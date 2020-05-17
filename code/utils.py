@@ -144,3 +144,15 @@ def second_stage(X_train, y_train, first_stage_train,  # y should be equal to tr
     return(dfp, model_dict)
 #############################################################################
 
+#############################################################################
+############# Aggregation helper functions for the per-state models
+def agg_predict(X_agg, all_models):
+    X_st = X_agg[0]
+    X_rt = np.array(X_agg[1:])
+    return all_models[X_st].predict(X_rt.reshape(1, -1))[0]
+
+def matrix_agg_predict(X_total, all_models):
+    n, p = X_total.shape
+    predictions = [agg_predict(X_total[i, :], all_models) for i in range(n)]
+    return predictions
+#############################################################################
