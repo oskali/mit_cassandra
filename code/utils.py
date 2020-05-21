@@ -16,6 +16,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import r2_score
 from sklearn.svm import SVR, LinearSVR
 import numpy as np
+from datetime import datetime
 #############################################################################
 
 #############################################################################
@@ -30,7 +31,6 @@ def wrangle_clustering_results_day_i(clt,
     output['pred_value_for_next_' + str(i) + 'days'] = (1+output[target])* output[var]
     output['predicted_value_model' +str(i)] = output.groupby('state')[
             'pred_value_for_next_' + str(i) + 'days'].shift(i)
-    
     del output[target]
     return(output)
     
@@ -51,6 +51,8 @@ def wrangle_clustering(clt,
     
     if cols_to_keep is not None:
         output = output.loc[:, cols_to_keep + ltarget]
+    
+    output['Date'] = output['Date'].apply(lambda x: datetime.strptime(x, '%Y-%m-%d'))
     return(output)
 #############################################################################
     
@@ -75,6 +77,42 @@ def update_results(X_train, y_train, first_stage_train,  # y should be equal to 
         train_dic_results_mape[model_name] = mean_absolute_percentage_error(first_stage_train + y_train, first_stage_train + model.predict(X_train))
         
         return dic_results, train_dic_results, dic_results_mape, train_dic_results_mape
+
+def read_measures(path):
+    measures = pd.read_csv(path)
+    measures_names =  ['EmergDec', 'SchoolClose', 'GathRestrict25', 'GathRestrictAny',
+                   'OtherBusinessClose', 'RestaurantRestrict', 'GathRestrict10',
+                   'CaseIsolation', 'StayAtHome', 'PublicMask', 'Quarantine',
+                   'NEBusinessClose', 'TravelRestrictIntra', 'GathRestrict50',
+                   'BusinessHealthSafety', 'GathRestrict250', 'GathRecomAny',
+                   'GathRestrict1000', 'TravelRestrictExit', 'TravelRestrictEntry',
+                   'GathRestrict100', 'GathRestrict5', 'GathRestrict500']
+
+    measures = measures.loc[:, ['state', 'date'] + measures_names]
+    measures['date'] = measures['date'].apply(lambda x: datetime.strptime(x, '%Y-%m-%d'))
+    measures = measures.groupby(['state', 'date']).last().reset_index()
+    return(measures, measures_names)
+
+def print_results(X_train, y_train, first_stage_train, X_test, y_test, first_stage_test,
+                  predictions_train, predictions_test):
+    
+    print('First stage In-Sample R2: ' + str(r2_score(
+        first_stage_train + y_train, first_stage_train)))
+    print('First stage Out-of-Sample R2: ' + str(r2_score(
+        first_stage_test + y_test, first_stage_test)))
+    print('First stage In-Sample MAPE: ' + str(mean_absolute_percentage_error(
+        first_stage_train + y_train, first_stage_train)))
+    print('First stage Out-of-Sample MAPE: ' + str(mean_absolute_percentage_error(
+        first_stage_test + y_test, first_stage_test)))
+    
+    print('Aggregated two-stage state model In-Sample R2: ' + str(r2_score(
+        first_stage_train + y_train, first_stage_train + predictions_train)))
+    print('Aggregated two-stage state model Out-of-Sample R2: ' + str(r2_score(
+        first_stage_test + y_test, first_stage_test + predictions_test)))
+    print('Aggregated two-stage state model In-Sample MAPE: ' + str(mean_absolute_percentage_error(
+        first_stage_train + y_train, first_stage_train + predictions_train)))
+    print('Aggregated two-stage state model Out-of-Sample MAPE: ' + str(mean_absolute_percentage_error(
+        first_stage_test + y_test, first_stage_test + predictions_test)))
 #############################################################################
         
 #############################################################################
