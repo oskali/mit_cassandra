@@ -1,0 +1,4015 @@
+state,date,cases
+Alabama,13-03-2020,5
+Alabama,14-03-2020,7
+Alabama,15-03-2020,11
+Alabama,16-03-2020,29
+Alabama,17-03-2020,39
+Alabama,18-03-2020,51
+Alabama,19-03-2020,78
+Alabama,20-03-2020,106
+Alabama,21-03-2020,131
+Alabama,22-03-2020,157
+Alabama,23-03-2020,196
+Alabama,24-03-2020,242
+Alabama,25-03-2020,381
+Alabama,26-03-2020,517
+Alabama,27-03-2020,587
+Alabama,28-03-2020,694
+Alabama,29-03-2020,825
+Alabama,30-03-2020,899
+Alabama,31-03-2020,987
+Alabama,01-04-2020,1060
+Alabama,02-04-2020,1233
+Alabama,03-04-2020,1495
+Alabama,04-04-2020,1614
+Alabama,05-04-2020,1765
+Alabama,06-04-2020,1952
+Alabama,07-04-2020,2169
+Alabama,08-04-2020,2328
+Alabama,09-04-2020,2703
+Alabama,10-04-2020,2947
+Alabama,11-04-2020,3217
+Alabama,12-04-2020,3563
+Alabama,13-04-2020,3734
+Alabama,14-04-2020,3953
+Alabama,15-04-2020,4075
+Alabama,16-04-2020,4345
+Alabama,17-04-2020,4571
+Alabama,18-04-2020,4712
+Alabama,19-04-2020,4888
+Alabama,20-04-2020,5079
+Alabama,21-04-2020,5317
+Alabama,22-04-2020,5593
+Alabama,23-04-2020,5832
+Alabama,24-04-2020,6026
+Alabama,25-04-2020,6026
+Alabama,26-04-2020,6421
+Alabama,27-04-2020,6539
+Alabama,28-04-2020,6750
+Alabama,29-04-2020,6912
+Alabama,30-04-2020,7088
+Alabama,01-05-2020,7294
+Alabama,02-05-2020,7611
+Alabama,03-05-2020,7888
+Alabama,04-05-2020,8112
+Alabama,05-05-2020,8437
+Alabama,06-05-2020,8691
+Alabama,07-05-2020,9046
+Alabama,08-05-2020,9385
+Alabama,09-05-2020,9668
+Alabama,10-05-2020,9889
+Alabama,11-05-2020,10164
+Alabama,12-05-2020,10464
+Alabama,13-05-2020,10700
+Alabama,14-05-2020,11101
+Alaska,13-03-2020,1
+Alaska,14-03-2020,1
+Alaska,15-03-2020,1
+Alaska,16-03-2020,1
+Alaska,17-03-2020,3
+Alaska,18-03-2020,5
+Alaska,19-03-2020,8
+Alaska,20-03-2020,11
+Alaska,21-03-2020,13
+Alaska,22-03-2020,18
+Alaska,23-03-2020,30
+Alaska,24-03-2020,34
+Alaska,25-03-2020,41
+Alaska,26-03-2020,56
+Alaska,27-03-2020,58
+Alaska,28-03-2020,85
+Alaska,29-03-2020,102
+Alaska,30-03-2020,114
+Alaska,31-03-2020,119
+Alaska,01-04-2020,132
+Alaska,02-04-2020,143
+Alaska,03-04-2020,157
+Alaska,04-04-2020,171
+Alaska,05-04-2020,185
+Alaska,06-04-2020,190
+Alaska,07-04-2020,213
+Alaska,08-04-2020,226
+Alaska,09-04-2020,235
+Alaska,10-04-2020,246
+Alaska,11-04-2020,257
+Alaska,12-04-2020,272
+Alaska,13-04-2020,277
+Alaska,14-04-2020,285
+Alaska,15-04-2020,293
+Alaska,16-04-2020,300
+Alaska,17-04-2020,309
+Alaska,18-04-2020,314
+Alaska,19-04-2020,319
+Alaska,20-04-2020,321
+Alaska,21-04-2020,329
+Alaska,22-04-2020,335
+Alaska,23-04-2020,337
+Alaska,24-04-2020,339
+Alaska,25-04-2020,339
+Alaska,26-04-2020,340
+Alaska,27-04-2020,345
+Alaska,28-04-2020,351
+Alaska,29-04-2020,355
+Alaska,30-04-2020,355
+Alaska,01-05-2020,364
+Alaska,02-05-2020,365
+Alaska,03-05-2020,368
+Alaska,04-05-2020,370
+Alaska,05-05-2020,371
+Alaska,06-05-2020,372
+Alaska,07-05-2020,374
+Alaska,08-05-2020,377
+Alaska,09-05-2020,378
+Alaska,10-05-2020,379
+Alaska,11-05-2020,379
+Alaska,12-05-2020,383
+Alaska,13-05-2020,383
+Alaska,14-05-2020,383
+Arizona,26-01-2020,1
+Arizona,27-01-2020,1
+Arizona,28-01-2020,1
+Arizona,29-01-2020,1
+Arizona,30-01-2020,1
+Arizona,31-01-2020,1
+Arizona,01-02-2020,1
+Arizona,02-02-2020,1
+Arizona,03-02-2020,1
+Arizona,04-02-2020,1
+Arizona,05-02-2020,1
+Arizona,06-02-2020,1
+Arizona,07-02-2020,1
+Arizona,08-02-2020,1
+Arizona,09-02-2020,1
+Arizona,10-02-2020,1
+Arizona,11-02-2020,1
+Arizona,12-02-2020,1
+Arizona,13-02-2020,1
+Arizona,14-02-2020,1
+Arizona,15-02-2020,1
+Arizona,16-02-2020,1
+Arizona,17-02-2020,1
+Arizona,18-02-2020,1
+Arizona,19-02-2020,1
+Arizona,20-02-2020,1
+Arizona,21-02-2020,1
+Arizona,22-02-2020,1
+Arizona,23-02-2020,1
+Arizona,24-02-2020,1
+Arizona,25-02-2020,1
+Arizona,26-02-2020,1
+Arizona,27-02-2020,1
+Arizona,28-02-2020,1
+Arizona,29-02-2020,1
+Arizona,01-03-2020,1
+Arizona,02-03-2020,1
+Arizona,03-03-2020,1
+Arizona,04-03-2020,1
+Arizona,05-03-2020,1
+Arizona,06-03-2020,2
+Arizona,07-03-2020,4
+Arizona,08-03-2020,4
+Arizona,09-03-2020,4
+Arizona,10-03-2020,6
+Arizona,11-03-2020,9
+Arizona,12-03-2020,9
+Arizona,13-03-2020,9
+Arizona,14-03-2020,12
+Arizona,15-03-2020,12
+Arizona,16-03-2020,18
+Arizona,17-03-2020,20
+Arizona,18-03-2020,27
+Arizona,19-03-2020,45
+Arizona,20-03-2020,68
+Arizona,21-03-2020,104
+Arizona,22-03-2020,152
+Arizona,23-03-2020,235
+Arizona,24-03-2020,326
+Arizona,25-03-2020,401
+Arizona,26-03-2020,508
+Arizona,27-03-2020,665
+Arizona,28-03-2020,773
+Arizona,29-03-2020,919
+Arizona,30-03-2020,1157
+Arizona,31-03-2020,1289
+Arizona,01-04-2020,1413
+Arizona,02-04-2020,1596
+Arizona,03-04-2020,1769
+Arizona,04-04-2020,2019
+Arizona,05-04-2020,2269
+Arizona,06-04-2020,2460
+Arizona,07-04-2020,2575
+Arizona,08-04-2020,2726
+Arizona,09-04-2020,3018
+Arizona,10-04-2020,3112
+Arizona,11-04-2020,3393
+Arizona,12-04-2020,3542
+Arizona,13-04-2020,3705
+Arizona,14-04-2020,3809
+Arizona,15-04-2020,3964
+Arizona,16-04-2020,4237
+Arizona,17-04-2020,4511
+Arizona,18-04-2020,4724
+Arizona,19-04-2020,4933
+Arizona,20-04-2020,5068
+Arizona,21-04-2020,5256
+Arizona,22-04-2020,5473
+Arizona,23-04-2020,5772
+Arizona,24-04-2020,6045
+Arizona,25-04-2020,6286
+Arizona,26-04-2020,6534
+Arizona,27-04-2020,6725
+Arizona,28-04-2020,6955
+Arizona,29-04-2020,7209
+Arizona,30-04-2020,7655
+Arizona,01-05-2020,7969
+Arizona,02-05-2020,8364
+Arizona,03-05-2020,8640
+Arizona,04-05-2020,8924
+Arizona,05-05-2020,9305
+Arizona,06-05-2020,9707
+Arizona,07-05-2020,9945
+Arizona,08-05-2020,10526
+Arizona,09-05-2020,10960
+Arizona,10-05-2020,11119
+Arizona,11-05-2020,11383
+Arizona,12-05-2020,11736
+Arizona,13-05-2020,12216
+Arizona,14-05-2020,12674
+Arkansas,13-03-2020,9
+Arkansas,14-03-2020,12
+Arkansas,15-03-2020,3
+Arkansas,16-03-2020,3
+Arkansas,17-03-2020,3
+Arkansas,18-03-2020,4
+Arkansas,19-03-2020,62
+Arkansas,20-03-2020,100
+Arkansas,21-03-2020,122
+Arkansas,22-03-2020,165
+Arkansas,23-03-2020,192
+Arkansas,24-03-2020,219
+Arkansas,25-03-2020,280
+Arkansas,26-03-2020,335
+Arkansas,27-03-2020,381
+Arkansas,28-03-2020,409
+Arkansas,29-03-2020,426
+Arkansas,30-03-2020,473
+Arkansas,31-03-2020,523
+Arkansas,01-04-2020,584
+Arkansas,02-04-2020,643
+Arkansas,03-04-2020,704
+Arkansas,04-04-2020,743
+Arkansas,05-04-2020,837
+Arkansas,06-04-2020,875
+Arkansas,07-04-2020,946
+Arkansas,08-04-2020,1000
+Arkansas,09-04-2020,1119
+Arkansas,10-04-2020,1171
+Arkansas,11-04-2020,1228
+Arkansas,12-04-2020,1280
+Arkansas,13-04-2020,1410
+Arkansas,14-04-2020,1498
+Arkansas,15-04-2020,1569
+Arkansas,16-04-2020,1620
+Arkansas,17-04-2020,1695
+Arkansas,18-04-2020,1744
+Arkansas,19-04-2020,1781
+Arkansas,20-04-2020,1973
+Arkansas,21-04-2020,1990
+Arkansas,22-04-2020,2276
+Arkansas,23-04-2020,2599
+Arkansas,24-04-2020,2810
+Arkansas,25-04-2020,2911
+Arkansas,26-04-2020,3001
+Arkansas,27-04-2020,3069
+Arkansas,28-04-2020,3127
+Arkansas,29-04-2020,3193
+Arkansas,30-04-2020,3281
+Arkansas,01-05-2020,3337
+Arkansas,02-05-2020,3372
+Arkansas,03-05-2020,3437
+Arkansas,04-05-2020,3491
+Arkansas,05-05-2020,3525
+Arkansas,06-05-2020,3611
+Arkansas,07-05-2020,3703
+Arkansas,08-05-2020,3747
+Arkansas,09-05-2020,3747
+Arkansas,10-05-2020,4012
+Arkansas,11-05-2020,4043
+Arkansas,12-05-2020,4164
+Arkansas,13-05-2020,4236
+Arkansas,14-05-2020,4366
+California,26-01-2020,2
+California,27-01-2020,2
+California,28-01-2020,2
+California,29-01-2020,2
+California,30-01-2020,2
+California,31-01-2020,3
+California,01-02-2020,3
+California,02-02-2020,3
+California,03-02-2020,6
+California,04-02-2020,6
+California,05-02-2020,6
+California,06-02-2020,6
+California,07-02-2020,6
+California,08-02-2020,6
+California,09-02-2020,6
+California,10-02-2020,6
+California,11-02-2020,7
+California,12-02-2020,7
+California,13-02-2020,8
+California,14-02-2020,8
+California,15-02-2020,8
+California,16-02-2020,8
+California,17-02-2020,8
+California,18-02-2020,8
+California,19-02-2020,8
+California,20-02-2020,8
+California,21-02-2020,10
+California,22-02-2020,10
+California,23-02-2020,10
+California,24-02-2020,10
+California,25-02-2020,10
+California,26-02-2020,10
+California,27-02-2020,11
+California,28-02-2020,11
+California,29-02-2020,12
+California,01-03-2020,12
+California,02-03-2020,21
+California,03-03-2020,25
+California,04-03-2020,35
+California,05-03-2020,51
+California,06-03-2020,59
+California,07-03-2020,81
+California,08-03-2020,95
+California,09-03-2020,101
+California,10-03-2020,144
+California,11-03-2020,178
+California,12-03-2020,221
+California,13-03-2020,281
+California,14-03-2020,372
+California,15-03-2020,373
+California,16-03-2020,557
+California,17-03-2020,700
+California,18-03-2020,828
+California,19-03-2020,1005
+California,20-03-2020,1243
+California,21-03-2020,1405
+California,22-03-2020,1646
+California,23-03-2020,2108
+California,24-03-2020,2538
+California,25-03-2020,2998
+California,26-03-2020,3899
+California,27-03-2020,4657
+California,28-03-2020,5095
+California,29-03-2020,5852
+California,30-03-2020,7138
+California,31-03-2020,8210
+California,01-04-2020,9399
+California,02-04-2020,10773
+California,03-04-2020,12004
+California,04-04-2020,12837
+California,05-04-2020,15034
+California,06-04-2020,16019
+California,07-04-2020,17351
+California,08-04-2020,18897
+California,09-04-2020,19710
+California,10-04-2020,21081
+California,11-04-2020,21706
+California,12-04-2020,22795
+California,13-04-2020,23931
+California,14-04-2020,25356
+California,15-04-2020,26686
+California,16-04-2020,27677
+California,17-04-2020,29157
+California,18-04-2020,30491
+California,19-04-2020,31431
+California,20-04-2020,33686
+California,21-04-2020,35465
+California,22-04-2020,37344
+California,23-04-2020,39561
+California,24-04-2020,41355
+California,25-04-2020,42368
+California,26-04-2020,43558
+California,27-04-2020,44966
+California,28-04-2020,46164
+California,29-04-2020,48747
+California,30-04-2020,50130
+California,01-05-2020,52026
+California,02-05-2020,53347
+California,03-05-2020,54903
+California,04-05-2020,55884
+California,05-05-2020,58456
+California,06-05-2020,60616
+California,07-05-2020,62148
+California,08-05-2020,63779
+California,09-05-2020,66558
+California,10-05-2020,67600
+California,11-05-2020,69329
+California,12-05-2020,70978
+California,13-05-2020,72798
+California,14-05-2020,74871
+Colorado,06-03-2020,3
+Colorado,07-03-2020,7
+Colorado,08-03-2020,7
+Colorado,09-03-2020,7
+Colorado,10-03-2020,14
+Colorado,11-03-2020,30
+Colorado,12-03-2020,45
+Colorado,13-03-2020,76
+Colorado,14-03-2020,101
+Colorado,15-03-2020,99
+Colorado,16-03-2020,132
+Colorado,17-03-2020,167
+Colorado,18-03-2020,218
+Colorado,19-03-2020,277
+Colorado,20-03-2020,363
+Colorado,21-03-2020,475
+Colorado,22-03-2020,591
+Colorado,23-03-2020,704
+Colorado,24-03-2020,723
+Colorado,25-03-2020,1021
+Colorado,26-03-2020,1430
+Colorado,27-03-2020,1433
+Colorado,28-03-2020,1740
+Colorado,29-03-2020,2307
+Colorado,30-03-2020,2311
+Colorado,31-03-2020,2966
+Colorado,01-04-2020,2982
+Colorado,02-04-2020,3342
+Colorado,03-04-2020,3742
+Colorado,04-04-2020,4188
+Colorado,05-04-2020,4950
+Colorado,06-04-2020,5183
+Colorado,07-04-2020,5429
+Colorado,08-04-2020,5655
+Colorado,09-04-2020,5655
+Colorado,10-04-2020,6202
+Colorado,11-04-2020,6513
+Colorado,12-04-2020,7307
+Colorado,13-04-2020,7691
+Colorado,14-04-2020,7950
+Colorado,15-04-2020,7956
+Colorado,16-04-2020,8286
+Colorado,17-04-2020,8691
+Colorado,18-04-2020,9047
+Colorado,19-04-2020,9730
+Colorado,20-04-2020,9730
+Colorado,21-04-2020,10473
+Colorado,22-04-2020,10891
+Colorado,23-04-2020,11278
+Colorado,24-04-2020,12256
+Colorado,25-04-2020,12968
+Colorado,26-04-2020,13441
+Colorado,27-04-2020,13879
+Colorado,28-04-2020,14316
+Colorado,29-04-2020,14758
+Colorado,30-04-2020,15284
+Colorado,01-05-2020,15793
+Colorado,02-05-2020,16225
+Colorado,03-05-2020,16635
+Colorado,04-05-2020,16918
+Colorado,05-05-2020,17367
+Colorado,06-05-2020,17832
+Colorado,07-05-2020,18370
+Colorado,08-05-2020,18827
+Colorado,09-05-2020,19375
+Colorado,10-05-2020,19703
+Colorado,11-05-2020,19879
+Colorado,12-05-2020,20157
+Colorado,13-05-2020,20475
+Colorado,14-05-2020,20838
+Connecticut,10-03-2020,1
+Connecticut,11-03-2020,3
+Connecticut,12-03-2020,5
+Connecticut,13-03-2020,11
+Connecticut,14-03-2020,23
+Connecticut,15-03-2020,24
+Connecticut,16-03-2020,41
+Connecticut,17-03-2020,68
+Connecticut,18-03-2020,96
+Connecticut,19-03-2020,159
+Connecticut,20-03-2020,194
+Connecticut,21-03-2020,194
+Connecticut,22-03-2020,327
+Connecticut,23-03-2020,415
+Connecticut,24-03-2020,618
+Connecticut,25-03-2020,875
+Connecticut,26-03-2020,1012
+Connecticut,27-03-2020,1291
+Connecticut,28-03-2020,1524
+Connecticut,29-03-2020,1993
+Connecticut,30-03-2020,2571
+Connecticut,31-03-2020,3128
+Connecticut,01-04-2020,3557
+Connecticut,02-04-2020,3824
+Connecticut,03-04-2020,4914
+Connecticut,04-04-2020,5276
+Connecticut,05-04-2020,5675
+Connecticut,06-04-2020,6906
+Connecticut,07-04-2020,7781
+Connecticut,08-04-2020,7781
+Connecticut,09-04-2020,9784
+Connecticut,10-04-2020,10538
+Connecticut,11-04-2020,11510
+Connecticut,12-04-2020,12035
+Connecticut,13-04-2020,13381
+Connecticut,14-04-2020,13989
+Connecticut,15-04-2020,14755
+Connecticut,16-04-2020,15884
+Connecticut,17-04-2020,16809
+Connecticut,18-04-2020,17550
+Connecticut,19-04-2020,17962
+Connecticut,20-04-2020,19815
+Connecticut,21-04-2020,20360
+Connecticut,22-04-2020,22469
+Connecticut,23-04-2020,23100
+Connecticut,24-04-2020,23936
+Connecticut,25-04-2020,24583
+Connecticut,26-04-2020,25269
+Connecticut,27-04-2020,25997
+Connecticut,28-04-2020,26312
+Connecticut,29-04-2020,26767
+Connecticut,30-04-2020,27700
+Connecticut,01-05-2020,28764
+Connecticut,02-05-2020,29287
+Connecticut,03-05-2020,29287
+Connecticut,04-05-2020,29973
+Connecticut,05-05-2020,30621
+Connecticut,06-05-2020,30995
+Connecticut,07-05-2020,31784
+Connecticut,08-05-2020,32411
+Connecticut,09-05-2020,32984
+Connecticut,10-05-2020,33554
+Connecticut,11-05-2020,33765
+Connecticut,12-05-2020,34333
+Connecticut,13-05-2020,34855
+Connecticut,14-05-2020,35464
+Delaware,11-03-2020,1
+Delaware,12-03-2020,1
+Delaware,13-03-2020,4
+Delaware,14-03-2020,6
+Delaware,15-03-2020,6
+Delaware,16-03-2020,8
+Delaware,17-03-2020,16
+Delaware,18-03-2020,19
+Delaware,19-03-2020,30
+Delaware,20-03-2020,39
+Delaware,21-03-2020,45
+Delaware,22-03-2020,56
+Delaware,23-03-2020,68
+Delaware,24-03-2020,104
+Delaware,25-03-2020,119
+Delaware,26-03-2020,130
+Delaware,27-03-2020,163
+Delaware,28-03-2020,214
+Delaware,29-03-2020,232
+Delaware,30-03-2020,264
+Delaware,31-03-2020,319
+Delaware,01-04-2020,368
+Delaware,02-04-2020,393
+Delaware,03-04-2020,450
+Delaware,04-04-2020,593
+Delaware,05-04-2020,673
+Delaware,06-04-2020,783
+Delaware,07-04-2020,928
+Delaware,08-04-2020,1116
+Delaware,09-04-2020,1209
+Delaware,10-04-2020,1326
+Delaware,11-04-2020,1479
+Delaware,12-04-2020,1625
+Delaware,13-04-2020,1758
+Delaware,14-04-2020,1926
+Delaware,15-04-2020,2014
+Delaware,16-04-2020,2070
+Delaware,17-04-2020,2317
+Delaware,18-04-2020,2538
+Delaware,19-04-2020,2538
+Delaware,20-04-2020,2745
+Delaware,21-04-2020,2931
+Delaware,22-04-2020,3200
+Delaware,23-04-2020,3308
+Delaware,24-04-2020,3442
+Delaware,25-04-2020,3576
+Delaware,26-04-2020,4034
+Delaware,27-04-2020,4162
+Delaware,28-04-2020,4575
+Delaware,29-04-2020,4655
+Delaware,30-04-2020,4734
+Delaware,01-05-2020,4918
+Delaware,02-05-2020,5038
+Delaware,03-05-2020,5208
+Delaware,04-05-2020,5288
+Delaware,05-05-2020,5371
+Delaware,06-05-2020,5778
+Delaware,07-05-2020,5939
+Delaware,08-05-2020,6111
+Delaware,09-05-2020,6277
+Delaware,10-05-2020,6277
+Delaware,11-05-2020,6565
+Delaware,12-05-2020,6741
+Delaware,13-05-2020,6952
+Delaware,14-05-2020,7223
+Diamond Princess,17-03-2020,47
+Diamond Princess,18-03-2020,47
+Diamond Princess,19-03-2020,47
+Diamond Princess,20-03-2020,49
+Diamond Princess,21-03-2020,49
+Diamond Princess,22-03-2020,49
+Diamond Princess,23-03-2020,49
+Diamond Princess,24-03-2020,49
+Diamond Princess,25-03-2020,49
+Diamond Princess,26-03-2020,49
+Diamond Princess,27-03-2020,49
+Diamond Princess,28-03-2020,49
+Diamond Princess,29-03-2020,49
+Diamond Princess,30-03-2020,49
+Diamond Princess,31-03-2020,49
+Diamond Princess,01-04-2020,49
+Diamond Princess,02-04-2020,49
+Diamond Princess,03-04-2020,49
+Diamond Princess,04-04-2020,49
+Diamond Princess,05-04-2020,49
+Diamond Princess,06-04-2020,49
+Diamond Princess,07-04-2020,49
+Diamond Princess,08-04-2020,49
+Diamond Princess,09-04-2020,49
+Diamond Princess,10-04-2020,49
+Diamond Princess,11-04-2020,49
+Diamond Princess,12-04-2020,49
+Diamond Princess,13-04-2020,49
+Diamond Princess,14-04-2020,49
+Diamond Princess,15-04-2020,49
+Diamond Princess,16-04-2020,49
+Diamond Princess,17-04-2020,49
+Diamond Princess,18-04-2020,49
+Diamond Princess,19-04-2020,49
+Diamond Princess,20-04-2020,49
+Diamond Princess,21-04-2020,49
+Diamond Princess,22-04-2020,49
+Diamond Princess,23-04-2020,49
+Diamond Princess,24-04-2020,49
+Diamond Princess,25-04-2020,49
+Diamond Princess,26-04-2020,49
+Diamond Princess,27-04-2020,49
+Diamond Princess,28-04-2020,49
+Diamond Princess,29-04-2020,49
+Diamond Princess,30-04-2020,49
+Diamond Princess,01-05-2020,49
+Diamond Princess,02-05-2020,49
+Diamond Princess,03-05-2020,49
+Diamond Princess,04-05-2020,49
+Diamond Princess,05-05-2020,49
+Diamond Princess,06-05-2020,49
+Diamond Princess,07-05-2020,49
+Diamond Princess,08-05-2020,49
+Diamond Princess,09-05-2020,49
+Diamond Princess,10-05-2020,49
+Diamond Princess,11-05-2020,49
+Diamond Princess,12-05-2020,49
+Diamond Princess,13-05-2020,49
+Diamond Princess,14-05-2020,49
+District of Columbia,16-03-2020,22
+District of Columbia,17-03-2020,22
+District of Columbia,18-03-2020,31
+District of Columbia,19-03-2020,40
+District of Columbia,20-03-2020,71
+District of Columbia,21-03-2020,98
+District of Columbia,22-03-2020,102
+District of Columbia,23-03-2020,120
+District of Columbia,24-03-2020,141
+District of Columbia,25-03-2020,187
+District of Columbia,26-03-2020,231
+District of Columbia,27-03-2020,271
+District of Columbia,28-03-2020,304
+District of Columbia,29-03-2020,342
+District of Columbia,30-03-2020,401
+District of Columbia,31-03-2020,495
+District of Columbia,01-04-2020,586
+District of Columbia,02-04-2020,653
+District of Columbia,03-04-2020,757
+District of Columbia,04-04-2020,902
+District of Columbia,05-04-2020,1002
+District of Columbia,06-04-2020,1097
+District of Columbia,07-04-2020,1211
+District of Columbia,08-04-2020,1440
+District of Columbia,09-04-2020,1523
+District of Columbia,10-04-2020,1660
+District of Columbia,11-04-2020,1778
+District of Columbia,12-04-2020,1875
+District of Columbia,13-04-2020,1955
+District of Columbia,14-04-2020,2058
+District of Columbia,15-04-2020,2197
+District of Columbia,16-04-2020,2350
+District of Columbia,17-04-2020,2476
+District of Columbia,18-04-2020,2666
+District of Columbia,19-04-2020,2793
+District of Columbia,20-04-2020,2927
+District of Columbia,21-04-2020,3098
+District of Columbia,22-04-2020,3206
+District of Columbia,23-04-2020,3361
+District of Columbia,24-04-2020,3528
+District of Columbia,25-04-2020,3699
+District of Columbia,26-04-2020,3841
+District of Columbia,27-04-2020,3892
+District of Columbia,28-04-2020,3994
+District of Columbia,29-04-2020,4106
+District of Columbia,30-04-2020,4323
+District of Columbia,01-05-2020,4658
+District of Columbia,02-05-2020,4797
+District of Columbia,03-05-2020,5016
+District of Columbia,04-05-2020,5170
+District of Columbia,05-05-2020,5322
+District of Columbia,06-05-2020,5461
+District of Columbia,07-05-2020,5654
+District of Columbia,08-05-2020,5899
+District of Columbia,09-05-2020,6102
+District of Columbia,10-05-2020,6272
+District of Columbia,11-05-2020,6389
+District of Columbia,12-05-2020,6485
+District of Columbia,13-05-2020,6584
+District of Columbia,14-05-2020,6736
+Florida,02-03-2020,1
+Florida,03-03-2020,2
+Florida,04-03-2020,2
+Florida,05-03-2020,3
+Florida,06-03-2020,3
+Florida,07-03-2020,7
+Florida,08-03-2020,10
+Florida,09-03-2020,13
+Florida,10-03-2020,15
+Florida,11-03-2020,24
+Florida,12-03-2020,30
+Florida,13-03-2020,50
+Florida,14-03-2020,76
+Florida,15-03-2020,100
+Florida,16-03-2020,101
+Florida,17-03-2020,190
+Florida,18-03-2020,306
+Florida,19-03-2020,432
+Florida,20-03-2020,564
+Florida,21-03-2020,763
+Florida,22-03-2020,1004
+Florida,23-03-2020,1227
+Florida,24-03-2020,1412
+Florida,25-03-2020,1682
+Florida,26-03-2020,2357
+Florida,27-03-2020,2900
+Florida,28-03-2020,3763
+Florida,29-03-2020,4246
+Florida,30-03-2020,5473
+Florida,31-03-2020,6741
+Florida,01-04-2020,6956
+Florida,02-04-2020,9008
+Florida,03-04-2020,10268
+Florida,04-04-2020,11537
+Florida,05-04-2020,12350
+Florida,06-04-2020,13324
+Florida,07-04-2020,14545
+Florida,08-04-2020,15456
+Florida,09-04-2020,16364
+Florida,10-04-2020,17531
+Florida,11-04-2020,18494
+Florida,12-04-2020,19895
+Florida,13-04-2020,21019
+Florida,14-04-2020,21628
+Florida,15-04-2020,22511
+Florida,16-04-2020,23343
+Florida,17-04-2020,24759
+Florida,18-04-2020,25492
+Florida,19-04-2020,26314
+Florida,20-04-2020,27059
+Florida,21-04-2020,27869
+Florida,22-04-2020,28309
+Florida,23-04-2020,29648
+Florida,24-04-2020,30533
+Florida,25-04-2020,30839
+Florida,26-04-2020,31532
+Florida,27-04-2020,32138
+Florida,28-04-2020,32848
+Florida,29-04-2020,33193
+Florida,30-04-2020,33690
+Florida,01-05-2020,34728
+Florida,02-05-2020,35463
+Florida,03-05-2020,36078
+Florida,04-05-2020,36897
+Florida,05-05-2020,37439
+Florida,06-05-2020,38002
+Florida,07-05-2020,38828
+Florida,08-05-2020,39199
+Florida,09-05-2020,40001
+Florida,10-05-2020,40596
+Florida,11-05-2020,40982
+Florida,12-05-2020,41923
+Florida,13-05-2020,42402
+Florida,14-05-2020,43210
+Georgia,03-03-2020,2
+Georgia,04-03-2020,2
+Georgia,05-03-2020,2
+Georgia,06-03-2020,3
+Georgia,07-03-2020,5
+Georgia,08-03-2020,5
+Georgia,09-03-2020,10
+Georgia,10-03-2020,17
+Georgia,11-03-2020,23
+Georgia,12-03-2020,31
+Georgia,13-03-2020,42
+Georgia,14-03-2020,73
+Georgia,15-03-2020,99
+Georgia,16-03-2020,121
+Georgia,17-03-2020,146
+Georgia,18-03-2020,197
+Georgia,19-03-2020,287
+Georgia,20-03-2020,485
+Georgia,21-03-2020,555
+Georgia,22-03-2020,621
+Georgia,23-03-2020,772
+Georgia,24-03-2020,1026
+Georgia,25-03-2020,1247
+Georgia,26-03-2020,1525
+Georgia,27-03-2020,2000
+Georgia,28-03-2020,2366
+Georgia,29-03-2020,2651
+Georgia,30-03-2020,2808
+Georgia,31-03-2020,3929
+Georgia,01-04-2020,4638
+Georgia,02-04-2020,5348
+Georgia,03-04-2020,5831
+Georgia,04-04-2020,6160
+Georgia,05-04-2020,6647
+Georgia,06-04-2020,7314
+Georgia,07-04-2020,8822
+Georgia,08-04-2020,9901
+Georgia,09-04-2020,10566
+Georgia,10-04-2020,11485
+Georgia,11-04-2020,12159
+Georgia,12-04-2020,12452
+Georgia,13-04-2020,13315
+Georgia,14-04-2020,14578
+Georgia,15-04-2020,14987
+Georgia,16-04-2020,15669
+Georgia,17-04-2020,17194
+Georgia,18-04-2020,17669
+Georgia,19-04-2020,18301
+Georgia,20-04-2020,19407
+Georgia,21-04-2020,19881
+Georgia,22-04-2020,21214
+Georgia,23-04-2020,21883
+Georgia,24-04-2020,22491
+Georgia,25-04-2020,23222
+Georgia,26-04-2020,23486
+Georgia,27-04-2020,24302
+Georgia,28-04-2020,24922
+Georgia,29-04-2020,25775
+Georgia,30-04-2020,26264
+Georgia,01-05-2020,27489
+Georgia,02-05-2020,28331
+Georgia,03-05-2020,28665
+Georgia,04-05-2020,29451
+Georgia,05-05-2020,29998
+Georgia,06-05-2020,30743
+Georgia,07-05-2020,31618
+Georgia,08-05-2020,32181
+Georgia,09-05-2020,32588
+Georgia,10-05-2020,33580
+Georgia,11-05-2020,34002
+Georgia,12-05-2020,34924
+Georgia,13-05-2020,35427
+Georgia,14-05-2020,35977
+Grand Princess,16-03-2020,20
+Grand Princess,17-03-2020,21
+Grand Princess,18-03-2020,21
+Grand Princess,19-03-2020,22
+Grand Princess,20-03-2020,23
+Grand Princess,21-03-2020,23
+Grand Princess,22-03-2020,30
+Grand Princess,23-03-2020,28
+Grand Princess,24-03-2020,28
+Grand Princess,25-03-2020,28
+Grand Princess,26-03-2020,28
+Grand Princess,27-03-2020,28
+Grand Princess,28-03-2020,103
+Grand Princess,29-03-2020,103
+Grand Princess,30-03-2020,103
+Grand Princess,31-03-2020,103
+Grand Princess,01-04-2020,103
+Grand Princess,02-04-2020,103
+Grand Princess,03-04-2020,103
+Grand Princess,04-04-2020,103
+Grand Princess,05-04-2020,103
+Grand Princess,06-04-2020,103
+Grand Princess,07-04-2020,103
+Grand Princess,08-04-2020,103
+Grand Princess,09-04-2020,103
+Grand Princess,10-04-2020,103
+Grand Princess,11-04-2020,103
+Grand Princess,12-04-2020,103
+Grand Princess,13-04-2020,103
+Grand Princess,14-04-2020,103
+Grand Princess,15-04-2020,103
+Grand Princess,16-04-2020,103
+Grand Princess,17-04-2020,103
+Grand Princess,18-04-2020,103
+Grand Princess,19-04-2020,103
+Grand Princess,20-04-2020,103
+Grand Princess,21-04-2020,103
+Grand Princess,22-04-2020,103
+Grand Princess,23-04-2020,103
+Grand Princess,24-04-2020,103
+Grand Princess,25-04-2020,103
+Grand Princess,26-04-2020,103
+Grand Princess,27-04-2020,103
+Grand Princess,28-04-2020,103
+Grand Princess,29-04-2020,103
+Grand Princess,30-04-2020,103
+Grand Princess,01-05-2020,103
+Grand Princess,02-05-2020,103
+Grand Princess,03-05-2020,103
+Grand Princess,04-05-2020,103
+Grand Princess,05-05-2020,103
+Grand Princess,06-05-2020,103
+Grand Princess,07-05-2020,103
+Grand Princess,08-05-2020,103
+Grand Princess,09-05-2020,103
+Grand Princess,10-05-2020,103
+Grand Princess,11-05-2020,103
+Grand Princess,12-05-2020,103
+Grand Princess,13-05-2020,103
+Grand Princess,14-05-2020,103
+Guam,16-03-2020,3
+Guam,17-03-2020,3
+Guam,18-03-2020,5
+Guam,19-03-2020,12
+Guam,20-03-2020,14
+Guam,21-03-2020,15
+Guam,22-03-2020,27
+Guam,23-03-2020,29
+Guam,24-03-2020,32
+Guam,25-03-2020,37
+Guam,26-03-2020,45
+Guam,27-03-2020,51
+Guam,28-03-2020,55
+Guam,29-03-2020,56
+Guam,30-03-2020,58
+Guam,31-03-2020,69
+Guam,01-04-2020,77
+Guam,02-04-2020,82
+Guam,03-04-2020,84
+Guam,04-04-2020,93
+Guam,05-04-2020,112
+Guam,06-04-2020,113
+Guam,07-04-2020,121
+Guam,08-04-2020,121
+Guam,09-04-2020,128
+Guam,10-04-2020,130
+Guam,11-04-2020,133
+Guam,12-04-2020,133
+Guam,13-04-2020,133
+Guam,14-04-2020,133
+Guam,15-04-2020,135
+Guam,16-04-2020,135
+Guam,17-04-2020,136
+Guam,18-04-2020,136
+Guam,19-04-2020,136
+Guam,20-04-2020,136
+Guam,21-04-2020,136
+Guam,22-04-2020,136
+Guam,23-04-2020,139
+Guam,24-04-2020,141
+Guam,25-04-2020,141
+Guam,26-04-2020,141
+Guam,27-04-2020,141
+Guam,28-04-2020,141
+Guam,29-04-2020,141
+Guam,30-04-2020,145
+Guam,01-05-2020,145
+Guam,02-05-2020,145
+Guam,03-05-2020,145
+Guam,04-05-2020,145
+Guam,05-05-2020,145
+Guam,06-05-2020,149
+Guam,07-05-2020,149
+Guam,08-05-2020,151
+Guam,09-05-2020,151
+Guam,10-05-2020,151
+Guam,11-05-2020,151
+Guam,12-05-2020,152
+Guam,13-05-2020,152
+Guam,14-05-2020,152
+Hawaii,07-03-2020,1
+Hawaii,08-03-2020,1
+Hawaii,09-03-2020,1
+Hawaii,10-03-2020,3
+Hawaii,11-03-2020,2
+Hawaii,12-03-2020,2
+Hawaii,13-03-2020,2
+Hawaii,14-03-2020,4
+Hawaii,15-03-2020,6
+Hawaii,16-03-2020,8
+Hawaii,17-03-2020,10
+Hawaii,18-03-2020,15
+Hawaii,19-03-2020,25
+Hawaii,20-03-2020,36
+Hawaii,21-03-2020,36
+Hawaii,22-03-2020,53
+Hawaii,23-03-2020,56
+Hawaii,24-03-2020,90
+Hawaii,25-03-2020,91
+Hawaii,26-03-2020,95
+Hawaii,27-03-2020,106
+Hawaii,28-03-2020,149
+Hawaii,29-03-2020,149
+Hawaii,30-03-2020,175
+Hawaii,31-03-2020,204
+Hawaii,01-04-2020,224
+Hawaii,02-04-2020,256
+Hawaii,03-04-2020,319
+Hawaii,04-04-2020,351
+Hawaii,05-04-2020,371
+Hawaii,06-04-2020,387
+Hawaii,07-04-2020,410
+Hawaii,08-04-2020,410
+Hawaii,09-04-2020,442
+Hawaii,10-04-2020,442
+Hawaii,11-04-2020,465
+Hawaii,12-04-2020,499
+Hawaii,13-04-2020,504
+Hawaii,14-04-2020,511
+Hawaii,15-04-2020,524
+Hawaii,16-04-2020,530
+Hawaii,17-04-2020,541
+Hawaii,18-04-2020,574
+Hawaii,19-04-2020,580
+Hawaii,20-04-2020,584
+Hawaii,21-04-2020,586
+Hawaii,22-04-2020,592
+Hawaii,23-04-2020,596
+Hawaii,24-04-2020,601
+Hawaii,25-04-2020,605
+Hawaii,26-04-2020,606
+Hawaii,27-04-2020,607
+Hawaii,28-04-2020,609
+Hawaii,29-04-2020,613
+Hawaii,30-04-2020,618
+Hawaii,01-05-2020,619
+Hawaii,02-05-2020,620
+Hawaii,03-05-2020,620
+Hawaii,04-05-2020,621
+Hawaii,05-05-2020,625
+Hawaii,06-05-2020,626
+Hawaii,07-05-2020,629
+Hawaii,08-05-2020,629
+Hawaii,09-05-2020,631
+Hawaii,10-05-2020,632
+Hawaii,11-05-2020,634
+Hawaii,12-05-2020,635
+Hawaii,13-05-2020,638
+Hawaii,14-05-2020,637
+Idaho,13-03-2020,1
+Idaho,14-03-2020,2
+Idaho,15-03-2020,4
+Idaho,16-03-2020,4
+Idaho,17-03-2020,8
+Idaho,18-03-2020,9
+Idaho,19-03-2020,23
+Idaho,20-03-2020,36
+Idaho,21-03-2020,42
+Idaho,22-03-2020,42
+Idaho,23-03-2020,68
+Idaho,24-03-2020,81
+Idaho,25-03-2020,91
+Idaho,26-03-2020,146
+Idaho,27-03-2020,205
+Idaho,28-03-2020,234
+Idaho,29-03-2020,281
+Idaho,30-03-2020,340
+Idaho,31-03-2020,515
+Idaho,01-04-2020,566
+Idaho,02-04-2020,776
+Idaho,03-04-2020,891
+Idaho,04-04-2020,1022
+Idaho,05-04-2020,1078
+Idaho,06-04-2020,1101
+Idaho,07-04-2020,1170
+Idaho,08-04-2020,1210
+Idaho,09-04-2020,1232
+Idaho,10-04-2020,1354
+Idaho,11-04-2020,1396
+Idaho,12-04-2020,1407
+Idaho,13-04-2020,1426
+Idaho,14-04-2020,1464
+Idaho,15-04-2020,1473
+Idaho,16-04-2020,1587
+Idaho,17-04-2020,1609
+Idaho,18-04-2020,1655
+Idaho,19-04-2020,1668
+Idaho,20-04-2020,1672
+Idaho,21-04-2020,1736
+Idaho,22-04-2020,1766
+Idaho,23-04-2020,1836
+Idaho,24-04-2020,1870
+Idaho,25-04-2020,1887
+Idaho,26-04-2020,1897
+Idaho,27-04-2020,1897
+Idaho,28-04-2020,1952
+Idaho,29-04-2020,1952
+Idaho,30-04-2020,1984
+Idaho,01-05-2020,2015
+Idaho,02-05-2020,2061
+Idaho,03-05-2020,2061
+Idaho,04-05-2020,2106
+Idaho,05-05-2020,2127
+Idaho,06-05-2020,2158
+Idaho,07-05-2020,2178
+Idaho,08-05-2020,2178
+Idaho,09-05-2020,2205
+Idaho,10-05-2020,2230
+Idaho,11-05-2020,2260
+Idaho,12-05-2020,2293
+Idaho,13-05-2020,2293
+Idaho,14-05-2020,2351
+Illinois,24-01-2020,1
+Illinois,25-01-2020,1
+Illinois,26-01-2020,1
+Illinois,27-01-2020,1
+Illinois,28-01-2020,1
+Illinois,29-01-2020,1
+Illinois,30-01-2020,1
+Illinois,31-01-2020,2
+Illinois,01-02-2020,2
+Illinois,02-02-2020,2
+Illinois,03-02-2020,2
+Illinois,04-02-2020,2
+Illinois,05-02-2020,2
+Illinois,06-02-2020,2
+Illinois,07-02-2020,2
+Illinois,08-02-2020,2
+Illinois,09-02-2020,2
+Illinois,10-02-2020,2
+Illinois,11-02-2020,2
+Illinois,12-02-2020,2
+Illinois,13-02-2020,2
+Illinois,14-02-2020,2
+Illinois,15-02-2020,2
+Illinois,16-02-2020,2
+Illinois,17-02-2020,2
+Illinois,18-02-2020,2
+Illinois,19-02-2020,2
+Illinois,20-02-2020,2
+Illinois,21-02-2020,2
+Illinois,22-02-2020,2
+Illinois,23-02-2020,2
+Illinois,24-02-2020,2
+Illinois,25-02-2020,2
+Illinois,26-02-2020,2
+Illinois,27-02-2020,2
+Illinois,28-02-2020,2
+Illinois,29-02-2020,2
+Illinois,01-03-2020,3
+Illinois,02-03-2020,4
+Illinois,03-03-2020,4
+Illinois,04-03-2020,4
+Illinois,05-03-2020,5
+Illinois,06-03-2020,5
+Illinois,07-03-2020,6
+Illinois,08-03-2020,7
+Illinois,09-03-2020,7
+Illinois,10-03-2020,12
+Illinois,11-03-2020,25
+Illinois,12-03-2020,32
+Illinois,13-03-2020,46
+Illinois,14-03-2020,64
+Illinois,15-03-2020,66
+Illinois,16-03-2020,83
+Illinois,17-03-2020,161
+Illinois,18-03-2020,272
+Illinois,19-03-2020,422
+Illinois,20-03-2020,585
+Illinois,21-03-2020,753
+Illinois,22-03-2020,1049
+Illinois,23-03-2020,1285
+Illinois,24-03-2020,1537
+Illinois,25-03-2020,1865
+Illinois,26-03-2020,2538
+Illinois,27-03-2020,3024
+Illinois,28-03-2020,3491
+Illinois,29-03-2020,4596
+Illinois,30-03-2020,5056
+Illinois,31-03-2020,5994
+Illinois,01-04-2020,6980
+Illinois,02-04-2020,7695
+Illinois,03-04-2020,8904
+Illinois,04-04-2020,10357
+Illinois,05-04-2020,11259
+Illinois,06-04-2020,12262
+Illinois,07-04-2020,13553
+Illinois,08-04-2020,15078
+Illinois,09-04-2020,16422
+Illinois,10-04-2020,17887
+Illinois,11-04-2020,19180
+Illinois,12-04-2020,20852
+Illinois,13-04-2020,22025
+Illinois,14-04-2020,23248
+Illinois,15-04-2020,24593
+Illinois,16-04-2020,25734
+Illinois,17-04-2020,27578
+Illinois,18-04-2020,29160
+Illinois,19-04-2020,30357
+Illinois,20-04-2020,31513
+Illinois,21-04-2020,33059
+Illinois,22-04-2020,35107
+Illinois,23-04-2020,36937
+Illinois,24-04-2020,39658
+Illinois,25-04-2020,41777
+Illinois,26-04-2020,43903
+Illinois,27-04-2020,45883
+Illinois,28-04-2020,48102
+Illinois,29-04-2020,50358
+Illinois,30-04-2020,52918
+Illinois,01-05-2020,56055
+Illinois,02-05-2020,58505
+Illinois,03-05-2020,61499
+Illinois,04-05-2020,63777
+Illinois,05-05-2020,65889
+Illinois,06-05-2020,68232
+Illinois,07-05-2020,70871
+Illinois,08-05-2020,73760
+Illinois,09-05-2020,76085
+Illinois,10-05-2020,77741
+Illinois,11-05-2020,79007
+Illinois,12-05-2020,83021
+Illinois,13-05-2020,84694
+Illinois,14-05-2020,87937
+Indiana,06-03-2020,1
+Indiana,07-03-2020,1
+Indiana,08-03-2020,2
+Indiana,09-03-2020,3
+Indiana,10-03-2020,6
+Indiana,11-03-2020,11
+Indiana,12-03-2020,13
+Indiana,13-03-2020,13
+Indiana,14-03-2020,16
+Indiana,15-03-2020,20
+Indiana,16-03-2020,25
+Indiana,17-03-2020,30
+Indiana,18-03-2020,38
+Indiana,19-03-2020,60
+Indiana,20-03-2020,86
+Indiana,21-03-2020,128
+Indiana,22-03-2020,204
+Indiana,23-03-2020,270
+Indiana,24-03-2020,368
+Indiana,25-03-2020,477
+Indiana,26-03-2020,645
+Indiana,27-03-2020,979
+Indiana,28-03-2020,1233
+Indiana,29-03-2020,1513
+Indiana,30-03-2020,1786
+Indiana,31-03-2020,2158
+Indiana,01-04-2020,2564
+Indiana,02-04-2020,3038
+Indiana,03-04-2020,3437
+Indiana,04-04-2020,3953
+Indiana,05-04-2020,4411
+Indiana,06-04-2020,4956
+Indiana,07-04-2020,5510
+Indiana,08-04-2020,5943
+Indiana,09-04-2020,6351
+Indiana,10-04-2020,6907
+Indiana,11-04-2020,7435
+Indiana,12-04-2020,7928
+Indiana,13-04-2020,8359
+Indiana,14-04-2020,8527
+Indiana,15-04-2020,8960
+Indiana,16-04-2020,9542
+Indiana,17-04-2020,10154
+Indiana,18-04-2020,10641
+Indiana,19-04-2020,11211
+Indiana,20-04-2020,11688
+Indiana,21-04-2020,12097
+Indiana,22-04-2020,12438
+Indiana,23-04-2020,13039
+Indiana,24-04-2020,13681
+Indiana,25-04-2020,14399
+Indiana,26-04-2020,15012
+Indiana,27-04-2020,15961
+Indiana,28-04-2020,16588
+Indiana,29-04-2020,17182
+Indiana,30-04-2020,17835
+Indiana,01-05-2020,18630
+Indiana,02-05-2020,19295
+Indiana,03-05-2020,19933
+Indiana,04-05-2020,20507
+Indiana,05-05-2020,21033
+Indiana,06-05-2020,21870
+Indiana,07-05-2020,22503
+Indiana,08-05-2020,23146
+Indiana,09-05-2020,23732
+Indiana,10-05-2020,24126
+Indiana,11-05-2020,24627
+Indiana,12-05-2020,25127
+Indiana,13-05-2020,25473
+Indiana,14-05-2020,26053
+Iowa,09-03-2020,3
+Iowa,10-03-2020,8
+Iowa,11-03-2020,13
+Iowa,12-03-2020,14
+Iowa,13-03-2020,17
+Iowa,14-03-2020,17
+Iowa,15-03-2020,18
+Iowa,16-03-2020,23
+Iowa,17-03-2020,23
+Iowa,18-03-2020,38
+Iowa,19-03-2020,44
+Iowa,20-03-2020,45
+Iowa,21-03-2020,69
+Iowa,22-03-2020,90
+Iowa,23-03-2020,105
+Iowa,24-03-2020,124
+Iowa,25-03-2020,146
+Iowa,26-03-2020,179
+Iowa,27-03-2020,235
+Iowa,28-03-2020,298
+Iowa,29-03-2020,336
+Iowa,30-03-2020,424
+Iowa,31-03-2020,497
+Iowa,01-04-2020,547
+Iowa,02-04-2020,614
+Iowa,03-04-2020,699
+Iowa,04-04-2020,787
+Iowa,05-04-2020,869
+Iowa,06-04-2020,946
+Iowa,07-04-2020,1046
+Iowa,08-04-2020,1145
+Iowa,09-04-2020,1270
+Iowa,10-04-2020,1388
+Iowa,11-04-2020,1510
+Iowa,12-04-2020,1587
+Iowa,13-04-2020,1710
+Iowa,14-04-2020,1899
+Iowa,15-04-2020,1995
+Iowa,16-04-2020,2141
+Iowa,17-04-2020,2332
+Iowa,18-04-2020,2513
+Iowa,19-04-2020,2902
+Iowa,20-04-2020,3159
+Iowa,21-04-2020,3641
+Iowa,22-04-2020,3748
+Iowa,23-04-2020,3924
+Iowa,24-04-2020,4445
+Iowa,25-04-2020,5092
+Iowa,26-04-2020,5476
+Iowa,27-04-2020,5868
+Iowa,28-04-2020,6376
+Iowa,29-04-2020,6843
+Iowa,30-04-2020,7145
+Iowa,01-05-2020,7884
+Iowa,02-05-2020,8643
+Iowa,03-05-2020,9175
+Iowa,04-05-2020,9703
+Iowa,05-05-2020,10111
+Iowa,06-05-2020,10404
+Iowa,07-05-2020,11059
+Iowa,08-05-2020,11457
+Iowa,09-05-2020,11671
+Iowa,10-05-2020,11959
+Iowa,11-05-2020,12373
+Iowa,12-05-2020,12912
+Iowa,13-05-2020,13289
+Iowa,14-05-2020,13675
+Kansas,08-03-2020,1
+Kansas,09-03-2020,1
+Kansas,10-03-2020,1
+Kansas,11-03-2020,1
+Kansas,12-03-2020,4
+Kansas,13-03-2020,6
+Kansas,14-03-2020,8
+Kansas,15-03-2020,8
+Kansas,16-03-2020,11
+Kansas,17-03-2020,18
+Kansas,18-03-2020,22
+Kansas,19-03-2020,35
+Kansas,20-03-2020,48
+Kansas,21-03-2020,57
+Kansas,22-03-2020,65
+Kansas,23-03-2020,84
+Kansas,24-03-2020,100
+Kansas,25-03-2020,134
+Kansas,26-03-2020,172
+Kansas,27-03-2020,206
+Kansas,28-03-2020,266
+Kansas,29-03-2020,330
+Kansas,30-03-2020,372
+Kansas,31-03-2020,434
+Kansas,01-04-2020,485
+Kansas,02-04-2020,553
+Kansas,03-04-2020,629
+Kansas,04-04-2020,698
+Kansas,05-04-2020,751
+Kansas,06-04-2020,849
+Kansas,07-04-2020,912
+Kansas,08-04-2020,1046
+Kansas,09-04-2020,1116
+Kansas,10-04-2020,1117
+Kansas,11-04-2020,1275
+Kansas,12-04-2020,1344
+Kansas,13-04-2020,1390
+Kansas,14-04-2020,1441
+Kansas,15-04-2020,1504
+Kansas,16-04-2020,1615
+Kansas,17-04-2020,1730
+Kansas,18-04-2020,1821
+Kansas,19-04-2020,1905
+Kansas,20-04-2020,2048
+Kansas,21-04-2020,2164
+Kansas,22-04-2020,2331
+Kansas,23-04-2020,2721
+Kansas,24-04-2020,2959
+Kansas,25-04-2020,3135
+Kansas,26-04-2020,3277
+Kansas,27-04-2020,3473
+Kansas,28-04-2020,3652
+Kansas,29-04-2020,3839
+Kansas,30-04-2020,4413
+Kansas,01-05-2020,4634
+Kansas,02-05-2020,4885
+Kansas,03-05-2020,5156
+Kansas,04-05-2020,5383
+Kansas,05-05-2020,5648
+Kansas,06-05-2020,5993
+Kansas,07-05-2020,6332
+Kansas,08-05-2020,6667
+Kansas,09-05-2020,6829
+Kansas,10-05-2020,6951
+Kansas,11-05-2020,7159
+Kansas,12-05-2020,7240
+Kansas,13-05-2020,7518
+Kansas,14-05-2020,7705
+Kentucky,06-03-2020,1
+Kentucky,07-03-2020,1
+Kentucky,08-03-2020,1
+Kentucky,09-03-2020,4
+Kentucky,10-03-2020,5
+Kentucky,11-03-2020,8
+Kentucky,12-03-2020,10
+Kentucky,13-03-2020,14
+Kentucky,14-03-2020,16
+Kentucky,15-03-2020,18
+Kentucky,16-03-2020,21
+Kentucky,17-03-2020,26
+Kentucky,18-03-2020,28
+Kentucky,19-03-2020,50
+Kentucky,20-03-2020,64
+Kentucky,21-03-2020,87
+Kentucky,22-03-2020,103
+Kentucky,23-03-2020,123
+Kentucky,24-03-2020,162
+Kentucky,25-03-2020,197
+Kentucky,26-03-2020,247
+Kentucky,27-03-2020,301
+Kentucky,28-03-2020,380
+Kentucky,29-03-2020,438
+Kentucky,30-03-2020,479
+Kentucky,31-03-2020,628
+Kentucky,01-04-2020,632
+Kentucky,02-04-2020,770
+Kentucky,03-04-2020,770
+Kentucky,04-04-2020,917
+Kentucky,05-04-2020,955
+Kentucky,06-04-2020,955
+Kentucky,07-04-2020,1149
+Kentucky,08-04-2020,1149
+Kentucky,09-04-2020,1341
+Kentucky,10-04-2020,1693
+Kentucky,11-04-2020,1693
+Kentucky,12-04-2020,1963
+Kentucky,13-04-2020,2018
+Kentucky,14-04-2020,2048
+Kentucky,15-04-2020,2210
+Kentucky,16-04-2020,2435
+Kentucky,17-04-2020,2522
+Kentucky,18-04-2020,2707
+Kentucky,19-04-2020,2960
+Kentucky,20-04-2020,3050
+Kentucky,21-04-2020,3204
+Kentucky,22-04-2020,3378
+Kentucky,23-04-2020,3479
+Kentucky,24-04-2020,3779
+Kentucky,25-04-2020,3915
+Kentucky,26-04-2020,4085
+Kentucky,27-04-2020,4156
+Kentucky,28-04-2020,4375
+Kentucky,29-04-2020,4537
+Kentucky,30-04-2020,4708
+Kentucky,01-05-2020,4882
+Kentucky,02-05-2020,4879
+Kentucky,03-05-2020,5130
+Kentucky,04-05-2020,5245
+Kentucky,05-05-2020,5822
+Kentucky,06-05-2020,5934
+Kentucky,07-05-2020,6129
+Kentucky,08-05-2020,6288
+Kentucky,09-05-2020,6440
+Kentucky,10-05-2020,6440
+Kentucky,11-05-2020,6677
+Kentucky,12-05-2020,6853
+Kentucky,13-05-2020,6853
+Kentucky,14-05-2020,7225
+Louisiana,11-03-2020,5
+Louisiana,12-03-2020,19
+Louisiana,13-03-2020,29
+Louisiana,14-03-2020,77
+Louisiana,15-03-2020,87
+Louisiana,16-03-2020,115
+Louisiana,17-03-2020,196
+Louisiana,18-03-2020,257
+Louisiana,19-03-2020,392
+Louisiana,20-03-2020,537
+Louisiana,21-03-2020,763
+Louisiana,22-03-2020,837
+Louisiana,23-03-2020,1172
+Louisiana,24-03-2020,1388
+Louisiana,25-03-2020,1795
+Louisiana,26-03-2020,2304
+Louisiana,27-03-2020,2744
+Louisiana,28-03-2020,3315
+Louisiana,29-03-2020,3540
+Louisiana,30-03-2020,4025
+Louisiana,31-03-2020,5237
+Louisiana,01-04-2020,6424
+Louisiana,02-04-2020,9149
+Louisiana,03-04-2020,10297
+Louisiana,04-04-2020,12496
+Louisiana,05-04-2020,13010
+Louisiana,06-04-2020,14867
+Louisiana,07-04-2020,16284
+Louisiana,08-04-2020,17030
+Louisiana,09-04-2020,18283
+Louisiana,10-04-2020,19253
+Louisiana,11-04-2020,20014
+Louisiana,12-04-2020,20595
+Louisiana,13-04-2020,21016
+Louisiana,14-04-2020,21518
+Louisiana,15-04-2020,21951
+Louisiana,16-04-2020,22532
+Louisiana,17-04-2020,23118
+Louisiana,18-04-2020,23580
+Louisiana,19-04-2020,23928
+Louisiana,20-04-2020,24523
+Louisiana,21-04-2020,24854
+Louisiana,22-04-2020,25258
+Louisiana,23-04-2020,25739
+Louisiana,24-04-2020,26140
+Louisiana,25-04-2020,26512
+Louisiana,26-04-2020,26773
+Louisiana,27-04-2020,27068
+Louisiana,28-04-2020,27286
+Louisiana,29-04-2020,27660
+Louisiana,30-04-2020,28001
+Louisiana,01-05-2020,28711
+Louisiana,02-05-2020,29140
+Louisiana,03-05-2020,29340
+Louisiana,04-05-2020,29673
+Louisiana,05-05-2020,29996
+Louisiana,06-05-2020,30399
+Louisiana,07-05-2020,30652
+Louisiana,08-05-2020,30855
+Louisiana,09-05-2020,31417
+Louisiana,10-05-2020,31600
+Louisiana,11-05-2020,31815
+Louisiana,12-05-2020,32050
+Louisiana,13-05-2020,32662
+Louisiana,14-05-2020,33489
+Maine,12-03-2020,1
+Maine,13-03-2020,3
+Maine,14-03-2020,3
+Maine,15-03-2020,2
+Maine,16-03-2020,17
+Maine,17-03-2020,26
+Maine,18-03-2020,35
+Maine,19-03-2020,52
+Maine,20-03-2020,56
+Maine,21-03-2020,70
+Maine,22-03-2020,89
+Maine,23-03-2020,107
+Maine,24-03-2020,118
+Maine,25-03-2020,142
+Maine,26-03-2020,155
+Maine,27-03-2020,168
+Maine,28-03-2020,211
+Maine,29-03-2020,253
+Maine,30-03-2020,275
+Maine,31-03-2020,303
+Maine,01-04-2020,303
+Maine,02-04-2020,376
+Maine,03-04-2020,432
+Maine,04-04-2020,456
+Maine,05-04-2020,470
+Maine,06-04-2020,499
+Maine,07-04-2020,519
+Maine,08-04-2020,537
+Maine,09-04-2020,560
+Maine,10-04-2020,586
+Maine,11-04-2020,616
+Maine,12-04-2020,633
+Maine,13-04-2020,698
+Maine,14-04-2020,735
+Maine,15-04-2020,770
+Maine,16-04-2020,796
+Maine,17-04-2020,827
+Maine,18-04-2020,847
+Maine,19-04-2020,867
+Maine,20-04-2020,875
+Maine,21-04-2020,888
+Maine,22-04-2020,907
+Maine,23-04-2020,937
+Maine,24-04-2020,965
+Maine,25-04-2020,965
+Maine,26-04-2020,1015
+Maine,27-04-2020,1023
+Maine,28-04-2020,1040
+Maine,29-04-2020,1056
+Maine,30-04-2020,1095
+Maine,01-05-2020,1123
+Maine,02-05-2020,1153
+Maine,03-05-2020,1185
+Maine,04-05-2020,1205
+Maine,05-05-2020,1226
+Maine,06-05-2020,1254
+Maine,07-05-2020,1330
+Maine,08-05-2020,1374
+Maine,09-05-2020,1408
+Maine,10-05-2020,1436
+Maine,11-05-2020,1462
+Maine,12-05-2020,1477
+Maine,13-05-2020,1515
+Maine,14-05-2020,1565
+Maryland,06-03-2020,3
+Maryland,07-03-2020,3
+Maryland,08-03-2020,5
+Maryland,09-03-2020,5
+Maryland,10-03-2020,8
+Maryland,11-03-2020,9
+Maryland,12-03-2020,12
+Maryland,13-03-2020,18
+Maryland,14-03-2020,27
+Maryland,15-03-2020,24
+Maryland,16-03-2020,42
+Maryland,17-03-2020,60
+Maryland,18-03-2020,85
+Maryland,19-03-2020,107
+Maryland,20-03-2020,149
+Maryland,21-03-2020,193
+Maryland,22-03-2020,244
+Maryland,23-03-2020,290
+Maryland,24-03-2020,349
+Maryland,25-03-2020,425
+Maryland,26-03-2020,583
+Maryland,27-03-2020,775
+Maryland,28-03-2020,995
+Maryland,29-03-2020,1239
+Maryland,30-03-2020,1413
+Maryland,31-03-2020,1660
+Maryland,01-04-2020,1986
+Maryland,02-04-2020,2331
+Maryland,03-04-2020,2758
+Maryland,04-04-2020,3125
+Maryland,05-04-2020,3617
+Maryland,06-04-2020,4045
+Maryland,07-04-2020,4371
+Maryland,08-04-2020,5529
+Maryland,09-04-2020,6185
+Maryland,10-04-2020,6968
+Maryland,11-04-2020,7694
+Maryland,12-04-2020,8225
+Maryland,13-04-2020,8936
+Maryland,14-04-2020,9472
+Maryland,15-04-2020,10032
+Maryland,16-04-2020,10784
+Maryland,17-04-2020,11572
+Maryland,18-04-2020,12326
+Maryland,19-04-2020,12847
+Maryland,20-04-2020,13684
+Maryland,21-04-2020,14193
+Maryland,22-04-2020,14775
+Maryland,23-04-2020,15737
+Maryland,24-04-2020,16616
+Maryland,25-04-2020,17766
+Maryland,26-04-2020,18581
+Maryland,27-04-2020,19487
+Maryland,28-04-2020,20113
+Maryland,29-04-2020,20849
+Maryland,30-04-2020,21742
+Maryland,01-05-2020,23472
+Maryland,02-05-2020,24473
+Maryland,03-05-2020,25462
+Maryland,04-05-2020,26408
+Maryland,05-05-2020,27117
+Maryland,06-05-2020,28163
+Maryland,07-05-2020,29374
+Maryland,08-05-2020,30485
+Maryland,09-05-2020,31534
+Maryland,10-05-2020,32587
+Maryland,11-05-2020,33373
+Maryland,12-05-2020,34061
+Maryland,13-05-2020,34812
+Maryland,14-05-2020,35903
+Massachusetts,01-02-2020,1
+Massachusetts,02-02-2020,1
+Massachusetts,03-02-2020,1
+Massachusetts,04-02-2020,1
+Massachusetts,05-02-2020,1
+Massachusetts,06-02-2020,1
+Massachusetts,07-02-2020,1
+Massachusetts,08-02-2020,1
+Massachusetts,09-02-2020,1
+Massachusetts,10-02-2020,1
+Massachusetts,11-02-2020,1
+Massachusetts,12-02-2020,1
+Massachusetts,13-02-2020,1
+Massachusetts,14-02-2020,1
+Massachusetts,15-02-2020,1
+Massachusetts,16-02-2020,1
+Massachusetts,17-02-2020,1
+Massachusetts,18-02-2020,1
+Massachusetts,19-02-2020,1
+Massachusetts,20-02-2020,1
+Massachusetts,21-02-2020,1
+Massachusetts,22-02-2020,1
+Massachusetts,23-02-2020,1
+Massachusetts,24-02-2020,1
+Massachusetts,25-02-2020,1
+Massachusetts,26-02-2020,1
+Massachusetts,27-02-2020,1
+Massachusetts,28-02-2020,1
+Massachusetts,29-02-2020,1
+Massachusetts,01-03-2020,1
+Massachusetts,02-03-2020,1
+Massachusetts,03-03-2020,2
+Massachusetts,04-03-2020,2
+Massachusetts,05-03-2020,2
+Massachusetts,06-03-2020,6
+Massachusetts,07-03-2020,6
+Massachusetts,08-03-2020,22
+Massachusetts,09-03-2020,22
+Massachusetts,10-03-2020,41
+Massachusetts,11-03-2020,92
+Massachusetts,12-03-2020,107
+Massachusetts,13-03-2020,123
+Massachusetts,14-03-2020,138
+Massachusetts,15-03-2020,138
+Massachusetts,16-03-2020,187
+Massachusetts,17-03-2020,217
+Massachusetts,18-03-2020,252
+Massachusetts,19-03-2020,328
+Massachusetts,20-03-2020,413
+Massachusetts,21-03-2020,523
+Massachusetts,22-03-2020,640
+Massachusetts,23-03-2020,777
+Massachusetts,24-03-2020,1159
+Massachusetts,25-03-2020,1838
+Massachusetts,26-03-2020,2417
+Massachusetts,27-03-2020,3240
+Massachusetts,28-03-2020,4257
+Massachusetts,29-03-2020,4955
+Massachusetts,30-03-2020,5752
+Massachusetts,31-03-2020,6620
+Massachusetts,01-04-2020,7738
+Massachusetts,02-04-2020,8966
+Massachusetts,03-04-2020,10402
+Massachusetts,04-04-2020,11736
+Massachusetts,05-04-2020,12500
+Massachusetts,06-04-2020,13837
+Massachusetts,07-04-2020,15202
+Massachusetts,08-04-2020,16790
+Massachusetts,09-04-2020,18941
+Massachusetts,10-04-2020,20974
+Massachusetts,11-04-2020,22860
+Massachusetts,12-04-2020,25475
+Massachusetts,13-04-2020,26867
+Massachusetts,14-04-2020,28164
+Massachusetts,15-04-2020,29918
+Massachusetts,16-04-2020,32181
+Massachusetts,17-04-2020,34402
+Massachusetts,18-04-2020,36372
+Massachusetts,19-04-2020,38077
+Massachusetts,20-04-2020,38077
+Massachusetts,21-04-2020,41199
+Massachusetts,22-04-2020,42944
+Massachusetts,23-04-2020,46023
+Massachusetts,24-04-2020,50969
+Massachusetts,25-04-2020,53348
+Massachusetts,26-04-2020,54938
+Massachusetts,27-04-2020,56462
+Massachusetts,28-04-2020,58302
+Massachusetts,29-04-2020,60265
+Massachusetts,30-04-2020,62205
+Massachusetts,01-05-2020,64311
+Massachusetts,02-05-2020,66263
+Massachusetts,03-05-2020,68087
+Massachusetts,04-05-2020,69087
+Massachusetts,05-05-2020,70271
+Massachusetts,06-05-2020,72025
+Massachusetts,07-05-2020,73721
+Massachusetts,08-05-2020,75333
+Massachusetts,09-05-2020,76743
+Massachusetts,10-05-2020,77793
+Massachusetts,11-05-2020,78462
+Massachusetts,12-05-2020,79332
+Massachusetts,13-05-2020,80497
+Massachusetts,14-05-2020,82182
+Michigan,11-03-2020,2
+Michigan,12-03-2020,2
+Michigan,13-03-2020,16
+Michigan,14-03-2020,25
+Michigan,15-03-2020,32
+Michigan,16-03-2020,54
+Michigan,17-03-2020,63
+Michigan,18-03-2020,119
+Michigan,19-03-2020,259
+Michigan,20-03-2020,402
+Michigan,21-03-2020,540
+Michigan,22-03-2020,1035
+Michigan,23-03-2020,1329
+Michigan,24-03-2020,1793
+Michigan,25-03-2020,2296
+Michigan,26-03-2020,2845
+Michigan,27-03-2020,3634
+Michigan,28-03-2020,4650
+Michigan,29-03-2020,5488
+Michigan,30-03-2020,6498
+Michigan,31-03-2020,7615
+Michigan,01-04-2020,9315
+Michigan,02-04-2020,10791
+Michigan,03-04-2020,12744
+Michigan,04-04-2020,14225
+Michigan,05-04-2020,15718
+Michigan,06-04-2020,17221
+Michigan,07-04-2020,18970
+Michigan,08-04-2020,20346
+Michigan,09-04-2020,21504
+Michigan,10-04-2020,22434
+Michigan,11-04-2020,23605
+Michigan,12-04-2020,24244
+Michigan,13-04-2020,25635
+Michigan,14-04-2020,27001
+Michigan,15-04-2020,28059
+Michigan,16-04-2020,28809
+Michigan,17-04-2020,30023
+Michigan,18-04-2020,30791
+Michigan,19-04-2020,31424
+Michigan,20-04-2020,32000
+Michigan,21-04-2020,32667
+Michigan,22-04-2020,33966
+Michigan,23-04-2020,35296
+Michigan,24-04-2020,36666
+Michigan,25-04-2020,37074
+Michigan,26-04-2020,37778
+Michigan,27-04-2020,38210
+Michigan,28-04-2020,39262
+Michigan,29-04-2020,40399
+Michigan,30-04-2020,41379
+Michigan,01-05-2020,42356
+Michigan,02-05-2020,43207
+Michigan,03-05-2020,43801
+Michigan,04-05-2020,43990
+Michigan,05-05-2020,44451
+Michigan,06-05-2020,45179
+Michigan,07-05-2020,45745
+Michigan,08-05-2020,46386
+Michigan,09-05-2020,46815
+Michigan,10-05-2020,47182
+Michigan,11-05-2020,47552
+Michigan,12-05-2020,48021
+Michigan,13-05-2020,48391
+Michigan,14-05-2020,49582
+Minnesota,06-03-2020,1
+Minnesota,07-03-2020,1
+Minnesota,08-03-2020,1
+Minnesota,09-03-2020,2
+Minnesota,10-03-2020,2
+Minnesota,11-03-2020,5
+Minnesota,12-03-2020,9
+Minnesota,13-03-2020,14
+Minnesota,14-03-2020,21
+Minnesota,15-03-2020,21
+Minnesota,16-03-2020,53
+Minnesota,17-03-2020,59
+Minnesota,18-03-2020,77
+Minnesota,19-03-2020,89
+Minnesota,20-03-2020,113
+Minnesota,21-03-2020,134
+Minnesota,22-03-2020,167
+Minnesota,23-03-2020,234
+Minnesota,24-03-2020,261
+Minnesota,25-03-2020,286
+Minnesota,26-03-2020,344
+Minnesota,27-03-2020,396
+Minnesota,28-03-2020,441
+Minnesota,29-03-2020,503
+Minnesota,30-03-2020,576
+Minnesota,31-03-2020,629
+Minnesota,01-04-2020,689
+Minnesota,02-04-2020,742
+Minnesota,03-04-2020,788
+Minnesota,04-04-2020,865
+Minnesota,05-04-2020,935
+Minnesota,06-04-2020,986
+Minnesota,07-04-2020,1069
+Minnesota,08-04-2020,1154
+Minnesota,09-04-2020,1240
+Minnesota,10-04-2020,1336
+Minnesota,11-04-2020,1427
+Minnesota,12-04-2020,1621
+Minnesota,13-04-2020,1621
+Minnesota,14-04-2020,1695
+Minnesota,15-04-2020,1809
+Minnesota,16-04-2020,1809
+Minnesota,17-04-2020,2070
+Minnesota,18-04-2020,2209
+Minnesota,19-04-2020,2356
+Minnesota,20-04-2020,2470
+Minnesota,21-04-2020,2567
+Minnesota,22-04-2020,2722
+Minnesota,23-04-2020,2942
+Minnesota,24-04-2020,3185
+Minnesota,25-04-2020,3446
+Minnesota,26-04-2020,3602
+Minnesota,27-04-2020,3811
+Minnesota,28-04-2020,4181
+Minnesota,29-04-2020,4644
+Minnesota,30-04-2020,5136
+Minnesota,01-05-2020,5730
+Minnesota,02-05-2020,6232
+Minnesota,03-05-2020,6663
+Minnesota,04-05-2020,7234
+Minnesota,05-05-2020,7851
+Minnesota,06-05-2020,8579
+Minnesota,07-05-2020,9365
+Minnesota,08-05-2020,10088
+Minnesota,09-05-2020,10790
+Minnesota,10-05-2020,11271
+Minnesota,11-05-2020,11799
+Minnesota,12-05-2020,12494
+Minnesota,13-05-2020,12917
+Minnesota,14-05-2020,13435
+Mississippi,12-03-2020,1
+Mississippi,13-03-2020,6
+Mississippi,14-03-2020,6
+Mississippi,15-03-2020,6
+Mississippi,16-03-2020,12
+Mississippi,17-03-2020,21
+Mississippi,18-03-2020,34
+Mississippi,19-03-2020,50
+Mississippi,20-03-2020,80
+Mississippi,21-03-2020,140
+Mississippi,22-03-2020,207
+Mississippi,23-03-2020,249
+Mississippi,24-03-2020,320
+Mississippi,25-03-2020,377
+Mississippi,26-03-2020,485
+Mississippi,27-03-2020,579
+Mississippi,28-03-2020,663
+Mississippi,29-03-2020,759
+Mississippi,30-03-2020,847
+Mississippi,31-03-2020,937
+Mississippi,01-04-2020,1073
+Mississippi,02-04-2020,1177
+Mississippi,03-04-2020,1358
+Mississippi,04-04-2020,1455
+Mississippi,05-04-2020,1638
+Mississippi,06-04-2020,1738
+Mississippi,07-04-2020,1915
+Mississippi,08-04-2020,2003
+Mississippi,09-04-2020,2260
+Mississippi,10-04-2020,2469
+Mississippi,11-04-2020,2642
+Mississippi,12-04-2020,2781
+Mississippi,13-04-2020,2942
+Mississippi,14-04-2020,3087
+Mississippi,15-04-2020,3360
+Mississippi,16-04-2020,3624
+Mississippi,17-04-2020,3793
+Mississippi,18-04-2020,3974
+Mississippi,19-04-2020,4274
+Mississippi,20-04-2020,4512
+Mississippi,21-04-2020,4716
+Mississippi,22-04-2020,4894
+Mississippi,23-04-2020,5153
+Mississippi,24-04-2020,5434
+Mississippi,25-04-2020,5718
+Mississippi,26-04-2020,5911
+Mississippi,27-04-2020,6094
+Mississippi,28-04-2020,6342
+Mississippi,29-04-2020,6569
+Mississippi,30-04-2020,6815
+Mississippi,01-05-2020,7212
+Mississippi,02-05-2020,7441
+Mississippi,03-05-2020,7550
+Mississippi,04-05-2020,7877
+Mississippi,05-05-2020,8207
+Mississippi,06-05-2020,8424
+Mississippi,07-05-2020,8686
+Mississippi,08-05-2020,9090
+Mississippi,09-05-2020,9378
+Mississippi,10-05-2020,9501
+Mississippi,11-05-2020,9674
+Mississippi,12-05-2020,9908
+Mississippi,13-05-2020,10090
+Mississippi,14-05-2020,10483
+Missouri,08-03-2020,1
+Missouri,09-03-2020,1
+Missouri,10-03-2020,1
+Missouri,11-03-2020,1
+Missouri,12-03-2020,2
+Missouri,13-03-2020,4
+Missouri,14-03-2020,4
+Missouri,15-03-2020,5
+Missouri,16-03-2020,6
+Missouri,17-03-2020,12
+Missouri,18-03-2020,18
+Missouri,19-03-2020,39
+Missouri,20-03-2020,73
+Missouri,21-03-2020,81
+Missouri,22-03-2020,100
+Missouri,23-03-2020,187
+Missouri,24-03-2020,257
+Missouri,25-03-2020,354
+Missouri,26-03-2020,520
+Missouri,27-03-2020,666
+Missouri,28-03-2020,836
+Missouri,29-03-2020,915
+Missouri,30-03-2020,1051
+Missouri,31-03-2020,1357
+Missouri,01-04-2020,1613
+Missouri,02-04-2020,1857
+Missouri,03-04-2020,1864
+Missouri,04-04-2020,2310
+Missouri,05-04-2020,2347
+Missouri,06-04-2020,2736
+Missouri,07-04-2020,3130
+Missouri,08-04-2020,3209
+Missouri,09-04-2020,3432
+Missouri,10-04-2020,3897
+Missouri,11-04-2020,4108
+Missouri,12-04-2020,4269
+Missouri,13-04-2020,4515
+Missouri,14-04-2020,4746
+Missouri,15-04-2020,4791
+Missouri,16-04-2020,5174
+Missouri,17-04-2020,5371
+Missouri,18-04-2020,5579
+Missouri,19-04-2020,5743
+Missouri,20-04-2020,5890
+Missouri,21-04-2020,6066
+Missouri,22-04-2020,6277
+Missouri,23-04-2020,6506
+Missouri,24-04-2020,6788
+Missouri,25-04-2020,6935
+Missouri,26-04-2020,7120
+Missouri,27-04-2020,7305
+Missouri,28-04-2020,7450
+Missouri,29-04-2020,7660
+Missouri,30-04-2020,7818
+Missouri,01-05-2020,8067
+Missouri,02-05-2020,8356
+Missouri,03-05-2020,8618
+Missouri,04-05-2020,8946
+Missouri,05-05-2020,9121
+Missouri,06-05-2020,9323
+Missouri,07-05-2020,9581
+Missouri,08-05-2020,9733
+Missouri,09-05-2020,9911
+Missouri,10-05-2020,10068
+Missouri,11-05-2020,10157
+Missouri,12-05-2020,10269
+Missouri,13-05-2020,10404
+Missouri,14-05-2020,10594
+Montana,13-03-2020,1
+Montana,14-03-2020,5
+Montana,15-03-2020,6
+Montana,16-03-2020,6
+Montana,17-03-2020,8
+Montana,18-03-2020,10
+Montana,19-03-2020,11
+Montana,20-03-2020,20
+Montana,21-03-2020,27
+Montana,22-03-2020,34
+Montana,23-03-2020,34
+Montana,24-03-2020,51
+Montana,25-03-2020,65
+Montana,26-03-2020,90
+Montana,27-03-2020,109
+Montana,28-03-2020,129
+Montana,29-03-2020,154
+Montana,30-03-2020,171
+Montana,31-03-2020,198
+Montana,01-04-2020,208
+Montana,02-04-2020,241
+Montana,03-04-2020,243
+Montana,04-04-2020,265
+Montana,05-04-2020,286
+Montana,06-04-2020,299
+Montana,07-04-2020,319
+Montana,08-04-2020,332
+Montana,09-04-2020,354
+Montana,10-04-2020,365
+Montana,11-04-2020,377
+Montana,12-04-2020,387
+Montana,13-04-2020,394
+Montana,14-04-2020,399
+Montana,15-04-2020,404
+Montana,16-04-2020,415
+Montana,17-04-2020,422
+Montana,18-04-2020,426
+Montana,19-04-2020,433
+Montana,20-04-2020,433
+Montana,21-04-2020,437
+Montana,22-04-2020,439
+Montana,23-04-2020,442
+Montana,24-04-2020,444
+Montana,25-04-2020,445
+Montana,26-04-2020,448
+Montana,27-04-2020,449
+Montana,28-04-2020,451
+Montana,29-04-2020,451
+Montana,30-04-2020,453
+Montana,01-05-2020,453
+Montana,02-05-2020,455
+Montana,03-05-2020,455
+Montana,04-05-2020,457
+Montana,05-05-2020,456
+Montana,06-05-2020,456
+Montana,07-05-2020,456
+Montana,08-05-2020,458
+Montana,09-05-2020,458
+Montana,10-05-2020,458
+Montana,11-05-2020,459
+Montana,12-05-2020,461
+Montana,13-05-2020,462
+Montana,14-05-2020,462
+Nebraska,06-03-2020,1
+Nebraska,07-03-2020,1
+Nebraska,08-03-2020,1
+Nebraska,09-03-2020,3
+Nebraska,10-03-2020,3
+Nebraska,11-03-2020,5
+Nebraska,12-03-2020,10
+Nebraska,13-03-2020,14
+Nebraska,14-03-2020,18
+Nebraska,15-03-2020,17
+Nebraska,16-03-2020,18
+Nebraska,17-03-2020,23
+Nebraska,18-03-2020,24
+Nebraska,19-03-2020,29
+Nebraska,20-03-2020,37
+Nebraska,21-03-2020,38
+Nebraska,22-03-2020,51
+Nebraska,23-03-2020,51
+Nebraska,24-03-2020,66
+Nebraska,25-03-2020,71
+Nebraska,26-03-2020,74
+Nebraska,27-03-2020,82
+Nebraska,28-03-2020,96
+Nebraska,29-03-2020,108
+Nebraska,30-03-2020,145
+Nebraska,31-03-2020,172
+Nebraska,01-04-2020,210
+Nebraska,02-04-2020,246
+Nebraska,03-04-2020,279
+Nebraska,04-04-2020,321
+Nebraska,05-04-2020,364
+Nebraska,06-04-2020,417
+Nebraska,07-04-2020,447
+Nebraska,08-04-2020,519
+Nebraska,09-04-2020,568
+Nebraska,10-04-2020,635
+Nebraska,11-04-2020,699
+Nebraska,12-04-2020,791
+Nebraska,13-04-2020,814
+Nebraska,14-04-2020,897
+Nebraska,15-04-2020,901
+Nebraska,16-04-2020,952
+Nebraska,17-04-2020,1066
+Nebraska,18-04-2020,1249
+Nebraska,19-04-2020,1474
+Nebraska,20-04-2020,1648
+Nebraska,21-04-2020,1685
+Nebraska,22-04-2020,1813
+Nebraska,23-04-2020,2202
+Nebraska,24-04-2020,2424
+Nebraska,25-04-2020,2719
+Nebraska,26-04-2020,3030
+Nebraska,27-04-2020,3358
+Nebraska,28-04-2020,3517
+Nebraska,29-04-2020,3851
+Nebraska,30-04-2020,4281
+Nebraska,01-05-2020,5008
+Nebraska,02-05-2020,5317
+Nebraska,03-05-2020,5661
+Nebraska,04-05-2020,6037
+Nebraska,05-05-2020,6373
+Nebraska,06-05-2020,6689
+Nebraska,07-05-2020,7334
+Nebraska,08-05-2020,7818
+Nebraska,09-05-2020,8093
+Nebraska,10-05-2020,8171
+Nebraska,11-05-2020,8407
+Nebraska,12-05-2020,8532
+Nebraska,13-05-2020,8912
+Nebraska,14-05-2020,9260
+Nevada,05-03-2020,1
+Nevada,06-03-2020,2
+Nevada,07-03-2020,2
+Nevada,08-03-2020,4
+Nevada,09-03-2020,4
+Nevada,10-03-2020,4
+Nevada,11-03-2020,7
+Nevada,12-03-2020,10
+Nevada,13-03-2020,18
+Nevada,14-03-2020,20
+Nevada,15-03-2020,20
+Nevada,16-03-2020,45
+Nevada,17-03-2020,55
+Nevada,18-03-2020,55
+Nevada,19-03-2020,95
+Nevada,20-03-2020,161
+Nevada,21-03-2020,161
+Nevada,22-03-2020,190
+Nevada,23-03-2020,245
+Nevada,24-03-2020,278
+Nevada,25-03-2020,323
+Nevada,26-03-2020,420
+Nevada,27-03-2020,536
+Nevada,28-03-2020,626
+Nevada,29-03-2020,920
+Nevada,30-03-2020,1012
+Nevada,31-03-2020,1114
+Nevada,01-04-2020,1279
+Nevada,02-04-2020,1463
+Nevada,03-04-2020,1514
+Nevada,04-04-2020,1742
+Nevada,05-04-2020,1855
+Nevada,06-04-2020,1953
+Nevada,07-04-2020,2124
+Nevada,08-04-2020,2259
+Nevada,09-04-2020,2456
+Nevada,10-04-2020,2722
+Nevada,11-04-2020,2702
+Nevada,12-04-2020,2836
+Nevada,13-04-2020,2990
+Nevada,14-04-2020,3134
+Nevada,15-04-2020,3211
+Nevada,16-04-2020,3214
+Nevada,17-04-2020,3524
+Nevada,18-04-2020,3626
+Nevada,19-04-2020,3728
+Nevada,20-04-2020,3830
+Nevada,21-04-2020,3937
+Nevada,22-04-2020,4081
+Nevada,23-04-2020,4208
+Nevada,24-04-2020,4398
+Nevada,25-04-2020,4539
+Nevada,26-04-2020,4734
+Nevada,27-04-2020,4700
+Nevada,28-04-2020,4821
+Nevada,29-04-2020,4934
+Nevada,30-04-2020,5053
+Nevada,01-05-2020,5248
+Nevada,02-05-2020,5389
+Nevada,03-05-2020,5472
+Nevada,04-05-2020,5630
+Nevada,05-05-2020,5660
+Nevada,06-05-2020,5741
+Nevada,07-05-2020,5855
+Nevada,08-05-2020,5920
+Nevada,09-05-2020,6171
+Nevada,10-05-2020,6120
+Nevada,11-05-2020,6152
+Nevada,12-05-2020,6313
+Nevada,13-05-2020,6476
+Nevada,14-05-2020,6504
+New Hampshire,02-03-2020,1
+New Hampshire,03-03-2020,2
+New Hampshire,04-03-2020,2
+New Hampshire,05-03-2020,2
+New Hampshire,06-03-2020,2
+New Hampshire,07-03-2020,2
+New Hampshire,08-03-2020,4
+New Hampshire,09-03-2020,4
+New Hampshire,10-03-2020,4
+New Hampshire,11-03-2020,5
+New Hampshire,12-03-2020,6
+New Hampshire,13-03-2020,6
+New Hampshire,14-03-2020,7
+New Hampshire,15-03-2020,7
+New Hampshire,16-03-2020,17
+New Hampshire,17-03-2020,26
+New Hampshire,18-03-2020,37
+New Hampshire,19-03-2020,42
+New Hampshire,20-03-2020,53
+New Hampshire,21-03-2020,61
+New Hampshire,22-03-2020,73
+New Hampshire,23-03-2020,101
+New Hampshire,24-03-2020,101
+New Hampshire,25-03-2020,108
+New Hampshire,26-03-2020,137
+New Hampshire,27-03-2020,158
+New Hampshire,28-03-2020,187
+New Hampshire,29-03-2020,214
+New Hampshire,30-03-2020,314
+New Hampshire,31-03-2020,357
+New Hampshire,01-04-2020,367
+New Hampshire,02-04-2020,479
+New Hampshire,03-04-2020,479
+New Hampshire,04-04-2020,540
+New Hampshire,05-04-2020,621
+New Hampshire,06-04-2020,715
+New Hampshire,07-04-2020,715
+New Hampshire,08-04-2020,747
+New Hampshire,09-04-2020,819
+New Hampshire,10-04-2020,819
+New Hampshire,11-04-2020,885
+New Hampshire,12-04-2020,929
+New Hampshire,13-04-2020,985
+New Hampshire,14-04-2020,922
+New Hampshire,15-04-2020,1139
+New Hampshire,16-04-2020,1139
+New Hampshire,17-04-2020,1287
+New Hampshire,18-04-2020,1342
+New Hampshire,19-04-2020,1390
+New Hampshire,20-04-2020,1447
+New Hampshire,21-04-2020,1490
+New Hampshire,22-04-2020,1588
+New Hampshire,23-04-2020,1670
+New Hampshire,24-04-2020,1720
+New Hampshire,25-04-2020,1797
+New Hampshire,26-04-2020,1864
+New Hampshire,27-04-2020,1938
+New Hampshire,28-04-2020,2010
+New Hampshire,29-04-2020,2058
+New Hampshire,30-04-2020,2146
+New Hampshire,01-05-2020,2310
+New Hampshire,02-05-2020,2429
+New Hampshire,03-05-2020,2518
+New Hampshire,04-05-2020,2588
+New Hampshire,05-05-2020,2636
+New Hampshire,06-05-2020,2741
+New Hampshire,07-05-2020,2843
+New Hampshire,08-05-2020,2947
+New Hampshire,09-05-2020,3011
+New Hampshire,10-05-2020,3071
+New Hampshire,11-05-2020,3160
+New Hampshire,12-05-2020,3239
+New Hampshire,13-05-2020,3299
+New Hampshire,14-05-2020,3382
+New Jersey,05-03-2020,2
+New Jersey,06-03-2020,2
+New Jersey,07-03-2020,4
+New Jersey,08-03-2020,5
+New Jersey,09-03-2020,5
+New Jersey,10-03-2020,15
+New Jersey,11-03-2020,23
+New Jersey,12-03-2020,29
+New Jersey,13-03-2020,49
+New Jersey,14-03-2020,69
+New Jersey,15-03-2020,72
+New Jersey,16-03-2020,176
+New Jersey,17-03-2020,250
+New Jersey,18-03-2020,397
+New Jersey,19-03-2020,741
+New Jersey,20-03-2020,890
+New Jersey,21-03-2020,1327
+New Jersey,22-03-2020,1914
+New Jersey,23-03-2020,2844
+New Jersey,24-03-2020,3675
+New Jersey,25-03-2020,4402
+New Jersey,26-03-2020,6876
+New Jersey,27-03-2020,8825
+New Jersey,28-03-2020,11124
+New Jersey,29-03-2020,13386
+New Jersey,30-03-2020,16636
+New Jersey,31-03-2020,18696
+New Jersey,01-04-2020,22255
+New Jersey,02-04-2020,25590
+New Jersey,03-04-2020,29895
+New Jersey,04-04-2020,34124
+New Jersey,05-04-2020,37505
+New Jersey,06-04-2020,41090
+New Jersey,07-04-2020,44416
+New Jersey,08-04-2020,47437
+New Jersey,09-04-2020,51027
+New Jersey,10-04-2020,54588
+New Jersey,11-04-2020,58151
+New Jersey,12-04-2020,61850
+New Jersey,13-04-2020,64584
+New Jersey,14-04-2020,68824
+New Jersey,15-04-2020,71030
+New Jersey,16-04-2020,75317
+New Jersey,17-04-2020,78467
+New Jersey,18-04-2020,81420
+New Jersey,19-04-2020,85301
+New Jersey,20-04-2020,88722
+New Jersey,21-04-2020,92387
+New Jersey,22-04-2020,95914
+New Jersey,23-04-2020,100025
+New Jersey,24-04-2020,102196
+New Jersey,25-04-2020,105498
+New Jersey,26-04-2020,109038
+New Jersey,27-04-2020,111188
+New Jersey,28-04-2020,113856
+New Jersey,29-04-2020,116365
+New Jersey,30-04-2020,118652
+New Jersey,01-05-2020,121190
+New Jersey,02-05-2020,123717
+New Jersey,03-05-2020,126744
+New Jersey,04-05-2020,128269
+New Jersey,05-05-2020,130593
+New Jersey,06-05-2020,131890
+New Jersey,07-05-2020,133991
+New Jersey,08-05-2020,135840
+New Jersey,09-05-2020,137397
+New Jersey,10-05-2020,138754
+New Jersey,11-05-2020,140206
+New Jersey,12-05-2020,140917
+New Jersey,13-05-2020,141560
+New Jersey,14-05-2020,142704
+New Mexico,11-03-2020,3
+New Mexico,12-03-2020,5
+New Mexico,13-03-2020,10
+New Mexico,14-03-2020,13
+New Mexico,15-03-2020,13
+New Mexico,16-03-2020,21
+New Mexico,17-03-2020,23
+New Mexico,18-03-2020,28
+New Mexico,19-03-2020,35
+New Mexico,20-03-2020,42
+New Mexico,21-03-2020,55
+New Mexico,22-03-2020,57
+New Mexico,23-03-2020,83
+New Mexico,24-03-2020,100
+New Mexico,25-03-2020,113
+New Mexico,26-03-2020,113
+New Mexico,27-03-2020,136
+New Mexico,28-03-2020,208
+New Mexico,29-03-2020,237
+New Mexico,30-03-2020,237
+New Mexico,31-03-2020,315
+New Mexico,01-04-2020,327
+New Mexico,02-04-2020,373
+New Mexico,03-04-2020,490
+New Mexico,04-04-2020,506
+New Mexico,05-04-2020,624
+New Mexico,06-04-2020,686
+New Mexico,07-04-2020,794
+New Mexico,08-04-2020,821
+New Mexico,09-04-2020,865
+New Mexico,10-04-2020,1081
+New Mexico,11-04-2020,1091
+New Mexico,12-04-2020,1245
+New Mexico,13-04-2020,1262
+New Mexico,14-04-2020,1345
+New Mexico,15-04-2020,1484
+New Mexico,16-04-2020,1484
+New Mexico,17-04-2020,1597
+New Mexico,18-04-2020,1798
+New Mexico,19-04-2020,1845
+New Mexico,20-04-2020,1971
+New Mexico,21-04-2020,1971
+New Mexico,22-04-2020,2210
+New Mexico,23-04-2020,2379
+New Mexico,24-04-2020,2521
+New Mexico,25-04-2020,2660
+New Mexico,26-04-2020,2726
+New Mexico,27-04-2020,2825
+New Mexico,28-04-2020,2974
+New Mexico,29-04-2020,3213
+New Mexico,30-04-2020,3411
+New Mexico,01-05-2020,3513
+New Mexico,02-05-2020,3732
+New Mexico,03-05-2020,3850
+New Mexico,04-05-2020,4031
+New Mexico,05-05-2020,4138
+New Mexico,06-05-2020,4291
+New Mexico,07-05-2020,4493
+New Mexico,08-05-2020,4673
+New Mexico,09-05-2020,4778
+New Mexico,10-05-2020,4863
+New Mexico,11-05-2020,5069
+New Mexico,12-05-2020,5212
+New Mexico,13-05-2020,5364
+New Mexico,14-05-2020,5503
+New York,02-03-2020,1
+New York,03-03-2020,2
+New York,04-03-2020,11
+New York,05-03-2020,23
+New York,06-03-2020,31
+New York,07-03-2020,76
+New York,08-03-2020,106
+New York,09-03-2020,142
+New York,10-03-2020,150
+New York,11-03-2020,220
+New York,12-03-2020,327
+New York,13-03-2020,421
+New York,14-03-2020,613
+New York,15-03-2020,615
+New York,16-03-2020,967
+New York,17-03-2020,1578
+New York,18-03-2020,3038
+New York,19-03-2020,5704
+New York,20-03-2020,8403
+New York,21-03-2020,11727
+New York,22-03-2020,15800
+New York,23-03-2020,20884
+New York,24-03-2020,25681
+New York,25-03-2020,30841
+New York,26-03-2020,37877
+New York,27-03-2020,44876
+New York,28-03-2020,52410
+New York,29-03-2020,59648
+New York,30-03-2020,66663
+New York,31-03-2020,75833
+New York,01-04-2020,83948
+New York,02-04-2020,92506
+New York,03-04-2020,102987
+New York,04-04-2020,113833
+New York,05-04-2020,123160
+New York,06-04-2020,131815
+New York,07-04-2020,139875
+New York,08-04-2020,151061
+New York,09-04-2020,161779
+New York,10-04-2020,172348
+New York,11-04-2020,181026
+New York,12-04-2020,189033
+New York,13-04-2020,195749
+New York,14-04-2020,203020
+New York,15-04-2020,214454
+New York,16-04-2020,223691
+New York,17-04-2020,230597
+New York,18-04-2020,237474
+New York,19-04-2020,243382
+New York,20-04-2020,248416
+New York,21-04-2020,253519
+New York,22-04-2020,258222
+New York,23-04-2020,263460
+New York,24-04-2020,271590
+New York,25-04-2020,282143
+New York,26-04-2020,288045
+New York,27-04-2020,291996
+New York,28-04-2020,295106
+New York,29-04-2020,299691
+New York,30-04-2020,304372
+New York,01-05-2020,308314
+New York,02-05-2020,312977
+New York,03-05-2020,316415
+New York,04-05-2020,318953
+New York,05-05-2020,321192
+New York,06-05-2020,323978
+New York,07-05-2020,327469
+New York,08-05-2020,330407
+New York,09-05-2020,333122
+New York,10-05-2020,335395
+New York,11-05-2020,337055
+New York,12-05-2020,338485
+New York,13-05-2020,340661
+New York,14-05-2020,343051
+North Carolina,03-03-2020,1
+North Carolina,04-03-2020,1
+North Carolina,05-03-2020,1
+North Carolina,06-03-2020,2
+North Carolina,07-03-2020,2
+North Carolina,08-03-2020,2
+North Carolina,09-03-2020,2
+North Carolina,10-03-2020,7
+North Carolina,11-03-2020,7
+North Carolina,12-03-2020,15
+North Carolina,13-03-2020,17
+North Carolina,14-03-2020,25
+North Carolina,15-03-2020,32
+North Carolina,16-03-2020,39
+North Carolina,17-03-2020,64
+North Carolina,18-03-2020,92
+North Carolina,19-03-2020,136
+North Carolina,20-03-2020,189
+North Carolina,21-03-2020,256
+North Carolina,22-03-2020,305
+North Carolina,23-03-2020,353
+North Carolina,24-03-2020,495
+North Carolina,25-03-2020,590
+North Carolina,26-03-2020,738
+North Carolina,27-03-2020,887
+North Carolina,28-03-2020,1020
+North Carolina,29-03-2020,1191
+North Carolina,30-03-2020,1313
+North Carolina,31-03-2020,1535
+North Carolina,01-04-2020,1675
+North Carolina,02-04-2020,1977
+North Carolina,03-04-2020,2251
+North Carolina,04-04-2020,2486
+North Carolina,05-04-2020,2649
+North Carolina,06-04-2020,2962
+North Carolina,07-04-2020,3299
+North Carolina,08-04-2020,3499
+North Carolina,09-04-2020,3736
+North Carolina,10-04-2020,3965
+North Carolina,11-04-2020,4354
+North Carolina,12-04-2020,4570
+North Carolina,13-04-2020,4886
+North Carolina,14-04-2020,5113
+North Carolina,15-04-2020,5340
+North Carolina,16-04-2020,5639
+North Carolina,17-04-2020,6045
+North Carolina,18-04-2020,6328
+North Carolina,19-04-2020,6601
+North Carolina,20-04-2020,6895
+North Carolina,21-04-2020,7134
+North Carolina,22-04-2020,7495
+North Carolina,23-04-2020,7820
+North Carolina,24-04-2020,8290
+North Carolina,25-04-2020,8768
+North Carolina,26-04-2020,8997
+North Carolina,27-04-2020,9428
+North Carolina,28-04-2020,9755
+North Carolina,29-04-2020,10180
+North Carolina,30-04-2020,10754
+North Carolina,01-05-2020,11070
+North Carolina,02-05-2020,11588
+North Carolina,03-05-2020,11770
+North Carolina,04-05-2020,11971
+North Carolina,05-05-2020,12510
+North Carolina,06-05-2020,13053
+North Carolina,07-05-2020,13540
+North Carolina,08-05-2020,14006
+North Carolina,09-05-2020,14478
+North Carolina,10-05-2020,14938
+North Carolina,11-05-2020,15274
+North Carolina,12-05-2020,15622
+North Carolina,13-05-2020,16352
+North Carolina,14-05-2020,16968
+North Dakota,12-03-2020,1
+North Dakota,13-03-2020,1
+North Dakota,14-03-2020,1
+North Dakota,15-03-2020,1
+North Dakota,16-03-2020,1
+North Dakota,17-03-2020,3
+North Dakota,18-03-2020,6
+North Dakota,19-03-2020,19
+North Dakota,20-03-2020,26
+North Dakota,21-03-2020,28
+North Dakota,22-03-2020,28
+North Dakota,23-03-2020,30
+North Dakota,24-03-2020,36
+North Dakota,25-03-2020,45
+North Dakota,26-03-2020,51
+North Dakota,27-03-2020,68
+North Dakota,28-03-2020,94
+North Dakota,29-03-2020,98
+North Dakota,30-03-2020,109
+North Dakota,31-03-2020,122
+North Dakota,01-04-2020,142
+North Dakota,02-04-2020,159
+North Dakota,03-04-2020,173
+North Dakota,04-04-2020,186
+North Dakota,05-04-2020,207
+North Dakota,06-04-2020,225
+North Dakota,07-04-2020,237
+North Dakota,08-04-2020,251
+North Dakota,09-04-2020,269
+North Dakota,10-04-2020,278
+North Dakota,11-04-2020,293
+North Dakota,12-04-2020,308
+North Dakota,13-04-2020,331
+North Dakota,14-04-2020,341
+North Dakota,15-04-2020,365
+North Dakota,16-04-2020,393
+North Dakota,17-04-2020,393
+North Dakota,18-04-2020,528
+North Dakota,19-04-2020,585
+North Dakota,20-04-2020,627
+North Dakota,21-04-2020,644
+North Dakota,22-04-2020,679
+North Dakota,23-04-2020,709
+North Dakota,24-04-2020,748
+North Dakota,25-04-2020,803
+North Dakota,26-04-2020,867
+North Dakota,27-04-2020,942
+North Dakota,28-04-2020,991
+North Dakota,29-04-2020,1033
+North Dakota,30-04-2020,1067
+North Dakota,01-05-2020,1107
+North Dakota,02-05-2020,1153
+North Dakota,03-05-2020,1191
+North Dakota,04-05-2020,1225
+North Dakota,05-05-2020,1266
+North Dakota,06-05-2020,1323
+North Dakota,07-05-2020,1371
+North Dakota,08-05-2020,1425
+North Dakota,09-05-2020,1464
+North Dakota,10-05-2020,1491
+North Dakota,11-05-2020,1518
+North Dakota,12-05-2020,1571
+North Dakota,13-05-2020,1647
+North Dakota,14-05-2020,1712
+Northern Mariana Islands,31-03-2020,2
+Northern Mariana Islands,01-04-2020,6
+Northern Mariana Islands,02-04-2020,6
+Northern Mariana Islands,03-04-2020,8
+Northern Mariana Islands,04-04-2020,8
+Northern Mariana Islands,05-04-2020,8
+Northern Mariana Islands,06-04-2020,8
+Northern Mariana Islands,07-04-2020,8
+Northern Mariana Islands,08-04-2020,11
+Northern Mariana Islands,09-04-2020,11
+Northern Mariana Islands,10-04-2020,11
+Northern Mariana Islands,11-04-2020,11
+Northern Mariana Islands,12-04-2020,11
+Northern Mariana Islands,13-04-2020,11
+Northern Mariana Islands,14-04-2020,11
+Northern Mariana Islands,15-04-2020,13
+Northern Mariana Islands,16-04-2020,13
+Northern Mariana Islands,17-04-2020,13
+Northern Mariana Islands,18-04-2020,14
+Northern Mariana Islands,19-04-2020,14
+Northern Mariana Islands,20-04-2020,14
+Northern Mariana Islands,21-04-2020,14
+Northern Mariana Islands,22-04-2020,14
+Northern Mariana Islands,23-04-2020,14
+Northern Mariana Islands,24-04-2020,14
+Northern Mariana Islands,25-04-2020,14
+Northern Mariana Islands,26-04-2020,14
+Northern Mariana Islands,27-04-2020,14
+Northern Mariana Islands,28-04-2020,14
+Northern Mariana Islands,29-04-2020,14
+Northern Mariana Islands,30-04-2020,14
+Northern Mariana Islands,01-05-2020,14
+Northern Mariana Islands,02-05-2020,14
+Northern Mariana Islands,03-05-2020,14
+Northern Mariana Islands,04-05-2020,14
+Northern Mariana Islands,05-05-2020,14
+Northern Mariana Islands,06-05-2020,15
+Northern Mariana Islands,07-05-2020,15
+Northern Mariana Islands,08-05-2020,15
+Northern Mariana Islands,09-05-2020,16
+Northern Mariana Islands,10-05-2020,16
+Northern Mariana Islands,11-05-2020,19
+Northern Mariana Islands,12-05-2020,19
+Northern Mariana Islands,13-05-2020,19
+Northern Mariana Islands,14-05-2020,19
+Ohio,10-03-2020,3
+Ohio,11-03-2020,4
+Ohio,12-03-2020,5
+Ohio,13-03-2020,12
+Ohio,14-03-2020,26
+Ohio,15-03-2020,30
+Ohio,16-03-2020,50
+Ohio,17-03-2020,67
+Ohio,18-03-2020,89
+Ohio,19-03-2020,119
+Ohio,20-03-2020,173
+Ohio,21-03-2020,247
+Ohio,22-03-2020,356
+Ohio,23-03-2020,443
+Ohio,24-03-2020,567
+Ohio,25-03-2020,704
+Ohio,26-03-2020,868
+Ohio,27-03-2020,1137
+Ohio,28-03-2020,1406
+Ohio,29-03-2020,1653
+Ohio,30-03-2020,1933
+Ohio,31-03-2020,2199
+Ohio,01-04-2020,2547
+Ohio,02-04-2020,2901
+Ohio,03-04-2020,3312
+Ohio,04-04-2020,3739
+Ohio,05-04-2020,4043
+Ohio,06-04-2020,4453
+Ohio,07-04-2020,4782
+Ohio,08-04-2020,5148
+Ohio,09-04-2020,5512
+Ohio,10-04-2020,5878
+Ohio,11-04-2020,6250
+Ohio,12-04-2020,6604
+Ohio,13-04-2020,6975
+Ohio,14-04-2020,7285
+Ohio,15-04-2020,7794
+Ohio,16-04-2020,8414
+Ohio,17-04-2020,9107
+Ohio,18-04-2020,10222
+Ohio,19-04-2020,11602
+Ohio,20-04-2020,12919
+Ohio,21-04-2020,13725
+Ohio,22-04-2020,14117
+Ohio,23-04-2020,14694
+Ohio,24-04-2020,15169
+Ohio,25-04-2020,15587
+Ohio,26-04-2020,15972
+Ohio,27-04-2020,16325
+Ohio,28-04-2020,16769
+Ohio,29-04-2020,17303
+Ohio,30-04-2020,18027
+Ohio,01-05-2020,18743
+Ohio,02-05-2020,19335
+Ohio,03-05-2020,19914
+Ohio,04-05-2020,20474
+Ohio,05-05-2020,20969
+Ohio,06-05-2020,21576
+Ohio,07-05-2020,22131
+Ohio,08-05-2020,23016
+Ohio,09-05-2020,23697
+Ohio,10-05-2020,24081
+Ohio,11-05-2020,24777
+Ohio,12-05-2020,25250
+Ohio,13-05-2020,25721
+Ohio,14-05-2020,26357
+Oklahoma,07-03-2020,1
+Oklahoma,08-03-2020,1
+Oklahoma,09-03-2020,1
+Oklahoma,10-03-2020,2
+Oklahoma,11-03-2020,2
+Oklahoma,12-03-2020,3
+Oklahoma,13-03-2020,3
+Oklahoma,14-03-2020,4
+Oklahoma,15-03-2020,4
+Oklahoma,16-03-2020,10
+Oklahoma,17-03-2020,17
+Oklahoma,18-03-2020,17
+Oklahoma,19-03-2020,44
+Oklahoma,20-03-2020,49
+Oklahoma,21-03-2020,53
+Oklahoma,22-03-2020,67
+Oklahoma,23-03-2020,81
+Oklahoma,24-03-2020,106
+Oklahoma,25-03-2020,164
+Oklahoma,26-03-2020,248
+Oklahoma,27-03-2020,322
+Oklahoma,28-03-2020,377
+Oklahoma,29-03-2020,429
+Oklahoma,30-03-2020,481
+Oklahoma,31-03-2020,568
+Oklahoma,01-04-2020,721
+Oklahoma,02-04-2020,881
+Oklahoma,03-04-2020,990
+Oklahoma,04-04-2020,1161
+Oklahoma,05-04-2020,1254
+Oklahoma,06-04-2020,1329
+Oklahoma,07-04-2020,1474
+Oklahoma,08-04-2020,1526
+Oklahoma,09-04-2020,1686
+Oklahoma,10-04-2020,1794
+Oklahoma,11-04-2020,1868
+Oklahoma,12-04-2020,1970
+Oklahoma,13-04-2020,2069
+Oklahoma,14-04-2020,2184
+Oklahoma,15-04-2020,2263
+Oklahoma,16-04-2020,2357
+Oklahoma,17-04-2020,2465
+Oklahoma,18-04-2020,2465
+Oklahoma,19-04-2020,2567
+Oklahoma,20-04-2020,2680
+Oklahoma,21-04-2020,2807
+Oklahoma,22-04-2020,2894
+Oklahoma,23-04-2020,3017
+Oklahoma,24-04-2020,3121
+Oklahoma,25-04-2020,3194
+Oklahoma,26-04-2020,3254
+Oklahoma,27-04-2020,3281
+Oklahoma,28-04-2020,3410
+Oklahoma,29-04-2020,3473
+Oklahoma,30-04-2020,3618
+Oklahoma,01-05-2020,3748
+Oklahoma,02-05-2020,3851
+Oklahoma,03-05-2020,3972
+Oklahoma,04-05-2020,4044
+Oklahoma,05-05-2020,4127
+Oklahoma,06-05-2020,4202
+Oklahoma,07-05-2020,4330
+Oklahoma,08-05-2020,4424
+Oklahoma,09-05-2020,4490
+Oklahoma,10-05-2020,4589
+Oklahoma,11-05-2020,4613
+Oklahoma,12-05-2020,4732
+Oklahoma,13-05-2020,4858
+Oklahoma,14-05-2020,4963
+Oregon,29-02-2020,1
+Oregon,01-03-2020,1
+Oregon,02-03-2020,3
+Oregon,03-03-2020,3
+Oregon,04-03-2020,3
+Oregon,05-03-2020,3
+Oregon,06-03-2020,3
+Oregon,07-03-2020,6
+Oregon,08-03-2020,14
+Oregon,09-03-2020,14
+Oregon,10-03-2020,14
+Oregon,11-03-2020,19
+Oregon,12-03-2020,24
+Oregon,13-03-2020,30
+Oregon,14-03-2020,36
+Oregon,15-03-2020,36
+Oregon,16-03-2020,39
+Oregon,17-03-2020,66
+Oregon,18-03-2020,75
+Oregon,19-03-2020,88
+Oregon,20-03-2020,114
+Oregon,21-03-2020,137
+Oregon,22-03-2020,161
+Oregon,23-03-2020,191
+Oregon,24-03-2020,210
+Oregon,25-03-2020,266
+Oregon,26-03-2020,316
+Oregon,27-03-2020,416
+Oregon,28-03-2020,479
+Oregon,29-03-2020,548
+Oregon,30-03-2020,606
+Oregon,31-03-2020,690
+Oregon,01-04-2020,736
+Oregon,02-04-2020,826
+Oregon,03-04-2020,899
+Oregon,04-04-2020,899
+Oregon,05-04-2020,1068
+Oregon,06-04-2020,1068
+Oregon,07-04-2020,1132
+Oregon,08-04-2020,1181
+Oregon,09-04-2020,1321
+Oregon,10-04-2020,1322
+Oregon,11-04-2020,1371
+Oregon,12-04-2020,1527
+Oregon,13-04-2020,1584
+Oregon,14-04-2020,1633
+Oregon,15-04-2020,1663
+Oregon,16-04-2020,1736
+Oregon,17-04-2020,1785
+Oregon,18-04-2020,1844
+Oregon,19-04-2020,1910
+Oregon,20-04-2020,1957
+Oregon,21-04-2020,2004
+Oregon,22-04-2020,2059
+Oregon,23-04-2020,2127
+Oregon,24-04-2020,2177
+Oregon,25-04-2020,2253
+Oregon,26-04-2020,2311
+Oregon,27-04-2020,2354
+Oregon,28-04-2020,2385
+Oregon,29-04-2020,2446
+Oregon,30-04-2020,2510
+Oregon,01-05-2020,2579
+Oregon,02-05-2020,2635
+Oregon,03-05-2020,2680
+Oregon,04-05-2020,2759
+Oregon,05-05-2020,2839
+Oregon,06-05-2020,2916
+Oregon,07-05-2020,2989
+Oregon,08-05-2020,3068
+Oregon,09-05-2020,3160
+Oregon,10-05-2020,3228
+Oregon,11-05-2020,3286
+Oregon,12-05-2020,3358
+Oregon,13-05-2020,3416
+Oregon,14-05-2020,3479
+Pennsylvania,06-03-2020,2
+Pennsylvania,07-03-2020,2
+Pennsylvania,08-03-2020,6
+Pennsylvania,09-03-2020,7
+Pennsylvania,10-03-2020,12
+Pennsylvania,11-03-2020,16
+Pennsylvania,12-03-2020,22
+Pennsylvania,13-03-2020,41
+Pennsylvania,14-03-2020,47
+Pennsylvania,15-03-2020,47
+Pennsylvania,16-03-2020,79
+Pennsylvania,17-03-2020,112
+Pennsylvania,18-03-2020,155
+Pennsylvania,19-03-2020,206
+Pennsylvania,20-03-2020,311
+Pennsylvania,21-03-2020,399
+Pennsylvania,22-03-2020,509
+Pennsylvania,23-03-2020,698
+Pennsylvania,24-03-2020,946
+Pennsylvania,25-03-2020,1260
+Pennsylvania,26-03-2020,1795
+Pennsylvania,27-03-2020,2345
+Pennsylvania,28-03-2020,2845
+Pennsylvania,29-03-2020,3432
+Pennsylvania,30-03-2020,4155
+Pennsylvania,31-03-2020,4963
+Pennsylvania,01-04-2020,6009
+Pennsylvania,02-04-2020,7268
+Pennsylvania,03-04-2020,8570
+Pennsylvania,04-04-2020,10444
+Pennsylvania,05-04-2020,11589
+Pennsylvania,06-04-2020,13127
+Pennsylvania,07-04-2020,14853
+Pennsylvania,08-04-2020,16631
+Pennsylvania,09-04-2020,18300
+Pennsylvania,10-04-2020,20051
+Pennsylvania,11-04-2020,21719
+Pennsylvania,12-04-2020,22938
+Pennsylvania,13-04-2020,24292
+Pennsylvania,14-04-2020,25465
+Pennsylvania,15-04-2020,26753
+Pennsylvania,16-04-2020,28258
+Pennsylvania,17-04-2020,29888
+Pennsylvania,18-04-2020,31652
+Pennsylvania,19-04-2020,32902
+Pennsylvania,20-04-2020,33914
+Pennsylvania,21-04-2020,35249
+Pennsylvania,22-04-2020,36082
+Pennsylvania,23-04-2020,38379
+Pennsylvania,24-04-2020,40208
+Pennsylvania,25-04-2020,41153
+Pennsylvania,26-04-2020,42616
+Pennsylvania,27-04-2020,43558
+Pennsylvania,28-04-2020,45137
+Pennsylvania,29-04-2020,46327
+Pennsylvania,30-04-2020,47971
+Pennsylvania,01-05-2020,49579
+Pennsylvania,02-05-2020,50494
+Pennsylvania,03-05-2020,51225
+Pennsylvania,04-05-2020,52816
+Pennsylvania,05-05-2020,53864
+Pennsylvania,06-05-2020,54800
+Pennsylvania,07-05-2020,55956
+Pennsylvania,08-05-2020,57371
+Pennsylvania,09-05-2020,58560
+Pennsylvania,10-05-2020,59939
+Pennsylvania,11-05-2020,60459
+Pennsylvania,12-05-2020,61310
+Pennsylvania,13-05-2020,62101
+Pennsylvania,14-05-2020,63105
+Puerto Rico,16-03-2020,5
+Puerto Rico,17-03-2020,5
+Puerto Rico,18-03-2020,5
+Puerto Rico,19-03-2020,5
+Puerto Rico,20-03-2020,14
+Puerto Rico,21-03-2020,21
+Puerto Rico,22-03-2020,23
+Puerto Rico,23-03-2020,31
+Puerto Rico,24-03-2020,39
+Puerto Rico,25-03-2020,51
+Puerto Rico,26-03-2020,64
+Puerto Rico,27-03-2020,79
+Puerto Rico,28-03-2020,100
+Puerto Rico,29-03-2020,127
+Puerto Rico,30-03-2020,174
+Puerto Rico,31-03-2020,239
+Puerto Rico,01-04-2020,286
+Puerto Rico,02-04-2020,316
+Puerto Rico,03-04-2020,316
+Puerto Rico,04-04-2020,452
+Puerto Rico,05-04-2020,475
+Puerto Rico,06-04-2020,513
+Puerto Rico,07-04-2020,573
+Puerto Rico,08-04-2020,620
+Puerto Rico,09-04-2020,683
+Puerto Rico,10-04-2020,725
+Puerto Rico,11-04-2020,788
+Puerto Rico,12-04-2020,897
+Puerto Rico,13-04-2020,903
+Puerto Rico,14-04-2020,923
+Puerto Rico,15-04-2020,974
+Puerto Rico,16-04-2020,1043
+Puerto Rico,17-04-2020,1068
+Puerto Rico,18-04-2020,1118
+Puerto Rico,19-04-2020,1213
+Puerto Rico,20-04-2020,1252
+Puerto Rico,21-04-2020,1298
+Puerto Rico,22-04-2020,1252
+Puerto Rico,23-04-2020,1416
+Puerto Rico,24-04-2020,1276
+Puerto Rico,25-04-2020,1307
+Puerto Rico,26-04-2020,1371
+Puerto Rico,27-04-2020,1389
+Puerto Rico,28-04-2020,1400
+Puerto Rico,29-04-2020,1433
+Puerto Rico,30-04-2020,1539
+Puerto Rico,01-05-2020,1575
+Puerto Rico,02-05-2020,1757
+Puerto Rico,03-05-2020,1808
+Puerto Rico,04-05-2020,1843
+Puerto Rico,05-05-2020,1924
+Puerto Rico,06-05-2020,1968
+Puerto Rico,07-05-2020,2031
+Puerto Rico,08-05-2020,2156
+Puerto Rico,09-05-2020,2173
+Puerto Rico,10-05-2020,2198
+Puerto Rico,11-05-2020,2256
+Puerto Rico,12-05-2020,2299
+Puerto Rico,13-05-2020,2329
+Puerto Rico,14-05-2020,2427
+Rhode Island,01-03-2020,1
+Rhode Island,02-03-2020,2
+Rhode Island,03-03-2020,2
+Rhode Island,04-03-2020,2
+Rhode Island,05-03-2020,2
+Rhode Island,06-03-2020,2
+Rhode Island,07-03-2020,3
+Rhode Island,08-03-2020,3
+Rhode Island,09-03-2020,3
+Rhode Island,10-03-2020,3
+Rhode Island,11-03-2020,5
+Rhode Island,12-03-2020,3
+Rhode Island,13-03-2020,12
+Rhode Island,14-03-2020,20
+Rhode Island,15-03-2020,20
+Rhode Island,16-03-2020,21
+Rhode Island,17-03-2020,23
+Rhode Island,18-03-2020,33
+Rhode Island,19-03-2020,44
+Rhode Island,20-03-2020,54
+Rhode Island,21-03-2020,66
+Rhode Island,22-03-2020,83
+Rhode Island,23-03-2020,106
+Rhode Island,24-03-2020,124
+Rhode Island,25-03-2020,132
+Rhode Island,26-03-2020,165
+Rhode Island,27-03-2020,203
+Rhode Island,28-03-2020,239
+Rhode Island,29-03-2020,294
+Rhode Island,30-03-2020,408
+Rhode Island,31-03-2020,488
+Rhode Island,01-04-2020,566
+Rhode Island,02-04-2020,645
+Rhode Island,03-04-2020,711
+Rhode Island,04-04-2020,806
+Rhode Island,05-04-2020,922
+Rhode Island,06-04-2020,1082
+Rhode Island,07-04-2020,1229
+Rhode Island,08-04-2020,1450
+Rhode Island,09-04-2020,1727
+Rhode Island,10-04-2020,1727
+Rhode Island,11-04-2020,2349
+Rhode Island,12-04-2020,2665
+Rhode Island,13-04-2020,2665
+Rhode Island,14-04-2020,3251
+Rhode Island,15-04-2020,3251
+Rhode Island,16-04-2020,3529
+Rhode Island,17-04-2020,4177
+Rhode Island,18-04-2020,4491
+Rhode Island,19-04-2020,4706
+Rhode Island,20-04-2020,5090
+Rhode Island,21-04-2020,5500
+Rhode Island,22-04-2020,5841
+Rhode Island,23-04-2020,6256
+Rhode Island,24-04-2020,6699
+Rhode Island,25-04-2020,7129
+Rhode Island,26-04-2020,7439
+Rhode Island,27-04-2020,7708
+Rhode Island,28-04-2020,7927
+Rhode Island,29-04-2020,8247
+Rhode Island,30-04-2020,8621
+Rhode Island,01-05-2020,8962
+Rhode Island,02-05-2020,9289
+Rhode Island,03-05-2020,9477
+Rhode Island,04-05-2020,9652
+Rhode Island,05-05-2020,9933
+Rhode Island,06-05-2020,10205
+Rhode Island,07-05-2020,10530
+Rhode Island,08-05-2020,10779
+Rhode Island,09-05-2020,10989
+Rhode Island,10-05-2020,11274
+Rhode Island,11-05-2020,11450
+Rhode Island,12-05-2020,11614
+Rhode Island,13-05-2020,11835
+Rhode Island,14-05-2020,12016
+South Carolina,07-03-2020,2
+South Carolina,08-03-2020,2
+South Carolina,09-03-2020,3
+South Carolina,10-03-2020,7
+South Carolina,11-03-2020,10
+South Carolina,12-03-2020,7
+South Carolina,13-03-2020,8
+South Carolina,14-03-2020,19
+South Carolina,15-03-2020,19
+South Carolina,16-03-2020,30
+South Carolina,17-03-2020,47
+South Carolina,18-03-2020,60
+South Carolina,19-03-2020,80
+South Carolina,20-03-2020,126
+South Carolina,21-03-2020,174
+South Carolina,22-03-2020,196
+South Carolina,23-03-2020,298
+South Carolina,24-03-2020,342
+South Carolina,25-03-2020,424
+South Carolina,26-03-2020,424
+South Carolina,27-03-2020,542
+South Carolina,28-03-2020,660
+South Carolina,29-03-2020,774
+South Carolina,30-03-2020,925
+South Carolina,31-03-2020,1083
+South Carolina,01-04-2020,1293
+South Carolina,02-04-2020,1554
+South Carolina,03-04-2020,1700
+South Carolina,04-04-2020,1917
+South Carolina,05-04-2020,2049
+South Carolina,06-04-2020,2232
+South Carolina,07-04-2020,2417
+South Carolina,08-04-2020,2417
+South Carolina,09-04-2020,2793
+South Carolina,10-04-2020,3067
+South Carolina,11-04-2020,3211
+South Carolina,12-04-2020,3320
+South Carolina,13-04-2020,3391
+South Carolina,14-04-2020,3553
+South Carolina,15-04-2020,3656
+South Carolina,16-04-2020,3931
+South Carolina,17-04-2020,4099
+South Carolina,18-04-2020,4248
+South Carolina,19-04-2020,4377
+South Carolina,20-04-2020,4446
+South Carolina,21-04-2020,4439
+South Carolina,22-04-2020,4761
+South Carolina,23-04-2020,4917
+South Carolina,24-04-2020,5070
+South Carolina,25-04-2020,5253
+South Carolina,26-04-2020,5498
+South Carolina,27-04-2020,5613
+South Carolina,28-04-2020,5735
+South Carolina,29-04-2020,5882
+South Carolina,30-04-2020,6095
+South Carolina,01-05-2020,6258
+South Carolina,02-05-2020,6489
+South Carolina,03-05-2020,6626
+South Carolina,04-05-2020,6757
+South Carolina,05-05-2020,6841
+South Carolina,06-05-2020,6936
+South Carolina,07-05-2020,7142
+South Carolina,08-05-2020,7367
+South Carolina,09-05-2020,7531
+South Carolina,10-05-2020,7653
+South Carolina,11-05-2020,7792
+South Carolina,12-05-2020,7927
+South Carolina,13-05-2020,8030
+South Carolina,14-05-2020,8189
+South Dakota,11-03-2020,8
+South Dakota,12-03-2020,7
+South Dakota,13-03-2020,8
+South Dakota,14-03-2020,8
+South Dakota,15-03-2020,8
+South Dakota,16-03-2020,10
+South Dakota,17-03-2020,11
+South Dakota,18-03-2020,11
+South Dakota,19-03-2020,14
+South Dakota,20-03-2020,14
+South Dakota,21-03-2020,14
+South Dakota,22-03-2020,21
+South Dakota,23-03-2020,28
+South Dakota,24-03-2020,30
+South Dakota,25-03-2020,41
+South Dakota,26-03-2020,46
+South Dakota,27-03-2020,58
+South Dakota,28-03-2020,68
+South Dakota,29-03-2020,90
+South Dakota,30-03-2020,101
+South Dakota,31-03-2020,108
+South Dakota,01-04-2020,129
+South Dakota,02-04-2020,165
+South Dakota,03-04-2020,187
+South Dakota,04-04-2020,212
+South Dakota,05-04-2020,240
+South Dakota,06-04-2020,288
+South Dakota,07-04-2020,320
+South Dakota,08-04-2020,393
+South Dakota,09-04-2020,447
+South Dakota,10-04-2020,536
+South Dakota,11-04-2020,626
+South Dakota,12-04-2020,730
+South Dakota,13-04-2020,868
+South Dakota,14-04-2020,988
+South Dakota,15-04-2020,1168
+South Dakota,16-04-2020,1311
+South Dakota,17-04-2020,1411
+South Dakota,18-04-2020,1542
+South Dakota,19-04-2020,1635
+South Dakota,20-04-2020,1685
+South Dakota,21-04-2020,1755
+South Dakota,22-04-2020,1858
+South Dakota,23-04-2020,1956
+South Dakota,24-04-2020,2040
+South Dakota,25-04-2020,2147
+South Dakota,26-04-2020,2212
+South Dakota,27-04-2020,2244
+South Dakota,28-04-2020,2313
+South Dakota,29-04-2020,2373
+South Dakota,30-04-2020,2449
+South Dakota,01-05-2020,2525
+South Dakota,02-05-2020,2588
+South Dakota,03-05-2020,2631
+South Dakota,04-05-2020,2668
+South Dakota,05-05-2020,2721
+South Dakota,06-05-2020,2780
+South Dakota,07-05-2020,2906
+South Dakota,08-05-2020,3145
+South Dakota,09-05-2020,3393
+South Dakota,10-05-2020,3517
+South Dakota,11-05-2020,3614
+South Dakota,12-05-2020,3663
+South Dakota,13-05-2020,3732
+South Dakota,14-05-2020,3792
+Tennessee,05-03-2020,1
+Tennessee,06-03-2020,1
+Tennessee,07-03-2020,1
+Tennessee,08-03-2020,3
+Tennessee,09-03-2020,3
+Tennessee,10-03-2020,3
+Tennessee,11-03-2020,9
+Tennessee,12-03-2020,18
+Tennessee,13-03-2020,26
+Tennessee,14-03-2020,32
+Tennessee,15-03-2020,32
+Tennessee,16-03-2020,52
+Tennessee,17-03-2020,74
+Tennessee,18-03-2020,100
+Tennessee,19-03-2020,154
+Tennessee,20-03-2020,223
+Tennessee,21-03-2020,304
+Tennessee,22-03-2020,393
+Tennessee,23-03-2020,614
+Tennessee,24-03-2020,772
+Tennessee,25-03-2020,916
+Tennessee,26-03-2020,1097
+Tennessee,27-03-2020,1318
+Tennessee,28-03-2020,1511
+Tennessee,29-03-2020,1720
+Tennessee,30-03-2020,1917
+Tennessee,31-03-2020,2391
+Tennessee,01-04-2020,2933
+Tennessee,02-04-2020,3013
+Tennessee,03-04-2020,3067
+Tennessee,04-04-2020,3322
+Tennessee,05-04-2020,3633
+Tennessee,06-04-2020,3802
+Tennessee,07-04-2020,4139
+Tennessee,08-04-2020,4363
+Tennessee,09-04-2020,4634
+Tennessee,10-04-2020,4891
+Tennessee,11-04-2020,5132
+Tennessee,12-04-2020,5508
+Tennessee,13-04-2020,5610
+Tennessee,14-04-2020,5827
+Tennessee,15-04-2020,5827
+Tennessee,16-04-2020,6166
+Tennessee,17-04-2020,6263
+Tennessee,18-04-2020,6589
+Tennessee,19-04-2020,7070
+Tennessee,20-04-2020,7238
+Tennessee,21-04-2020,7394
+Tennessee,22-04-2020,7394
+Tennessee,23-04-2020,8266
+Tennessee,24-04-2020,8728
+Tennessee,25-04-2020,9189
+Tennessee,26-04-2020,9667
+Tennessee,27-04-2020,9918
+Tennessee,28-04-2020,10052
+Tennessee,29-04-2020,10366
+Tennessee,30-04-2020,10735
+Tennessee,01-05-2020,11891
+Tennessee,02-05-2020,12661
+Tennessee,03-05-2020,13177
+Tennessee,04-05-2020,13571
+Tennessee,05-05-2020,13690
+Tennessee,06-05-2020,13938
+Tennessee,07-05-2020,14096
+Tennessee,08-05-2020,14441
+Tennessee,09-05-2020,14768
+Tennessee,10-05-2020,14985
+Tennessee,11-05-2020,15544
+Tennessee,12-05-2020,16111
+Tennessee,13-05-2020,16370
+Tennessee,14-05-2020,16699
+Texas,05-03-2020,3
+Texas,06-03-2020,4
+Texas,07-03-2020,8
+Texas,08-03-2020,11
+Texas,09-03-2020,13
+Texas,10-03-2020,16
+Texas,11-03-2020,21
+Texas,12-03-2020,27
+Texas,13-03-2020,44
+Texas,14-03-2020,60
+Texas,15-03-2020,63
+Texas,16-03-2020,85
+Texas,17-03-2020,110
+Texas,18-03-2020,196
+Texas,19-03-2020,306
+Texas,20-03-2020,429
+Texas,21-03-2020,582
+Texas,22-03-2020,643
+Texas,23-03-2020,758
+Texas,24-03-2020,955
+Texas,25-03-2020,1229
+Texas,26-03-2020,1563
+Texas,27-03-2020,1937
+Texas,28-03-2020,2455
+Texas,29-03-2020,2792
+Texas,30-03-2020,3147
+Texas,31-03-2020,3809
+Texas,01-04-2020,4355
+Texas,02-04-2020,5069
+Texas,03-04-2020,5734
+Texas,04-04-2020,6567
+Texas,05-04-2020,7209
+Texas,06-04-2020,8043
+Texas,07-04-2020,8925
+Texas,08-04-2020,9777
+Texas,09-04-2020,11208
+Texas,10-04-2020,12105
+Texas,11-04-2020,13023
+Texas,12-04-2020,13677
+Texas,13-04-2020,14275
+Texas,14-04-2020,15006
+Texas,15-04-2020,15907
+Texas,16-04-2020,16876
+Texas,17-04-2020,17849
+Texas,18-04-2020,18704
+Texas,19-04-2020,19260
+Texas,20-04-2020,19751
+Texas,21-04-2020,20574
+Texas,22-04-2020,21321
+Texas,23-04-2020,22650
+Texas,24-04-2020,23642
+Texas,25-04-2020,24153
+Texas,26-04-2020,24967
+Texas,27-04-2020,25321
+Texas,28-04-2020,26357
+Texas,29-04-2020,27257
+Texas,30-04-2020,28727
+Texas,01-05-2020,29692
+Texas,02-05-2020,30917
+Texas,03-05-2020,31998
+Texas,04-05-2020,32783
+Texas,05-05-2020,33912
+Texas,06-05-2020,34928
+Texas,07-05-2020,36036
+Texas,08-05-2020,37246
+Texas,09-05-2020,38394
+Texas,10-05-2020,39258
+Texas,11-05-2020,40555
+Texas,12-05-2020,41432
+Texas,13-05-2020,43020
+Texas,14-05-2020,44480
+Utah,07-03-2020,1
+Utah,08-03-2020,1
+Utah,09-03-2020,1
+Utah,10-03-2020,2
+Utah,11-03-2020,3
+Utah,12-03-2020,3
+Utah,13-03-2020,9
+Utah,14-03-2020,10
+Utah,15-03-2020,18
+Utah,16-03-2020,28
+Utah,17-03-2020,39
+Utah,18-03-2020,47
+Utah,19-03-2020,62
+Utah,20-03-2020,95
+Utah,21-03-2020,118
+Utah,22-03-2020,162
+Utah,23-03-2020,257
+Utah,24-03-2020,298
+Utah,25-03-2020,340
+Utah,26-03-2020,396
+Utah,27-03-2020,472
+Utah,28-03-2020,602
+Utah,29-03-2020,720
+Utah,30-03-2020,798
+Utah,31-03-2020,888
+Utah,01-04-2020,888
+Utah,02-04-2020,1086
+Utah,03-04-2020,1248
+Utah,04-04-2020,1428
+Utah,05-04-2020,1601
+Utah,06-04-2020,1678
+Utah,07-04-2020,1739
+Utah,08-04-2020,1848
+Utah,09-04-2020,1856
+Utah,10-04-2020,2103
+Utah,11-04-2020,2207
+Utah,12-04-2020,2303
+Utah,13-04-2020,2363
+Utah,14-04-2020,2417
+Utah,15-04-2020,2548
+Utah,16-04-2020,2683
+Utah,17-04-2020,2793
+Utah,18-04-2020,2917
+Utah,19-04-2020,3069
+Utah,20-04-2020,3213
+Utah,21-04-2020,3297
+Utah,22-04-2020,3445
+Utah,23-04-2020,3612
+Utah,24-04-2020,3782
+Utah,25-04-2020,3948
+Utah,26-04-2020,4123
+Utah,27-04-2020,4236
+Utah,28-04-2020,4345
+Utah,29-04-2020,4497
+Utah,30-04-2020,4672
+Utah,01-05-2020,4828
+Utah,02-05-2020,4985
+Utah,03-05-2020,5175
+Utah,04-05-2020,5317
+Utah,05-05-2020,5449
+Utah,06-05-2020,5595
+Utah,07-05-2020,5724
+Utah,08-05-2020,5919
+Utah,09-05-2020,6103
+Utah,10-05-2020,6251
+Utah,11-05-2020,6362
+Utah,12-05-2020,6432
+Utah,13-05-2020,6620
+Utah,14-05-2020,6749
+Vermont,08-03-2020,1
+Vermont,09-03-2020,1
+Vermont,10-03-2020,1
+Vermont,11-03-2020,1
+Vermont,12-03-2020,2
+Vermont,13-03-2020,2
+Vermont,14-03-2020,5
+Vermont,15-03-2020,5
+Vermont,16-03-2020,12
+Vermont,17-03-2020,12
+Vermont,18-03-2020,13
+Vermont,19-03-2020,22
+Vermont,20-03-2020,29
+Vermont,21-03-2020,49
+Vermont,22-03-2020,52
+Vermont,23-03-2020,75
+Vermont,24-03-2020,95
+Vermont,25-03-2020,125
+Vermont,26-03-2020,158
+Vermont,27-03-2020,184
+Vermont,28-03-2020,211
+Vermont,29-03-2020,235
+Vermont,30-03-2020,256
+Vermont,31-03-2020,293
+Vermont,01-04-2020,321
+Vermont,02-04-2020,338
+Vermont,03-04-2020,389
+Vermont,04-04-2020,461
+Vermont,05-04-2020,512
+Vermont,06-04-2020,543
+Vermont,07-04-2020,575
+Vermont,08-04-2020,605
+Vermont,09-04-2020,628
+Vermont,10-04-2020,679
+Vermont,11-04-2020,711
+Vermont,12-04-2020,727
+Vermont,13-04-2020,748
+Vermont,14-04-2020,752
+Vermont,15-04-2020,759
+Vermont,16-04-2020,774
+Vermont,17-04-2020,779
+Vermont,18-04-2020,803
+Vermont,19-04-2020,813
+Vermont,20-04-2020,816
+Vermont,21-04-2020,818
+Vermont,22-04-2020,823
+Vermont,23-04-2020,825
+Vermont,24-04-2020,827
+Vermont,25-04-2020,843
+Vermont,26-04-2020,851
+Vermont,27-04-2020,855
+Vermont,28-04-2020,862
+Vermont,29-04-2020,862
+Vermont,30-04-2020,866
+Vermont,01-05-2020,879
+Vermont,02-05-2020,886
+Vermont,03-05-2020,897
+Vermont,04-05-2020,902
+Vermont,05-05-2020,907
+Vermont,06-05-2020,908
+Vermont,07-05-2020,916
+Vermont,08-05-2020,919
+Vermont,09-05-2020,921
+Vermont,10-05-2020,927
+Vermont,11-05-2020,926
+Vermont,12-05-2020,927
+Vermont,13-05-2020,929
+Vermont,14-05-2020,932
+Virgin Islands,16-03-2020,1
+Virgin Islands,17-03-2020,2
+Virgin Islands,18-03-2020,2
+Virgin Islands,19-03-2020,3
+Virgin Islands,20-03-2020,3
+Virgin Islands,21-03-2020,6
+Virgin Islands,22-03-2020,6
+Virgin Islands,23-03-2020,7
+Virgin Islands,24-03-2020,17
+Virgin Islands,25-03-2020,17
+Virgin Islands,26-03-2020,17
+Virgin Islands,27-03-2020,19
+Virgin Islands,28-03-2020,22
+Virgin Islands,29-03-2020,23
+Virgin Islands,30-03-2020,30
+Virgin Islands,31-03-2020,30
+Virgin Islands,01-04-2020,30
+Virgin Islands,02-04-2020,30
+Virgin Islands,03-04-2020,37
+Virgin Islands,04-04-2020,40
+Virgin Islands,05-04-2020,42
+Virgin Islands,06-04-2020,43
+Virgin Islands,07-04-2020,43
+Virgin Islands,08-04-2020,45
+Virgin Islands,09-04-2020,45
+Virgin Islands,10-04-2020,50
+Virgin Islands,11-04-2020,51
+Virgin Islands,12-04-2020,51
+Virgin Islands,13-04-2020,51
+Virgin Islands,14-04-2020,51
+Virgin Islands,15-04-2020,51
+Virgin Islands,16-04-2020,51
+Virgin Islands,17-04-2020,51
+Virgin Islands,18-04-2020,53
+Virgin Islands,19-04-2020,53
+Virgin Islands,20-04-2020,53
+Virgin Islands,21-04-2020,53
+Virgin Islands,22-04-2020,54
+Virgin Islands,23-04-2020,54
+Virgin Islands,24-04-2020,54
+Virgin Islands,25-04-2020,55
+Virgin Islands,26-04-2020,57
+Virgin Islands,27-04-2020,57
+Virgin Islands,28-04-2020,57
+Virgin Islands,29-04-2020,57
+Virgin Islands,30-04-2020,66
+Virgin Islands,01-05-2020,66
+Virgin Islands,02-05-2020,66
+Virgin Islands,03-05-2020,66
+Virgin Islands,04-05-2020,66
+Virgin Islands,05-05-2020,66
+Virgin Islands,06-05-2020,66
+Virgin Islands,07-05-2020,66
+Virgin Islands,08-05-2020,68
+Virgin Islands,09-05-2020,68
+Virgin Islands,10-05-2020,69
+Virgin Islands,11-05-2020,69
+Virgin Islands,12-05-2020,69
+Virgin Islands,13-05-2020,69
+Virgin Islands,14-05-2020,69
+Virginia,08-03-2020,2
+Virginia,09-03-2020,2
+Virginia,10-03-2020,8
+Virginia,11-03-2020,9
+Virginia,12-03-2020,12
+Virginia,13-03-2020,27
+Virginia,14-03-2020,37
+Virginia,15-03-2020,37
+Virginia,16-03-2020,49
+Virginia,17-03-2020,67
+Virginia,18-03-2020,79
+Virginia,19-03-2020,103
+Virginia,20-03-2020,123
+Virginia,21-03-2020,157
+Virginia,22-03-2020,220
+Virginia,23-03-2020,254
+Virginia,24-03-2020,293
+Virginia,25-03-2020,396
+Virginia,26-03-2020,466
+Virginia,27-03-2020,607
+Virginia,28-03-2020,740
+Virginia,29-03-2020,890
+Virginia,30-03-2020,1020
+Virginia,31-03-2020,1249
+Virginia,01-04-2020,1483
+Virginia,02-04-2020,1706
+Virginia,03-04-2020,2012
+Virginia,04-04-2020,2407
+Virginia,05-04-2020,2640
+Virginia,06-04-2020,2878
+Virginia,07-04-2020,3335
+Virginia,08-04-2020,3645
+Virginia,09-04-2020,4042
+Virginia,10-04-2020,4509
+Virginia,11-04-2020,5077
+Virginia,12-04-2020,5274
+Virginia,13-04-2020,5747
+Virginia,14-04-2020,6182
+Virginia,15-04-2020,6500
+Virginia,16-04-2020,6889
+Virginia,17-04-2020,7491
+Virginia,18-04-2020,8053
+Virginia,19-04-2020,8542
+Virginia,20-04-2020,8990
+Virginia,21-04-2020,9630
+Virginia,22-04-2020,10266
+Virginia,23-04-2020,10998
+Virginia,24-04-2020,11594
+Virginia,25-04-2020,12366
+Virginia,26-04-2020,12970
+Virginia,27-04-2020,13538
+Virginia,28-04-2020,14339
+Virginia,29-04-2020,14962
+Virginia,30-04-2020,15847
+Virginia,01-05-2020,16902
+Virginia,02-05-2020,17738
+Virginia,03-05-2020,18672
+Virginia,04-05-2020,19493
+Virginia,05-05-2020,20257
+Virginia,06-05-2020,20985
+Virginia,07-05-2020,21570
+Virginia,08-05-2020,22342
+Virginia,09-05-2020,23196
+Virginia,10-05-2020,24081
+Virginia,11-05-2020,25070
+Virginia,12-05-2020,25800
+Virginia,13-05-2020,26746
+Virginia,14-05-2020,27813
+Washington,22-01-2020,1
+Washington,23-01-2020,1
+Washington,24-01-2020,1
+Washington,25-01-2020,1
+Washington,26-01-2020,1
+Washington,27-01-2020,1
+Washington,28-01-2020,1
+Washington,29-01-2020,1
+Washington,30-01-2020,1
+Washington,31-01-2020,1
+Washington,01-02-2020,1
+Washington,02-02-2020,1
+Washington,03-02-2020,1
+Washington,04-02-2020,1
+Washington,05-02-2020,1
+Washington,06-02-2020,1
+Washington,07-02-2020,1
+Washington,08-02-2020,1
+Washington,09-02-2020,1
+Washington,10-02-2020,1
+Washington,11-02-2020,1
+Washington,12-02-2020,1
+Washington,13-02-2020,1
+Washington,14-02-2020,1
+Washington,15-02-2020,1
+Washington,16-02-2020,1
+Washington,17-02-2020,1
+Washington,18-02-2020,1
+Washington,19-02-2020,1
+Washington,20-02-2020,1
+Washington,21-02-2020,1
+Washington,22-02-2020,1
+Washington,23-02-2020,1
+Washington,24-02-2020,1
+Washington,25-02-2020,1
+Washington,26-02-2020,1
+Washington,27-02-2020,1
+Washington,28-02-2020,1
+Washington,29-02-2020,7
+Washington,01-03-2020,11
+Washington,02-03-2020,18
+Washington,03-03-2020,27
+Washington,04-03-2020,39
+Washington,05-03-2020,70
+Washington,06-03-2020,78
+Washington,07-03-2020,102
+Washington,08-03-2020,122
+Washington,09-03-2020,122
+Washington,10-03-2020,167
+Washington,11-03-2020,282
+Washington,12-03-2020,442
+Washington,13-03-2020,568
+Washington,14-03-2020,642
+Washington,15-03-2020,603
+Washington,16-03-2020,779
+Washington,17-03-2020,955
+Washington,18-03-2020,1022
+Washington,19-03-2020,1374
+Washington,20-03-2020,1524
+Washington,21-03-2020,1793
+Washington,22-03-2020,1997
+Washington,23-03-2020,2221
+Washington,24-03-2020,2328
+Washington,25-03-2020,2591
+Washington,26-03-2020,3207
+Washington,27-03-2020,3477
+Washington,28-03-2020,4030
+Washington,29-03-2020,4465
+Washington,30-03-2020,4923
+Washington,31-03-2020,5432
+Washington,01-04-2020,5608
+Washington,02-04-2020,6389
+Washington,03-04-2020,6846
+Washington,04-04-2020,7247
+Washington,05-04-2020,7825
+Washington,06-04-2020,8311
+Washington,07-04-2020,8692
+Washington,08-04-2020,9276
+Washington,09-04-2020,9639
+Washington,10-04-2020,10119
+Washington,11-04-2020,10434
+Washington,12-04-2020,10609
+Washington,13-04-2020,10635
+Washington,14-04-2020,10799
+Washington,15-04-2020,10942
+Washington,16-04-2020,11057
+Washington,17-04-2020,11517
+Washington,18-04-2020,11776
+Washington,19-04-2020,11978
+Washington,20-04-2020,12114
+Washington,21-04-2020,12392
+Washington,22-04-2020,12596
+Washington,23-04-2020,12753
+Washington,24-04-2020,12977
+Washington,25-04-2020,13319
+Washington,26-04-2020,13521
+Washington,27-04-2020,13686
+Washington,28-04-2020,13842
+Washington,29-04-2020,14070
+Washington,30-04-2020,14327
+Washington,01-05-2020,14637
+Washington,02-05-2020,15003
+Washington,03-05-2020,15185
+Washington,04-05-2020,15462
+Washington,05-05-2020,15594
+Washington,06-05-2020,15905
+Washington,07-05-2020,16231
+Washington,08-05-2020,16388
+Washington,09-05-2020,16674
+Washington,10-05-2020,16891
+Washington,11-05-2020,17122
+Washington,12-05-2020,17330
+Washington,13-05-2020,17512
+Washington,14-05-2020,17773
+West Virginia,18-03-2020,1
+West Virginia,19-03-2020,2
+West Virginia,20-03-2020,8
+West Virginia,21-03-2020,12
+West Virginia,22-03-2020,16
+West Virginia,23-03-2020,16
+West Virginia,24-03-2020,22
+West Virginia,25-03-2020,39
+West Virginia,26-03-2020,52
+West Virginia,27-03-2020,76
+West Virginia,28-03-2020,96
+West Virginia,29-03-2020,113
+West Virginia,30-03-2020,145
+West Virginia,31-03-2020,162
+West Virginia,01-04-2020,191
+West Virginia,02-04-2020,216
+West Virginia,03-04-2020,237
+West Virginia,04-04-2020,282
+West Virginia,05-04-2020,324
+West Virginia,06-04-2020,345
+West Virginia,07-04-2020,412
+West Virginia,08-04-2020,483
+West Virginia,09-04-2020,514
+West Virginia,10-04-2020,574
+West Virginia,11-04-2020,577
+West Virginia,12-04-2020,593
+West Virginia,13-04-2020,611
+West Virginia,14-04-2020,640
+West Virginia,15-04-2020,702
+West Virginia,16-04-2020,728
+West Virginia,17-04-2020,775
+West Virginia,18-04-2020,785
+West Virginia,19-04-2020,890
+West Virginia,20-04-2020,902
+West Virginia,21-04-2020,908
+West Virginia,22-04-2020,939
+West Virginia,23-04-2020,981
+West Virginia,24-04-2020,1010
+West Virginia,25-04-2020,1010
+West Virginia,26-04-2020,1055
+West Virginia,27-04-2020,1063
+West Virginia,28-04-2020,1095
+West Virginia,29-04-2020,1110
+West Virginia,30-04-2020,1125
+West Virginia,01-05-2020,1152
+West Virginia,02-05-2020,1185
+West Virginia,03-05-2020,1195
+West Virginia,04-05-2020,1224
+West Virginia,05-05-2020,1246
+West Virginia,06-05-2020,1242
+West Virginia,07-05-2020,1287
+West Virginia,08-05-2020,1323
+West Virginia,09-05-2020,1323
+West Virginia,10-05-2020,1360
+West Virginia,11-05-2020,1366
+West Virginia,12-05-2020,1378
+West Virginia,13-05-2020,1398
+West Virginia,14-05-2020,1427
+Wisconsin,10-03-2020,3
+Wisconsin,11-03-2020,4
+Wisconsin,12-03-2020,8
+Wisconsin,13-03-2020,19
+Wisconsin,14-03-2020,27
+Wisconsin,15-03-2020,28
+Wisconsin,16-03-2020,48
+Wisconsin,17-03-2020,73
+Wisconsin,18-03-2020,111
+Wisconsin,19-03-2020,159
+Wisconsin,20-03-2020,219
+Wisconsin,21-03-2020,282
+Wisconsin,22-03-2020,381
+Wisconsin,23-03-2020,425
+Wisconsin,24-03-2020,481
+Wisconsin,25-03-2020,621
+Wisconsin,26-03-2020,728
+Wisconsin,27-03-2020,926
+Wisconsin,28-03-2020,1055
+Wisconsin,29-03-2020,1164
+Wisconsin,30-03-2020,1230
+Wisconsin,31-03-2020,1412
+Wisconsin,01-04-2020,1556
+Wisconsin,02-04-2020,1748
+Wisconsin,03-04-2020,2012
+Wisconsin,04-04-2020,2030
+Wisconsin,05-04-2020,2320
+Wisconsin,06-04-2020,2449
+Wisconsin,07-04-2020,2578
+Wisconsin,08-04-2020,2710
+Wisconsin,09-04-2020,2886
+Wisconsin,10-04-2020,3068
+Wisconsin,11-04-2020,3213
+Wisconsin,12-04-2020,3341
+Wisconsin,13-04-2020,3428
+Wisconsin,14-04-2020,3555
+Wisconsin,15-04-2020,3721
+Wisconsin,16-04-2020,3875
+Wisconsin,17-04-2020,4053
+Wisconsin,18-04-2020,4199
+Wisconsin,19-04-2020,4346
+Wisconsin,20-04-2020,4499
+Wisconsin,21-04-2020,4625
+Wisconsin,22-04-2020,4845
+Wisconsin,23-04-2020,5052
+Wisconsin,24-04-2020,5356
+Wisconsin,25-04-2020,5687
+Wisconsin,26-04-2020,5912
+Wisconsin,27-04-2020,6081
+Wisconsin,28-04-2020,6289
+Wisconsin,29-04-2020,6520
+Wisconsin,30-04-2020,6854
+Wisconsin,01-05-2020,7314
+Wisconsin,02-05-2020,7660
+Wisconsin,03-05-2020,7964
+Wisconsin,04-05-2020,8236
+Wisconsin,05-05-2020,8566
+Wisconsin,06-05-2020,8901
+Wisconsin,07-05-2020,9215
+Wisconsin,08-05-2020,9590
+Wisconsin,09-05-2020,9939
+Wisconsin,10-05-2020,10219
+Wisconsin,11-05-2020,10418
+Wisconsin,12-05-2020,10611
+Wisconsin,13-05-2020,10902
+Wisconsin,14-05-2020,11275
+Wyoming,12-03-2020,1
+Wyoming,13-03-2020,1
+Wyoming,14-03-2020,2
+Wyoming,15-03-2020,2
+Wyoming,16-03-2020,2
+Wyoming,17-03-2020,11
+Wyoming,18-03-2020,16
+Wyoming,19-03-2020,18
+Wyoming,20-03-2020,21
+Wyoming,21-03-2020,23
+Wyoming,22-03-2020,26
+Wyoming,23-03-2020,26
+Wyoming,24-03-2020,29
+Wyoming,25-03-2020,44
+Wyoming,26-03-2020,53
+Wyoming,27-03-2020,70
+Wyoming,28-03-2020,82
+Wyoming,29-03-2020,86
+Wyoming,30-03-2020,94
+Wyoming,31-03-2020,109
+Wyoming,01-04-2020,130
+Wyoming,02-04-2020,150
+Wyoming,03-04-2020,162
+Wyoming,04-04-2020,187
+Wyoming,05-04-2020,197
+Wyoming,06-04-2020,210
+Wyoming,07-04-2020,216
+Wyoming,08-04-2020,221
+Wyoming,09-04-2020,230
+Wyoming,10-04-2020,239
+Wyoming,11-04-2020,261
+Wyoming,12-04-2020,270
+Wyoming,13-04-2020,275
+Wyoming,14-04-2020,282
+Wyoming,15-04-2020,287
+Wyoming,16-04-2020,296
+Wyoming,17-04-2020,305
+Wyoming,18-04-2020,309
+Wyoming,19-04-2020,313
+Wyoming,20-04-2020,317
+Wyoming,21-04-2020,443
+Wyoming,22-04-2020,447
+Wyoming,23-04-2020,453
+Wyoming,24-04-2020,473
+Wyoming,25-04-2020,491
+Wyoming,26-04-2020,502
+Wyoming,27-04-2020,520
+Wyoming,28-04-2020,536
+Wyoming,29-04-2020,545
+Wyoming,30-04-2020,559
+Wyoming,01-05-2020,566
+Wyoming,02-05-2020,579
+Wyoming,03-05-2020,586
+Wyoming,04-05-2020,596
+Wyoming,05-05-2020,604
+Wyoming,06-05-2020,631
+Wyoming,07-05-2020,635
+Wyoming,08-05-2020,644
+Wyoming,09-05-2020,653
+Wyoming,10-05-2020,662
+Wyoming,11-05-2020,669
+Wyoming,12-05-2020,675
+Wyoming,13-05-2020,688
+Wyoming,14-05-2020,701
