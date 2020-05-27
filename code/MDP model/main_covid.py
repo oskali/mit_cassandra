@@ -14,7 +14,7 @@ m.fit(df, # csv file name with data OR data frame
         h=5, # time horizon for cross val = n_days/d_avg
         n_iter=70, # number of iterations, gives an upper bound on the #of clusters wanted.
         d_avg=3, # int: number of days to average data over
-        distance_threshold = 0.05, #Tolerated error in each cluster. param to be tuned (range advised: 0.05-0.3)
+        distance_threshold = 0.05) #Tolerated error in each cluster. param to be tuned (range advised: 0.05-0.3)
 
 #prediction fora single state
 m.predict('Maryland',n_days = 15)
