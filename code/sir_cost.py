@@ -12,7 +12,7 @@ def NLL(params, data, times): #negative log likelihood
     data = np.array(data)
     res = ode(sir_ode.model, sir_ode.x0fcn(params,data), times, args =(params,))
     y = sir_ode.yfcn(res, params)
-    #nll = sum((y) - (data*np.log(y)))
+    nll = sum((y) - (data*np.log(y)))
     #nll = -sum(np.log(poisson.pmf(np.round(data),np.round(y))))
-    nll = -sum(np.log(norm.pdf(data,y,0.1*np.mean(data))))
+    #nll = -sum(np.log(norm.pdf(data,y,0.1*np.mean(data))))
     return nll
