@@ -6,6 +6,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.model_selection import GridSearchCV
 import matplotlib.pyplot as plt
+from random import choices
 
 def wmape(y_true, y_pred): 
     y_true, y_pred = np.array(y_true), np.array(y_pred).astype('float')
@@ -15,7 +16,7 @@ def get_in_date_range(dataset, first_date = '2020-01-01', last_date = '2020-12-3
     return dataset.loc[(dataset.Date.astype('datetime64') >= np.datetime64(first_date)) & (dataset.Date.astype('datetime64') < np.datetime64(last_date))]
 
 def mod_date(date, interval):
-    return str(np.datetime64(date) + np.timedelta64(interval, 'D') )
+    return str(np.datetime64(date) + np.timedelta64(interval, 'D'))
 
 def get_weights(arr, threshold = 100):
     return np.apply_along_axis(lambda x: weight_func(x, threshold), 1, arr)
@@ -73,6 +74,25 @@ def rename_features(i, features, memory):
         dictionary[features[j]] = 'GrowthRate_t-' +str(memory-j)
     return dictionary
 
+def transpose_case_df(simple_output, forward_days, day_0):
+
+    dates = []
+    cases = []
+    low_cases = []
+    high_cases = []
+    states = []
+    for i in range(forward_days):
+        date = mod_date(day_0, i)
+
+        dates.extend([date for i in range(len(simple_output))])
+        cases.extend(simple_output['cases_predicted_day_' + str(i)])
+        low_cases.extend(simple_output['cases_low_predicted_day_' + str(i)])
+        high_cases.extend(simple_output['cases_high_predicted_day_' + str(i)])
+        states.extend(simple_output['state'])
+
+    df = pd.DataFrame({'Date':dates,'state': states, 'pred_cases':cases, 'pred_cases_low':low_cases, 'pred_cases_high': high_cases})
+    return df
+
 def get_best_parameters(df, memory, split_date):
     output = []
     features = ['GrowthRate_t-'+ str(i+1) for i in range(memory)]
@@ -100,7 +120,7 @@ def get_best_parameters(df, memory, split_date):
                         output.append([[threshold,n,p,get_weights_sq], wmape(y_test, pred_sq)])
     return output[np.argmin([x[1] for x in output])][0]
 
-def match_to_real_growth(df, threshold, n, p, func, memory, forward_days, prediction_day, split_date):
+def match_to_real_growth(df, threshold, n, p, func, memory, forward_days, day_0, split_date, deterministic):
     #creates a list that we will use with a rolling window. e.g. to predict i=2 (2 days ahead) we have features [GrowthRate_t-5, GrowthRate_t-4,... GrowthRate_t-1, pred_forward_day_0, pred_forward_day_1]
     feature_choices = ['GrowthRate_t-' + str(i) for i in [memory-i for i in range(memory)]] + ['pred_forward_day_' + str(i) for i in range(forward_days)]
 
@@ -117,9 +137,9 @@ def match_to_real_growth(df, threshold, n, p, func, memory, forward_days, predic
             # when we have a specific first_date for each state, we will update the hard coded march 22
 
             
-            # the distinction between in state and out of state only has an effect when the prediction_day is before the split_date
-            #for in state train data, we can use anything before the prediction_day
-            train_data_in_state = get_in_date_range(df.loc[df.state == state],first_date='2020-03-22', last_date = prediction_day)
+            # the distinction between in state and out of state only has an effect when the day_0 is before the split_date
+            #for in state train data, we can use anything before the day_0
+            train_data_in_state = get_in_date_range(df.loc[df.state == state],first_date='2020-03-22', last_date = day_0)
             # for out of state train data, we can use anything before the split_date
             train_data_out_of_state = get_in_date_range(df.loc[df.state != state], first_date='2020-03-22', last_date = split_date)
             
@@ -130,7 +150,7 @@ def match_to_real_growth(df, threshold, n, p, func, memory, forward_days, predic
             y_train = train['GrowthRate']
 
             test_df = previous_final_test.loc[previous_final_test.state == state]
-            test0 = get_in_date_range(test_df, first_date=prediction_day, last_date=mod_date(prediction_day, 1))
+            test0 = get_in_date_range(test_df, first_date=day_0, last_date=mod_date(day_0, 1))
 
             #we create a copy in which we will modify feature names (which include some 'pred_forward_day_x' features) to match the real_features from the train rows (all 'GrowthRate_t-x')
             test = test0.copy(deep = True)
@@ -141,18 +161,33 @@ def match_to_real_growth(df, threshold, n, p, func, memory, forward_days, predic
 
             nn = KNeighborsRegressor(n_neighbors=n, weights = lambda x: func(x, threshold), p=p)
             nn.fit(x_train, y_train)
-            y_pred = nn.predict(x_test)
-            test0['pred_forward_day_'+str(i)] = y_pred # add the new prediction as a new column
+            distances, indexes = nn.kneighbors(x_test)
+            weights = func(distances)[0]
+            # values is the GrowthRate of the n nearest neighbors
+            values = np.array(y_train.iloc[indexes[0]])
 
+            weights_not_zero = np.ma.masked_not_equal(weights, 0.0, copy=False).mask   
+            valid_values = values[weights_not_zero]
+
+
+            test0['pred_high_day_'+str(i)] = max(valid_values)
+            test0['pred_low_day_'+str(i)] = min(valid_values)
+            
+            if deterministic: 
+                y_pred = nn.predict(x_test)
+            else:
+                y_pred = choices(values, weights)
+            test0['pred_forward_day_'+str(i)] = y_pred # add the new prediction as a new column
+            #pred_high_day_i and pred_low_day_i
 #             x_test = x_test.rename(columns = undo_rename(features)) # make sure that original column names are not changed when they are changed in the copy
 
-            current_final_test = pd.concat([current_final_test, test0], sort = True)
+            current_final_test = pd.concat([current_final_test, test0], sort = False)
         previous_final_test = current_final_test
         
-    # after the final iteration, previous_final_test contains predictions for the next forward_days starting from prediction_day
+    # after the final iteration, previous_final_test contains predictions for the next forward_days starting from day_0
     return previous_final_test
 
-def predict_covid(df, memory = 7, forward_days = 7, split_date = '2020-05-01', prediction_day = '2020-05-01', real_GR = False):
+def predict_covid(df, memory = 7, forward_days = 7, split_date = '2020-05-01', day_0 = '2020-05-01', real_GR = False, deterministic = True):
     '''
     everything before split_date is train 
     
@@ -196,25 +231,43 @@ def predict_covid(df, memory = 7, forward_days = 7, split_date = '2020-05-01', p
 #         predictions = match_to_real_growth(df0, threshold, n, p, func, memory, forward_days, split_date, last_test_date)
     
     #we run the method using the best parameters according to the split date
-    predictions = match_to_real_growth(df0, threshold, n, p, func, memory, forward_days, prediction_day, split_date)
+    predictions = match_to_real_growth(df0, threshold, n, p, func, memory, forward_days, day_0, split_date, deterministic)
     
     #we have finished producing predictions, and move on to converting predicted growth rates into predicted cases
     
     #convert growth rates to cumulative growth rates -- here we need to add 1 to each predicted growth rate so that when multiplied they represent growth rate over multiple days
     #the cumulative growth rate over n days starting today = (1+ GR_0) * (1+GR_1) * ... * (1+ GR_n-1)
     predictions['pred_growth_for_next_1days'] = predictions['pred_forward_day_0'] + 1
+    predictions['pred_high_growth_for_next_1days'] = predictions['pred_high_day_0'] + 1
+    predictions['pred_low_growth_for_next_1days'] = predictions['pred_low_day_0'] + 1
+
     for i in range(1,forward_days): 
         predictions['pred_growth_for_next_{}days'.format(i+1)] = predictions['pred_growth_for_next_{}days'.format(i)]*(predictions['pred_forward_day_'+ str(i)] + 1)
+        predictions['pred_high_growth_for_next_{}days'.format(i+1)] = predictions['pred_growth_for_next_{}days'.format(i)]*(predictions['pred_high_day_'+ str(i)] + 1)
+        predictions['pred_low_growth_for_next_{}days'.format(i+1)] = predictions['pred_growth_for_next_{}days'.format(i)]*(predictions['pred_low_day_'+ str(i)] + 1)
     for i in range(forward_days):
         predictions['pred_growth_for_next_{}days'.format(i+1)] = predictions['pred_growth_for_next_{}days'.format(i+1)] - 1
-    
+        predictions['pred_high_growth_for_next_{}days'.format(i+1)] = predictions['pred_high_growth_for_next_{}days'.format(i+1)] - 1
+        predictions['pred_low_growth_for_next_{}days'.format(i+1)] = predictions['pred_low_growth_for_next_{}days'.format(i+1)] - 1
+
     #convert cumulative growth rates to cases
     for i in range(forward_days):
         predictions['cases_predicted_day_' + str(i)] = np.round(predictions['cases_t-1']*(predictions['pred_growth_for_next_{}days'.format(i+1)]+1))
-    
-    columns_to_keep = ['state', 'Date', 'cases'] + ['cases_predicted_day_' + str(i) for i in range(forward_days)]
+        predictions['cases_high_predicted_day_' + str(i)] = np.round(predictions['cases_t-1']*(predictions['pred_high_growth_for_next_{}days'.format(i+1)]+1))
+        predictions['cases_low_predicted_day_' + str(i)] = np.round(predictions['cases_t-1']*(predictions['pred_low_growth_for_next_{}days'.format(i+1)]+1))
+
+    columns_to_keep = ['state', 'Date', 'cases'] + ['cases_predicted_day_' + str(i) for i in range(forward_days)] + ['cases_low_predicted_day_' + str(i) for i in range(forward_days)] + ['cases_high_predicted_day_' + str(i) for i in range(forward_days)]
     simple_output = predictions[columns_to_keep]
+    # print(simple_output.iloc[0])
 
     #transpose simple output to have forward_days*50 rows
+    transposed_simple_output = transpose_case_df(simple_output, forward_days, day_0)
 
-    return simple_output, predictions
+
+    return transposed_simple_output, predictions
+
+
+# test 
+
+# test_df = pd.read_csv('covid_preds/predicted10_cases_for_2020-04-27_split_2020-05-18_samples_10.csv')
+# transpose_case_df(test_df, 10, '2020-04-27').to_csv('test_transpose.csv', index = False)
