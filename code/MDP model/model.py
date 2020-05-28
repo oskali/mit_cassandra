@@ -38,7 +38,7 @@ class MDP_model:
     def fit(self, 
             file, # csv file with data OR data frame
             h=5, # time horizon = n_days/d_avg
-            n_iter=70, # number of iterations
+            n_iter=40, # number of iterations
             d_avg=3, # int: number of days to average data over
             distance_threshold = 0.05, # clustering diameter for Agglomerative clustering
             action_thresh = [], # list of cutoffs for each action bin
@@ -161,9 +161,9 @@ class MDP_model:
 def model_testing(file, # csv file with data OR data frame
             n_days, # int: n_days for prediction (cut the data here)
             h, # time horizon to get best prediction
-            n_iter=50, # number of iterations
+            n_iter=40, # number of iterations
             d_avg=3, # int: number of days to average data over
-            distance_threshold = 0.3, # clustering diameter for Agglomerative clustering
+            distance_threshold = 0.06, # clustering diameter for Agglomerative clustering
             action_thresh = [], # list of cutoffs for each action bin
             cv=5, # number for cross validation
             th=0, # splitting threshold
