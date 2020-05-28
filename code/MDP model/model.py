@@ -117,6 +117,7 @@ class MDP_model:
                         # preferably a multiple of d_avg (default 3)
         
         h = int(np.round(n_days/self.d_avg))
+        delta = n_days - self.d_avg*h
         # get initial cases for the state at the latest datapoint
         cases = self.df[self.df['state']== state].iloc[-1, 2]
         date = self.df[self.df['state']== state].iloc[-1, 1]
@@ -136,8 +137,8 @@ class MDP_model:
             clusters_seq.append(s)
         
         print('Sequence of clusters:', clusters_seq)
-        pred = cases*r
-        print('Prediction for date:', date + timedelta(h*self.d_avg),'| cases:', pred)
+        pred = cases*r*(np.exp(self.R_df.loc[s])**(delta/3))
+        print('Prediction for date:', date + timedelta(n_days),'| cases:', pred)
         return pred
     
         
@@ -150,7 +151,7 @@ class MDP_model:
         df = df[['state','TIME','cases']]
         df = df.groupby('state').last()
         df.reset_index(inplace = True)
-        df['TIME'] = df['TIME'] + timedelta(h*self.d_avg)
+        df['TIME'] = df['TIME'] + timedelta(n_days)
         df['cases'] = df['state'].apply(lambda st: int(self.predict(st,n_days)))
         return df
     
