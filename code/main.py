@@ -1,205 +1,223 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri May 15 18:14:33 2020
+Created on Thu May 28 20:29:42 2020
 
 @author: omars
 """
-#%%
 #############################################################################
-############# Import libraries
-from sklearn.model_selection import train_test_split
-import pandas as pd
+#%%
+# Load Libraries
 import numpy as np
-from utils import (wrangle_clustering, second_stage, read_measures,
-                   matrix_agg_predict, mean_absolute_percentage_error,
-                   print_results)
+import pandas as pd
+import datetime
+import warnings
 from copy import deepcopy
-from datetime import datetime
-import matplotlib.pyplot as plt
+from mdp_model import MDP_model
+from tqdm import tqdm
+from utils import (sir_fit_predict, knn_fit_predict, mean_absolute_percentage_error, alpha, wrapper, cols_to_keep)
+from scipy.stats import norm
+warnings.filterwarnings("ignore")
 #############################################################################
 
+#############################################################################
 #%%
-#############################################################################
-############# Clustering second stage
-df = pd.read_csv(
-        'C:/Users/omars/Desktop/covid19_georgia/covid19_team2/data/output/predictions_over_7_days_20200508.csv') # TODO: change with correct path
-df = wrangle_clustering(
-        df, cols_to_keep=None).dropna()
-
-measures, measures_names = read_measures('C:/Users/omars/Desktop/covid19_georgia/large_data/input/05-14_states_cases_measures_mobility.csv')
-df = df.merge(measures, how='left', left_on=['state', 'Date'], right_on=['state', 'date'])
-#############################################################################
-
-#############################################################################
-############# Define your column names
-## Column name of predicted value of first stage model
-predicted = 'predicted_value_model' + str(6)
-## Column name of true value
-true = 'cases' 
-df = df[df[true] > 100]
-## Column names for the features you want to use in the second stage model
-features= measures_names
-
-############# Which models do you want to test for the second stage?
-ml_models = ['lin', # linear model
-             'elastic', # elastic net
-             'cart',  # cart tree
-             'rf', # random forest
-             'xgb', # xgboost
-             #'xst', # xstrees
-             'linear_svm', # linear svm
-             'kernel_svm'] # kernel svm
+path = 'C:/Users/omars/Desktop/covid19_georgia/large_data/input/'
+file = '05_27_states_combined.csv'
+training_cutoff = '2020-04-30'
+nmin = 20
+deterministic = True
+if deterministic:
+	deterministic_label = ''
+else:
+	deterministic_label = 'markov_'
+run_mdp = False
+sgm = .1
+n_iter_mdp = 2
+n_iter_ci = 10
+ci_range = 0.95
 #############################################################################
 
+#############################################################################
 #%%
+df_orig = pd.read_csv(path + file)
 #############################################################################
-############# Adapt for a per-state model
-all_models = {}
-all_states = sorted(list(set(df['state'])))
-for state in all_states:
-    df_st = df.query('state == @state')
-    # Split into training and testing
-    df_train, df_test = train_test_split(df_st, test_size=0.33, shuffle=False)
-    X_train, y_train, first_stage_train = df_train.loc[:, features], df_train[true] - df_train[predicted], df_train[predicted]
-    X_test, y_test, first_stage_test = df_test.loc[:, features], df_test[true] - df_test[predicted], df_test[predicted]
-    
-    X_train, y_train, first_stage_train = np.array(X_train), np.array(y_train), np.array(first_stage_train)
-    X_test, y_test, first_stage_test = np.array(X_test), np.array(y_test), np.array(first_stage_test)
-    
-    # Automatically get results for the second stage (combined)
-    ## 'results' is the table summarizing the results
-    ## 'model_dict' is the dictionary containing all the trained models.
-    ## e.g. model_dict['lin'] is the trained linear model
-    results, model_dict = second_stage(X_train, y_train, first_stage_train,
-                                       X_test, y_test, first_stage_test,
-                                       ml_models=ml_models)
-    results = results.iloc[1:, :]
-    all_models[state] = model_dict[results.loc[
-        results['Out-of-Sample MAPE'].idxmin(), 'Model']]
-    print(state + ' done')
 
+#############################################################################
+print('Data Wrangling in Progress...')
+df = deepcopy(df_orig)
+df.columns = map(str.lower, df.columns)
+df = df.query('cases >= @nmin')
+df['date'] = df['date'].apply(lambda x: datetime.datetime.strptime(x,'%Y-%m-%d'))
+df = df.sort_values(by = ['state','date'])
+states = sorted(list(set(df['state'])))
+pop_df = df.loc[:, ['state', 'population']]
+pop_dic = {pop_df .iloc[i, 0] : pop_df .iloc[i, 1] for i in range(pop_df .shape[0])}
+
+df_train = df[df['date'] <= training_cutoff]
+df_test = df[df['date'] > training_cutoff]
+
+pred_out = len(set(df_test.date))
+day_0 = str(df_test.date.min())[:10]
+print('Data Wrangling Complete.')
+#############################################################################
+
+#############################################################################
 #%%
-############# Aggregation and results
-df_train, df_test = train_test_split(df, test_size=0.33, shuffle=False)
-X_train, y_train, first_stage_train = df_train.loc[:, ['state'] + features], df_train[true] - df_train[predicted], df_train[predicted]
-X_test, y_test, first_stage_test = df_test.loc[:, ['state'] + features], df_test[true] - df_test[predicted], df_test[predicted]
-X_train, y_train, first_stage_train = np.array(X_train), np.array(y_train), np.array(first_stage_train)
-X_test, y_test, first_stage_test = np.array(X_test), np.array(y_test), np.array(first_stage_test)
-predictions_train = matrix_agg_predict(X_train, all_models)
-predictions_test = matrix_agg_predict(X_test, all_models)
+print('SIR Model Training in Progress...')
+sir_output = sir_fit_predict(df_train, pop_dic, pred_out, nmin)
+sir_output = sir_output.rename(
+    columns={'prediction':'sir_prediction'}).loc[:, ['state','date', 'sir_prediction']]
 
-print_results(X_train, y_train, first_stage_train,
-              X_test, y_test, first_stage_test,
-              predictions_train, predictions_test)
-
-output = deepcopy(df.loc[:, ['state', 'Date'] + features + [true, predicted]])
-output['Clustering + ML'] =  output[predicted] + matrix_agg_predict(np.array(df.loc[:, ['state'] + features]), all_models)
-output = output.rename(columns={"state": "State", true: "True", predicted: "Clustering"})
+df = df.merge(sir_output, how='left', on=['state', 'date'])
+print('SIR Model Complete.')
 #############################################################################
 
-
-
-
-
-
-
-
-
-
+#############################################################################
 #%%
-#############################################################################
-############# Epidemiological second stage
-df = pd.read_csv(
-        'C:/Users/omars/Desktop/covid19_georgia/large_data/output/USA_Cases_Predictions_May_Data_Akarsh.csv') # TODO: change with correct path
+print('kNN Model Training in Progress...')
+knn_output, _ = knn_fit_predict(
+    df=df, memory=7, forward_days=pred_out, split_date =training_cutoff,
+    day_0 = day_0, real_GR=True, deterministic=deterministic)
 
-df['date'] = df['date'].apply(lambda x: datetime.strptime(x, '%d-%m-%Y'))
-df = df.merge(measures, how='left', left_on=['state', 'date'], right_on=['state', 'date'])
-#############################################################################
+knn_output = knn_output.rename(
+    columns={'pred_cases':'knn_prediction'}).loc[:, ['state','date', 'knn_prediction']]
+knn_output['date'] = knn_output['date'].apply(lambda x: datetime.datetime.strptime(x,'%Y-%m-%d'))
 
-#############################################################################
-############# Define your column names
-## Column name of predicted value of first stage model
-predicted = 'predictions'
-## Column name of true value
-true = 'cases' 
-df = df[df[true] > 100]
-df = df[df['date'] >= output.Date.min()]
-df = df[df['date'] <= output.Date.max()]
-## Column names for the features you want to use in the second stage model
-features= measures_names
-
-############# Which models do you want to test for the second stage?
-ml_models = ['lin', # linear model
-             'elastic', # elastic net
-             'cart',  # cart tree
-             'rf', # random forest
-             'xgb', # xgboost
-             #'xst', # xstrees
-             'linear_svm', # linear svm
-             'kernel_svm'] # kernel svm
+df = df.merge(knn_output, how='left', on=['state', 'date'])
+df.knn_prediction = np.where([a and b for a, b in zip(df.knn_prediction.isnull(), df.date <= training_cutoff)], df.cases, df.knn_prediction)
+print('kNN Model Complete.')
 #############################################################################
 
+#############################################################################
 #%%
-#############################################################################
-############# Adapt for a per-state model
-all_models = {}
-all_states = sorted(list(set(df['state'])))
-for state in all_states:
-    df_st = df.query('state == @state')
-    # Split into training and testing
-    df_train, df_test = train_test_split(df_st, test_size=0.33, shuffle=False)
-    X_train, y_train, first_stage_train = df_train.loc[:, features], df_train[true] - df_train[predicted], df_train[predicted]
-    X_test, y_test, first_stage_test = df_test.loc[:, features], df_test[true] - df_test[predicted], df_test[predicted]
-    
-    X_train, y_train, first_stage_train = np.array(X_train), np.array(y_train), np.array(first_stage_train)
-    X_test, y_test, first_stage_test = np.array(X_test), np.array(y_test), np.array(first_stage_test)
-    
-    # Automatically get results for the second stage (combined)
-    ## 'results' is the table summarizing the results
-    ## 'model_dict' is the dictionary containing all the trained models.
-    ## e.g. model_dict['lin'] is the trained linear model
-    results, model_dict = second_stage(X_train, y_train, first_stage_train,
-                                       X_test, y_test, first_stage_test,
-                                       ml_models=ml_models)
-    results = results.iloc[1:, :]
-    all_models[state] = model_dict[results.loc[
-        results['Out-of-Sample MAPE'].idxmin(), 'Model']]
-    print(state + ' done')
+if run_mdp:
+    print('MDP Model Training in Progress...')
+    df_train = df_orig[df_orig['date'] <= training_cutoff].drop(columns='people_tested').dropna(axis=0)
 
+    mdp = MDP_model()
+    mdp.fit(df_train,
+            h=5,
+            n_iter=n_iter_mdp,
+            d_avg=3,
+            distance_threshold = 0.05)
+
+    mdp_output = pd.DataFrame()
+    for i in range(pred_out):
+        mdp_output = mdp_output.append(mdp.predict_all(n_days=i))
+
+    mdp_output = mdp_output.rename(columns={'TIME': 'date', 'cases':'mdp_prediction'}).loc[:, ['state','date', 'mdp_prediction']]
+
+    df = df.merge(mdp_output, how='left', on=['state', 'date'])
+    df.mdp_prediction = np.where([a and b for a, b in zip(df.mdp_prediction.isnull(), df.date <= training_cutoff)], df.cases, df.mdp_prediction)
+    print('MDP Model Complete.')
+else:
+    print('MDP Model Skipped.')
+#############################################################################
+
+#############################################################################
 #%%
-############# Aggregation and results
-df_train, df_test = train_test_split(df, test_size=0.33, shuffle=False)
-X_train, y_train, first_stage_train = df_train.loc[:, ['state'] + features], df_train[true] - df_train[predicted], df_train[predicted]
-X_test, y_test, first_stage_test = df_test.loc[:, ['state'] + features], df_test[true] - df_test[predicted], df_test[predicted]
-X_train, y_train, first_stage_train = np.array(X_train), np.array(y_train), np.array(first_stage_train)
-X_test, y_test, first_stage_test = np.array(X_test), np.array(y_test), np.array(first_stage_test)
-predictions_train = matrix_agg_predict(X_train, all_models)
-predictions_test = matrix_agg_predict(X_test, all_models)
+print('Training Weights for the Aggregated Model...')
+df_test = df[df['date'] > training_cutoff].dropna()
+states_test = set(df_test.state)
 
-print_results(X_train, y_train, first_stage_train,
-              X_test, y_test, first_stage_test,
-              predictions_train, predictions_test)
+sir_mape, knn_mape, mdp_mape = {}, {}, {}
+for state in states_test:
+    sub = df_test.query('state == @state')
+    sir_mape[state] = mean_absolute_percentage_error(sub.cases, sub.sir_prediction)
+    knn_mape[state] = mean_absolute_percentage_error(sub.cases, sub.knn_prediction)
+    if run_mdp:
+        mdp_mape[state] = mean_absolute_percentage_error(sub.cases, sub.mdp_prediction)
 
-df['Epidemiological + ML'] = df[predicted] + matrix_agg_predict(np.array(df.loc[:, ['state'] + features]), all_models)
-df = df.loc[:, ['state', 'date', predicted, 'Epidemiological + ML']]
-df = df.rename(columns={predicted: 'Epidemiological'})
-output = output.merge(df, how='left', left_on=['State', 'Date'], right_on=['state', 'date'])
-output = output.dropna().drop(columns=['state', 'date'])
-output.to_csv('C:/Users/omars/Desktop/covid19_georgia/large_data/output/2stage_results.csv')
+if run_mdp:
+    weights = {state: np.array([(1/sir_mape[state]), (1/knn_mape[state]), (1/mdp_mape[state])])/((1/sir_mape[state])+(1/knn_mape[state])+(1/mdp_mape[state])) for state in states_test}
+else:
+    weights = {state: np.array([(1/sir_mape[state]), (1/knn_mape[state])])/((1/sir_mape[state])+(1/knn_mape[state])) for state in states_test}
+
+df = df.reset_index()
+
+if run_mdp:
+    df['agg_prediction'] = [weights[df.state[i]][0]*df.sir_prediction[i] + weights[df.state[i]][1]*df.knn_prediction[i] + weights[df.state[i]][2]*df.mdp_prediction[i] if df.state[i] in weights.keys() else df.knn_prediction[i] for i in range(len(df))]
+else:
+     df['agg_prediction'] = [weights[df.state[i]][0]*df.sir_prediction[i] + weights[df.state[i]][1]*df.knn_prediction[i] if df.state[i] in weights.keys() else df.knn_prediction[i] for i in range(len(df))]
+
+print('Aggregated Model Complete.')
 #############################################################################
 
+#############################################################################
 #%%
+print('Computing Prevalence...')
+df['prevalence'] = [(cases/tests)*population*alpha(tests/population) for cases, tests, population in zip(df['cases'], df['people_tested'], df['population'])]
+print('Prevalence Computed.')
 #############################################################################
-state = 'Texas'
-model = 'Clustering'
-train_date = df_train['date'].iloc[-1]
-df_st = output.query('State == @state')
-plt.plot(df_st['Date'], df_st['True'],  label= 'True value')
-plt.plot(df_st['Date'], df_st[model],  label= '1-stage ' + model + ' model')
-plt.plot(df_st['Date'], df_st[model + ' + ML'], label= '2-stage ' + model + ' model')
-plt.axvline(x=train_date, linestyle='--', color='red')
-plt.xticks(rotation=45)
-plt.legend()
-print('1-stage ' + model + ' model MAPE: ' + str(mean_absolute_percentage_error(df_st['True'], df_st[model])))
-print('2-stage ' + model + ' MAPE: ' + str(mean_absolute_percentage_error(df_st['True'], df_st[model + ' + ML'])))
+
 #############################################################################
+#%%
+print('Exporting Results...')
+df.to_csv('C:/Users/omars/Desktop/df.csv')
+finalDf = deepcopy(df)
+print('Results Saved.')
+#############################################################################
+
+#############################################################################
+#%%
+print('Computing Confidence Intervals...')
+df = deepcopy(df_orig)
+df.columns = map(str.lower, df.columns)
+df = df.query('cases >= @nmin')
+df.groupby(['state', 'date']).first().reset_index()
+df['date'] = df['date'].apply(lambda x: datetime.datetime.strptime(x,'%Y-%m-%d'))
+df = df.sort_values(by = ['state','date']).reset_index()
+n = df.shape[0]
+states = sorted(list(set(df['state'])))
+pop_df = df.loc[:, ['state', 'population']]
+pop_dic = {pop_df .iloc[i, 0] : pop_df .iloc[i, 1] for i in range(pop_df .shape[0])}
+
+sirl, knnl, mdpl, aggl = {i: [] for i in range(n)}, {i: [] for i in range(n)}, {i: [] for i in range(n)}, {i: [] for i in range(n)}
+for _ in tqdm(range(n_iter_ci)):
+    df['new_cases'] = (df['cases'] - df.groupby(['state'])['cases'].shift(1)).apply(lambda x: (1+ 0.1*np.random.randn())*x)
+    df['new_cases'] = np.where(df.new_cases.isnull(), df.cases, df.new_cases)
+    df['cases'] = df.groupby('state')['new_cases'].cumsum()
+
+    sirp, knnp, mdpp, aggp = wrapper(df_orig,
+                                     df,
+                                     training_cutoff,
+                                     pop_dic,
+                                     weights,
+                                     nmin=nmin,
+                                     n_iter_mdp=n_iter_mdp,
+                                     deterministic=deterministic,
+                                     run_mdp=run_mdp)
+
+    for i in range(n):
+        sirl[i].append(list(sirp)[i])
+        knnl[i].append(list(knnp)[i])
+        mdpl[i].append(list(mdpp)[i])
+        aggl[i].append(list(aggp)[i])
+
+
+
+df['sir_ci'] = [norm.interval(ci_range, loc=np.nanmean(sirl[i]), scale=np.nanstd(sirl[i])) for i in range(n)]
+df['knn_ci'] = [norm.interval(ci_range, loc=np.nanmean(knnl[i]), scale=np.nanstd(knnl[i])) for i in range(n)]
+df['mdp_ci'] = [norm.interval(ci_range, loc=np.nanmean(mdpl[i]), scale=np.nanstd(mdpl[i])) for i in range(n)]
+df['agg_ci'] = [norm.interval(ci_range, loc=np.nanmean(aggl[i]), scale=np.nanstd(aggl[i])) for i in range(n)]
+
+finalDf = finalDf.merge(df.loc[:, ['state',
+                         'date',
+                         'sir_ci',
+                         'knn_ci',
+                         'mdp_ci',
+                         'agg_ci']] ,how='left', on=['state', 'date'])
+
+for model_str in ['sir', 'knn', 'mdp', 'agg']:
+    finalDf[model_str + '_lower'] = finalDf[model_str + '_ci'].apply(lambda x: x[0])
+    finalDf[model_str + '_upper'] = finalDf[model_str + '_ci'].apply(lambda x: x[1])
+
+
+finalDf = finalDf.loc[:, cols_to_keep]
+print('Confidence Intervals Computed')
+#############################################################################
+
+
+
+
+

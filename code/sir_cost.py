@@ -1,9 +1,6 @@
 import numpy as np
 #import import_ipynb
 import sir_ode
-import sir_cost
-from scipy.stats import poisson
-from scipy.stats import norm
 
 from scipy.integrate import odeint as ode
 
