@@ -34,7 +34,7 @@ run_mdp = False
 sgm = .1
 n_iter_mdp = 2
 n_iter_ci = 10
-ci_range = 0.95
+ci_range = 0.75
 #############################################################################
 
 #############################################################################
@@ -146,7 +146,15 @@ print('Aggregated Model Complete.')
 #############################################################################
 #%%
 print('Computing Prevalence...')
-df['prevalence'] = [(cases/tests)*population*alpha(tests/population) for cases, tests, population in zip(df['cases'], df['people_tested'], df['population'])]
+df['daily_prevalence'] = [(cases/tests)*population*alpha(tests/population) if new_tests != 0 else np.nan for cases, tests, population, new_tests in zip((df['cases'] - df.groupby(['state'])['cases'].shift(1)), df['people_tested'], df['population'], (df['people_tested'] - df.groupby(['state'])['people_tested'].shift(1)))]
+df['prevalence'] = np.where(df.daily_prevalence.isnull(), df.cases - df.groupby(['state'])['cases'].shift(1), df.daily_prevalence)
+df['prevalence'] = df.groupby(['state'])['prevalence'].cumsum()
+# df = df.sort_values(['state', 'date'])
+# df['prevalence'] = [(float(cases)/tests)*population*alpha(tests/population, p=0, q=1) for cases, tests, population in zip(df['cases'], df['people_tested'], df['population'])]
+
+# del finalDf['prevalence']
+# finalDf = finalDf.merge(df.loc[:, ['state', 'date', 'prevalence']], how='left', on=['state', 'date'])
+# finalDf.to_csv('C:/Users/omars/Desktop/df_bis.csv')
 print('Prevalence Computed.')
 #############################################################################
 
@@ -160,7 +168,7 @@ print('Results Saved.')
 
 #############################################################################
 #%%
-print('Computing Confidence Intervals...')
+print('Computing Confidence Intervals... (1/2)')
 df = deepcopy(df_orig)
 df.columns = map(str.lower, df.columns)
 df = df.query('cases >= @nmin')
@@ -214,9 +222,31 @@ for model_str in ['sir', 'knn', 'mdp', 'agg']:
 
 
 finalDf = finalDf.loc[:, cols_to_keep]
-print('Confidence Intervals Computed')
+print('Confidence Intervals Computed. (1/2)')
 #############################################################################
 
+#############################################################################
+#%%
+print('Computing Confidence Intervals... (2/2)')
+df = deepcopy(finalDf)
+states = sorted(list(set(df['state'])))
+df_test = df.query('date > @training_cutoff')
+models = ['sir', 'knn', 'mdp', 'agg']
+for model in models:
+    finalDf[model + '_per_residuals'] = (finalDf['cases'] - finalDf[model + '_prediction'])/(finalDf[model+ '_prediction'])
+    globals()[model + '_grouped'] = finalDf.groupby('state').agg({model+ '_per_residuals': ['mean', 'std']})
+
+dicGrouped = {(model, state): norm.interval(ci_range, loc=globals()[model + '_grouped'].loc[state,:].iloc[0], scale=globals()[model + '_grouped'].loc[state,:].iloc[1]) for model in models for state in states}
+
+for model in models:
+    finalDf[model + '_lower'] = [(1+dicGrouped[(model, state)][0])*prediction for state, prediction in zip(finalDf['state'], finalDf[model + '_prediction'])]
+    finalDf[model + '_upper'] = [(1+dicGrouped[(model, state)][1])*prediction for state, prediction in zip(finalDf['state'], finalDf[model + '_prediction'])]
+
+
+finalDf = finalDf.loc[:, cols_to_keep]
+finalDf = finalDf.sort_values(['state', 'date'])
+print('Confidence Intervals Computed. (2/2)')
+#############################################################################
 
 
 
