@@ -30,9 +30,9 @@ if deterministic:
 	deterministic_label = ''
 else:
 	deterministic_label = 'markov_'
-run_mdp = False
+run_mdp = True
 sgm = .1
-n_iter_mdp = 2
+n_iter_mdp = 50
 n_iter_ci = 10
 ci_range = 0.75
 #############################################################################
@@ -99,7 +99,7 @@ if run_mdp:
             h=5,
             n_iter=n_iter_mdp,
             d_avg=3,
-            distance_threshold = 0.05)
+            distance_threshold = 0.1)
 
     mdp_output = pd.DataFrame()
     for i in range(pred_out):
