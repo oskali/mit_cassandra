@@ -59,7 +59,7 @@ class MDP_model:
         self.d_avg = d_avg
 
         # run cross validation on the data to find best clusters
-        list_training_error,list_testing_error,df_new,df_test =fit_CV(df,
+        cv_training_error,cv_testing_error=fit_CV(df,
                                               pfeatures,
                                               th,
                                               clustering,
@@ -73,13 +73,17 @@ class MDP_model:
                                               cv=cv)
 
         # find the best cluster
-        cv_testing_error = np.mean(np.array(list_testing_error),axis=0)
-        it = max(1 ,np.argmin(cv_testing_error))
+        try:
+            k = cv_testing_error.idxmin()
+            self.CV_error = cv_testing_error.loc[k]
+        except:
+            k = n_iter
+        self.opt_k = k
         if self.verbose:
-            print('minimum iterations:', it) # this is iterations, but should be cluster
+            print('minimum iterations:', k)
 
         # error corresponding to chosen model
-        self.CV_error = cv_testing_error[it]
+        
 
         # actual training on all the data
         df_init = initializeClusters(self.df,
@@ -94,7 +98,7 @@ class MDP_model:
                                           df_test = None,
                                           testing = False,
                                           classification=classification,
-                                          it = it,
+                                          it = k,
                                           h=h,
                                           OutputFlag = 0)
 
@@ -169,7 +173,7 @@ def model_testing(file, # csv file with data OR data frame
             h, # time horizon to get best prediction
             n_iter=40, # number of iterations
             d_avg=3, # int: number of days to average data over
-            distance_threshold = 0.06, # clustering diameter for Agglomerative clustering
+            distance_threshold = 0.1, # clustering diameter for Agglomerative clustering
             action_thresh = [], # list of cutoffs for each action bin
             cv=5, # number for cross validation
             th=0, # splitting threshold
@@ -192,7 +196,7 @@ def model_testing(file, # csv file with data OR data frame
     m = MDP_model()
     m.fit(df_train, # csv file with data OR data frame
             h, # time horizon
-            n_iter, # number of iterations
+            n_iter, # max # of clusters
             d_avg, # int: number of days to average data over
             distance_threshold, # clustering diameter for Agglomerative clustering
             action_thresh, # list of cutoffs for each action bin

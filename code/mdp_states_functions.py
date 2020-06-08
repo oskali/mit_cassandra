@@ -15,6 +15,7 @@ Created on Sun April 7 18:51:20 2020
 import pandas as pd
 import numpy as np
 import matplotlib as plt
+import random
 # from tqdm import tqdm #progress bar
 import binascii
 from copy import deepcopy
@@ -23,11 +24,13 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, GroupKFold
 #from xgboost import XGBClassifier
 from collections import Counter
 from itertools import groupby
 from operator import itemgetter
+from datetime import datetime
+
 from mdp_testing import *
 #############################################################################
 
@@ -161,7 +164,7 @@ def split_train_test_by_id(data, # dataframe: all the data
 def initializeClusters(df,  # pandas dataFrame: MUST contain a "RISK" column
                        clustering='Agglomerative',  # string: clustering algorithm
                        n_clusters= None,
-                       distance_threshold= 0.3,# number of clusters
+                       distance_threshold= 0.1,# number of clusters
                        random_state=0):  # random seed for the clustering
     df = df.copy()
     if clustering == 'KMeans':
@@ -314,11 +317,11 @@ def splitter(df,  # pandas dataFrame
              df_test = None,
              testing = False,
              classification='LogisticRegression',  # string: classification alg
-             it=6, # integer: max number of iterations
+             it=6, # integer: max number of clusters
              h=5,
              OutputFlag = 1,
              n=-1,
-             plot = True):  #If we plot error
+             plot = False):  #If we plot error
     # initializing lists for error & accuracy data
     training_R2 = []
     testing_R2 = []
@@ -331,7 +334,7 @@ def splitter(df,  # pandas dataFrame
     df_new = deepcopy(df)
 
     # Setting progress bar--------------
-    split_bar = range(it)
+    split_bar = range(it-k)
     # split_bar.set_description("Splitting...")
     # Setting progress bar--------------
     for i in split_bar:
@@ -385,6 +388,8 @@ def splitter(df,  # pandas dataFrame
             nc += 1
         if not cont:
             break
+        if nc >= it:
+            break
     #if OutputFlag == 1:
         #print(df_new.groupby(['CLUSTER', 'OG_CLUSTER'])['ACTION'].count())
 
@@ -419,7 +424,15 @@ def splitter(df,  # pandas dataFrame
         ax2.set_title('MAPE error by number of clusters')
         ax2.legend()
         plt.show()
-
+    
+    
+    df_train_error = pd.DataFrame(list(zip(its, training_error)), \
+                                  columns = ['Clusters', 'Error'])
+    if testing:
+        df_test_error = pd.DataFrame(list(zip(its, testing_error)), \
+                                  columns = ['Clusters', 'Error'])
+        return (df_new,df_train_error,df_test_error)
+    
     return(df_new,training_error,testing_error)
 
 #############################################################################
@@ -435,22 +448,29 @@ def fit_CV(df,
           random_state,
           h=5,
           OutputFlag = 0,
-          n=-1,
           cv=5,
-          plot = True):
+          n=-1,
+          plot = False):
 
-    list_training_error = []
-    list_testing_error = []
-    data_size = df['ID'].max()
+    df_training_error = pd.DataFrame(columns=['Clusters'])
+    df_testing_error = pd.DataFrame(columns=['Clusters'])
     testing_errors = []
+    
+    gkf = GroupKFold(n_splits=cv)
 
-    cv_bar = range(cv)
+    # shuffle ID's and create a new column 'ID_shuffle'
+    random.seed(datetime.now())
+    g = [df for _, df in df.groupby('ID')]
+    random.shuffle(g)
+    df = pd.concat(g).reset_index(drop=True)
+    ids = df.groupby(['ID'], sort=False).ngroup()
+    df['ID_shuffle'] = ids
     # cv_bar.set_description("Cross-Validation...")
-    for i in cv_bar:
+    for train_idx, test_idx in gkf.split(df, y=None, groups=df['ID_shuffle']):
         # cv_bar.set_description("Cross-Validation... | Test set # %i" %i)
 
-        df_test = df[(df['ID']<(i+1)*data_size//cv) & (df['ID']>=i*data_size//cv)] #WARNING last datapoint not included
-        df_train = df[~((df['ID']<(i+1)*data_size//cv) & (df['ID']>=i*data_size//cv))]
+        df_train = df[df.index.isin(train_idx)]
+        df_test = df[df.index.isin(test_idx)]
         #################################################################
         # Initialize Clusters
         df_init = initializeClusters(df_train,
@@ -475,32 +495,47 @@ def fit_CV(df,
                                           OutputFlag = 0,
                                           n=n,
                                           plot = plot)
-        list_training_error.append(np.array(training_error))
-        list_testing_error.append(np.array(testing_error))
+        df_training_error = df_training_error.merge(training_error, \
+                                                    how='outer', on=['Clusters'])
+        df_testing_error = df_testing_error.merge(testing_error, \
+                                                  how='outer', on=['Clusters'])
 
         m = predict_cluster(df_new, pfeatures)
         df_err, E_v = error_per_ID(df_test, df_new, m, pfeatures, relative=True, h=h)
         testing_errors.append(df_err)
 
-    cv_training_error = np.mean(np.array(list_training_error),axis=0)
-    cv_testing_error = np.mean(np.array(list_testing_error),axis=0)
+    df_training_error.set_index('Clusters', inplace=True)
+    df_testing_error.set_index('Clusters', inplace=True)
+    df_training_error.dropna(inplace=True)
+    df_testing_error.dropna(inplace=True)
+    #print(df_training_error)
+    #print(df_testing_error)
+    cv_training_error = np.mean(df_training_error, axis=1)
+    cv_testing_error = np.mean(df_testing_error, axis=1)
+    #print(cv_training_error)
+    #print(cv_testing_error)
+    
+    
+    if plot:
+        fig1, ax1 = plt.subplots()
+        #its = np.arange(k+1,k+1+len(cv_training_error))
+        ax1.plot(cv_training_error.index.values, cv_training_error, label= "CV Training Error")
+        #ax1.plot(its, cv_testing_error, label = "CV Testing Error")
+        ax1.plot(cv_testing_error.index.values, cv_testing_error, label= "CV Testing Error")
+        #ax1.plot(its, training_acc, label = "Training Accuracy")
+        #ax1.plot(its, testing_acc, label = "Testing Accuracy")
+        if n>0:
+            ax1.axvline(x=n,linestyle='--',color='r') #Plotting vertical line at #cluster =n
+        ax1.set_ylim(0)
+        ax1.set_xlabel('# of Clusters')
+        ax1.set_ylabel('Mean CV Error or Accuracy %')
+        ax1.set_title('Mean CV Error and Accuracy During Splitting')
+        ax1.legend()
+    
+    #for t in testing_errors:
+    #    print(t)
+    
+    return (cv_training_error,cv_testing_error)
 
-    fig1, ax1 = plt.subplots()
-    its = np.arange(k+1,k+1+len(cv_training_error))
-    ax1.plot(its, cv_training_error, label= "CV Training Error")
-    ax1.plot(its, cv_testing_error, label = "CV Testing Error")
-#    ax1.plot(its, training_acc, label = "Training Accuracy")
-#    ax1.plot(its, testing_acc, label = "Testing Accuracy")
-    if n>0:
-        ax1.axvline(x=n,linestyle='--',color='r') #Plotting vertical line at #cluster =n
-    ax1.set_ylim(0,1)
-    ax1.set_xlabel('# of Clusters')
-    ax1.set_ylabel('Mean CV Error or Accuracy %')
-    ax1.set_title('Mean CV Error and Accuracy During Splitting')
-    ax1.legend()
-
-    # for t in testing_errors:
-        # print(t)
-
-    return (list_training_error,list_testing_error,df_new, df_test)
+    #return (list_training_error,list_testing_error,df_new, df_test)
 #############################################################################
