@@ -1,6 +1,6 @@
 import numpy as np
 #import import_ipynb
-import sir_ode
+import sir_ode_dummy as sir_ode
 
 from scipy.integrate import odeint as ode
 
