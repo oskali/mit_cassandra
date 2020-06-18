@@ -84,7 +84,7 @@ def rename_features(i, features, memory):
         dictionary[features[j]] = 'GrowthRate_t-' +str(memory-j)
     return dictionary
 
-def transpose_case_df(simple_output, forward_days, day_0):
+def transpose_case_df(simple_output, forward_days, day_0, target='cases'):
 
     dates = []
     cases = []
@@ -95,12 +95,12 @@ def transpose_case_df(simple_output, forward_days, day_0):
         date = mod_date(day_0, i)
 
         dates.extend([date for i in range(len(simple_output))])
-        cases.extend(simple_output['cases_predicted_day_' + str(i)])
-        low_cases.extend(simple_output['cases_low_predicted_day_' + str(i)])
-        high_cases.extend(simple_output['cases_high_predicted_day_' + str(i)])
+        cases.extend(simple_output[target+ '_predicted_day_' + str(i)])
+        low_cases.extend(simple_output[target+'_low_predicted_day_' + str(i)])
+        high_cases.extend(simple_output[target+'_high_predicted_day_' + str(i)])
         states.extend(simple_output['state'])
 
-    df = pd.DataFrame({'date':dates,'state': states, 'pred_cases':cases, 'pred_cases_low':low_cases, 'pred_cases_high': high_cases})
+    df = pd.DataFrame({'date':dates,'state': states, 'pred_'+target:cases, 'pred_'+target+'_low':low_cases, 'pred_'+target+'_high': high_cases})
     return df
 
 def get_best_parameters(df, memory, split_date):
@@ -211,13 +211,13 @@ def predict_covid(df, memory = 7, forward_days = 7, split_date = '2020-05-01', d
     df0 = df0.loc[~df0['state'].isin(['West Virginia','District of Columbia','Puerto Rico','American Samoa', 'Diamond Princess','Grand Princess','Guam','Northern Mariana Islands','Virgin Islands'])]
 
     df0 = df0.sort_values(by=['state', 'date']) #has to be sorted by days to create growth rates
-    df0['GrowthRate'] = (df0.groupby('state')['cases'].shift(0) / df0['cases'].shift(1) - 1) #group by state so that consecutive rows are consecutive days in a single state
+    df0['GrowthRate'] = (df0.groupby('state')[target].shift(0) / df0[target].shift(1) - 1) #group by state so that consecutive rows are consecutive days in a single state
 
     #create the t-1 to t-memory growth rates
     for i in range(memory):
         df0['GrowthRate_t-' + str(i+1)] = df0.groupby('state')['GrowthRate'].shift(i+1)
 
-    df0['cases_t-1'] = df0['cases'].shift(1)
+    df0[target+'_t-1'] = df0[target].shift(1)
 
     #this is used only if we are using the alternate method where we run nearest neighbors on predictions in the train set
     if real_GR:
@@ -225,7 +225,7 @@ def predict_covid(df, memory = 7, forward_days = 7, split_date = '2020-05-01', d
             df0['GrowthRate_t+' + str(i)] = df0.groupby('state')['GrowthRate'].shift(-i)
 
         for i in range(forward_days):
-            df0['actual_growth_for_next_{}days'.format(i+1)] = (df0['cases'].shift(-i)/df0['cases'].shift(1)) - 1
+            df0['actual_growth_for_next_{}days'.format(i+1)] = (df0[target].shift(-i)/df0[target].shift(1)) - 1
     '''
     threshold: multiplier on the nearest distance that we cut off at when assigning weights, e.g. a point outside the threshold gets a weight of 0
     n: maximum number of nearest neighbors
@@ -263,16 +263,16 @@ def predict_covid(df, memory = 7, forward_days = 7, split_date = '2020-05-01', d
 
     #convert cumulative growth rates to cases
     for i in range(forward_days):
-        predictions['cases_predicted_day_' + str(i)] = np.round(predictions['cases_t-1']*(predictions['pred_growth_for_next_{}days'.format(i+1)]+1))
-        predictions['cases_high_predicted_day_' + str(i)] = np.round(predictions['cases_t-1']*(predictions['pred_high_growth_for_next_{}days'.format(i+1)]+1))
-        predictions['cases_low_predicted_day_' + str(i)] = np.round(predictions['cases_t-1']*(predictions['pred_low_growth_for_next_{}days'.format(i+1)]+1))
+        predictions[target+'_predicted_day_' + str(i)] = np.round(predictions[target+'_t-1']*(predictions['pred_growth_for_next_{}days'.format(i+1)]+1))
+        predictions[target+'_high_predicted_day_' + str(i)] = np.round(predictions[target+'_t-1']*(predictions['pred_high_growth_for_next_{}days'.format(i+1)]+1))
+        predictions[target+'_low_predicted_day_' + str(i)] = np.round(predictions[target+'_t-1']*(predictions['pred_low_growth_for_next_{}days'.format(i+1)]+1))
 
-    columns_to_keep = ['state', 'date', 'cases'] + ['cases_predicted_day_' + str(i) for i in range(forward_days)] + ['cases_low_predicted_day_' + str(i) for i in range(forward_days)] + ['cases_high_predicted_day_' + str(i) for i in range(forward_days)]
+    columns_to_keep = ['state', 'date', target] + [target+'_predicted_day_' + str(i) for i in range(forward_days)] + [target+'_low_predicted_day_' + str(i) for i in range(forward_days)] + [target+'_high_predicted_day_' + str(i) for i in range(forward_days)]
     simple_output = predictions[columns_to_keep]
     # print(simple_output.iloc[0])
 
     #transpose simple output to have forward_days*50 rows
-    transposed_simple_output = transpose_case_df(simple_output, forward_days, day_0)
+    transposed_simple_output = transpose_case_df(simple_output, forward_days, day_0, target)
 
 
     return transposed_simple_output, predictions
