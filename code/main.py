@@ -34,7 +34,7 @@ else:
 	deterministic_label = 'markov_'
 run_sir = True
 run_knn = True
-run_mdp = False
+run_mdp = True
 run_scnd = True
 target = 'deaths'
 
@@ -117,10 +117,14 @@ else:
 #%%
 if run_mdp:
     print('MDP Model Training in Progress...')
-    df_train = df_orig[df_orig['date'] <= training_cutoff].drop(columns='people_tested').dropna(axis=0)
-
+    #df_train = df_orig[df_orig['date'] <= training_cutoff].drop(columns='people_tested').dropna(axis=0)
+    df_train = df_orig[df_orig['date'] <= training_cutoff]
     mdp = MDP_model()
     mdp.fit(df_train,
+            target_col = target, # str: col name of target (i.e. 'deaths')
+            region_col = 'state', # str, col name of region (i.e. 'state')
+            date_col = 'date', # str, col name of time (i.e. 'date')
+            features_cols = ['distance', 'home_time'], # list of strs: feature columns
             h=5,
             n_iter=n_iter_mdp,
             d_avg=3,
@@ -130,7 +134,7 @@ if run_mdp:
     for i in range(pred_out):
         mdp_output = mdp_output.append(mdp.predict_all(n_days=i))
 
-    mdp_output = mdp_output.rename(columns={'TIME': 'date', 'cases':'mdp_prediction'}).loc[:, ['state','date', 'mdp_prediction']]
+    mdp_output = mdp_output.rename(columns={'TIME': 'date', target:'mdp_prediction'}).loc[:, ['state','date', 'mdp_prediction']]
 
     df = df.merge(mdp_output, how='left', on=['state', 'date'])
     df.mdp_prediction = np.where([a and b for a, b in zip(df.mdp_prediction.isnull(), df.date <= training_cutoff)], df.cases, df.mdp_prediction)

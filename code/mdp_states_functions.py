@@ -49,18 +49,30 @@ from mdp_testing import *
 # returns new dataframe with only the desired columns, number of features considered, end date of dataset
 def createSamples(df,#, # dataframe: original full dataframe
                   #new_cols, # str list: names of columns to be considered
+                  target_col, # str: col name of target (i.e. 'deaths')
+                  region_col, # str, col name of region (i.e. 'state')
+                  date_col, # str, col name of time (i.e. 'date')
+                  features_cols, # list of str: i.e. (['mobility', 'testing'])
                   action_thresh, # int list: defining size of jumps in stringency
                   #d_delay, # int: day lag before calculating death impact
                   d_avg): # int: # of days to average when reporting death
-    df = df[df['state']!='Guam']
-    df = df[df['state']!='Northern Mariana Islands']
-    df = df[df['state']!='Puerto Rico']
+    
+    df.rename(columns={date_col: 'TIME'}, inplace = True)
+    df = df[df[region_col]!='Guam']
+    df = df[df[region_col]!='Northern Mariana Islands']
+    df = df[df[region_col]!='Puerto Rico']
+    df = df[df[region_col]!='Diamond Princess']
+    df = df[df[region_col]!='Grand Princess']
+    df = df[df[region_col]!='American Samoa']
+    df = df[df[region_col]!='Virgin Islands']
+    
 
-    new_cols = ['state', 'date', 'cases', 'mobility_score']
+    #new_cols = ['state', 'date', 'cases', 'mobility_score']
+    new_cols = [region_col] + ['TIME'] + [target_col] + features_cols
     df_new = df[new_cols]
 
-    df_new.rename(columns = {df_new.columns[1]: 'TIME'}, inplace = True)
-    ids = df_new.groupby(['state']).ngroup()
+    #df_new.rename(columns = {df_new.columns[1]: 'TIME'}, inplace = True)
+    ids = df_new.groupby([region_col]).ngroup()
     df_new.insert(0, 'ID', ids, True)
 
     #print(df.columns)
@@ -84,7 +96,7 @@ def createSamples(df,#, # dataframe: original full dataframe
     cols = df_new.columns
     #print('cols', cols)
     dictio = {i:'last' for i in cols}
-    for key in ['cases', 'mobility_score']:
+    for key in [target_col]+features_cols:
         dictio[key] = 'mean'
     #dictio['StringencyChange'] = 'sum'
     #del dictio['TIME']
@@ -98,29 +110,39 @@ def createSamples(df,#, # dataframe: original full dataframe
     #df['Cases_Delay'] = df['cases'].shift(-d_delay)
 
     # averaging mobility score
-    df_new['mobility_score'] = df_new['mobility_score'].rolling(4).sum()/4
+    #df_new['mobility_score'] = df_new['mobility_score'].rolling(4).sum()/4
 
-
-    # creating cases-1, cases-2, etc.
-    df_new['cases-1'] = df_new['cases'].shift(1)
-    df_new['cases-2'] = df_new['cases'].shift(2)
+    
+    # creating target-1, target-2, etc.
+    df_new[target_col+'-1'] = df_new[target_col].shift(1)
+    df_new[target_col+'-2'] = df_new[target_col].shift(2)
 
     # creating mobility-1, mobility-2 etc.
-    df_new['mobility-1'] = df_new['mobility_score'].shift(1)
-    df_new['mobility-2'] = df_new['mobility_score'].shift(2)
+    for f in features_cols:
+        df_new[f+'-1'] = df_new[f].shift(1)
+        df_new[f+'-2'] = df_new[f].shift(2)
 
     # creating r_t, r_t-1, etc ratio values from cases
-    df_new = df_new[df_new['cases'] != 0]
-    df_new['r_t'] = df_new['cases']/df_new['cases'].shift(1)
+    df_new = df_new[df_new[target_col] != 0]
+    df_new['r_t'] = df_new[target_col]/df_new[target_col].shift(1)
     df_new['r_t-1'] = df_new['r_t'].shift(1)
     df_new['r_t-2'] = df_new['r_t'].shift(2)
 
     df_new.loc[df_new['ID'] != df_new['ID'].shift(1), \
-               ['r_t', 'r_t-1', 'cases-1']] = 0
+               ['r_t', 'r_t-1', target_col+'-1']] = 0
     df_new.loc[df_new['ID'] != df_new['ID'].shift(2), \
-               ['r_t-1', 'r_t-2', 'cases-2']] = 0
+               ['r_t-1', 'r_t-2', target_col+'-2']] = 0
     df_new.loc[df_new['ID'] != df_new['ID'].shift(3), \
                ['r_t-2']] = 0
+        
+    for f in features_cols:
+        df_new.loc[df_new['ID'] != df_new['ID'].shift(1), \
+               [f+'-1', f+'-2']] = df_new[f]
+        
+        df_new.loc[df_new['ID'] != df_new['ID'].shift(2), \
+           [f+'-2']] = df_new[f+'-1']
+        
+    
 
     # Here we assign initial clustering by r_t
     df_new['RISK'] = np.log(df_new['r_t'])
@@ -135,10 +157,14 @@ def createSamples(df,#, # dataframe: original full dataframe
     df_new = df_new[df_new['r_t'] != 0]
     df_new = df_new.reset_index()
     df_new = df_new.drop(columns=['index'])
-    df_new = df_new[[c for c in df_new if c not in ['state']]
-       + ['state']]
+    # moving region col to the end, since not a feature
+    df_new = df_new[[c for c in df_new if c not in [region_col]]
+       + [region_col]]
+    
+    # Drop all rows with empty cells
+    #df_new.dropna(inplace=True)
 
-    return df_new, len(df_new.columns)-5 #change the - value when deciding features
+    return df_new, len(df_new.columns)-5 #CHECK if this is still correct!! 
 
 
 

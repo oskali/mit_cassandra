@@ -51,7 +51,14 @@ def predict_cluster(df_new, # dataframe: trained clusters
     m = GridSearchCV(m, params,cv = 5, iid=True) #will return warning if 'idd' param not set to true
 
 #    m = DecisionTreeClassifier(max_depth = 10)
-    m.fit(X, y)
+    try: 
+        m.fit(X, y)
+    except ValueError:
+        print('Warning: Feature Columns missing values!')
+        df_new.dropna(inplace=True)
+        X = df_new.iloc[:, 2:2+pfeatures]
+        y = df_new['CLUSTER']
+        m.fit(X, y)
     return m
 
 
@@ -212,6 +219,14 @@ def training_value_error(df_new, #Outpul of algorithm
 # expected value error given actions and a predicted initial cluster
 # Returns a float of sqrt average value error per ID
 def testing_value_error(df_test, df_new, model, pfeatures,relative=False,h=5):
+    try:
+        df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
+    except ValueError:
+        print('Warning: Feature Columns missing values!')
+        df_test.dropna(inplace=True)
+        model.predict(df_test.iloc[:, 2:2+pfeatures])
+        df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
+    
     E_v = 0
     P_df,R_df = get_MDP(df_new)
     df2 = df_test.reset_index()
@@ -219,7 +234,6 @@ def testing_value_error(df_test, df_new, model, pfeatures,relative=False,h=5):
     N_test = df2.shape[0]
 #    print(df2)
 
-    df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
     for i in range(N_test):
 #        print('new item')
         # initializing index of first state for each ID
@@ -279,14 +293,21 @@ def testing_value_error(df_test, df_new, model, pfeatures,relative=False,h=5):
 
 
 def error_per_ID(df_test, df_new, model, pfeatures,relative=False,h=5):
+    try:
+        df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
+    except ValueError:
+        print('Warning: Feature Columns missing values!')
+        df_test.dropna(inplace=True)
+        model.predict(df_test.iloc[:, 2:2+pfeatures])
+        df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
     E_v = 0
     P_df,R_df = get_MDP(df_new)
     df2 = df_test.reset_index()
     df2 = df2.groupby(['ID']).first()
     N_test = df2.shape[0]
 #    print(df2)
-
-    df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
+    
+    
     V_true,V_estim,V_err,C_err,State = [],[],[],[],[]
 
     for i in range(N_test):
@@ -596,8 +617,8 @@ def show_state(df_new,df,state,pfeatures):
     st['CLUSTER'] = model.predict(st.iloc[:,2:pfeatures+2])
     return st[['TIME','cases','RISK','CLUSTER', 'r_t']]
 
-def mape(df_pred,df_true):
-    df_pred['real cases'] = df_true['cases']
-    df_pred['rel_error'] = abs(df_pred['cases']-df_true['cases'])/df_true['cases']
+def mape(df_pred,df_true, target_col):
+    df_pred['real '+target_col] = df_true[target_col]
+    df_pred['rel_error'] = abs(df_pred[target_col]-df_true[target_col])/df_true[target_col]
     return df_pred
 #############################################################################
