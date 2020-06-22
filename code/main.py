@@ -37,6 +37,9 @@ run_knn = True
 run_mdp = True
 run_scnd = True
 target = 'deaths'
+mdp_region_col = 'state' # str, col name of region (e.g. 'state')
+mdp_date_col = 'date' # str, col name of time (e.g. 'date')
+mdp_features_cols = [] # list of strs: feature columns
 
 sgm = .1
 n_iter_mdp = 50
@@ -120,25 +123,33 @@ if run_mdp:
     #df_train = df_orig[df_orig['date'] <= training_cutoff].drop(columns='people_tested').dropna(axis=0)
     df_train = df_orig[df_orig['date'] <= training_cutoff]
     mdp = MDP_model()
-    mdp.fit(df_train,
-            target_col = target, # str: col name of target (i.e. 'deaths')
-            region_col = 'state', # str, col name of region (i.e. 'state')
-            date_col = 'date', # str, col name of time (i.e. 'date')
-            features_cols = ['distance', 'home_time'], # list of strs: feature columns
-            h=5,
-            n_iter=n_iter_mdp,
-            d_avg=3,
-            distance_threshold = 0.1)
-
-    mdp_output = pd.DataFrame()
-    for i in range(pred_out):
-        mdp_output = mdp_output.append(mdp.predict_all(n_days=i))
-
-    mdp_output = mdp_output.rename(columns={'TIME': 'date', target:'mdp_prediction'}).loc[:, ['state','date', 'mdp_prediction']]
-
-    df = df.merge(mdp_output, how='left', on=['state', 'date'])
-    df.mdp_prediction = np.where([a and b for a, b in zip(df.mdp_prediction.isnull(), df.date <= training_cutoff)], df.cases, df.mdp_prediction)
-    print('MDP Model Complete.')
+    mdp_abort=False
+    try:
+        mdp.fit(df_train,
+                target_col = target, # str: col name of target (i.e. 'deaths')
+                region_col = mdp_region_col, # str, col name of region (i.e. 'state')
+                date_col = mdp_date_col, # str, col name of time (i.e. 'date')
+                features_cols = mdp_features_cols, # list of strs: feature columns
+                h=5,
+                n_iter=n_iter_mdp,
+                d_avg=3,
+                distance_threshold = 0.1)
+    except ValueError:
+        print('Warning: Feature columns have missing values! Please drop' \
+              ' rows or fill in missing data.')
+        print('MDP Model Aborted.')
+        mdp_abort=True
+        run_mdp = False
+    if not mdp_abort:
+        mdp_output = pd.DataFrame()
+        for i in range(pred_out):
+            mdp_output = mdp_output.append(mdp.predict_all(n_days=i))
+    
+        mdp_output = mdp_output.rename(columns={'TIME': 'date', target:'mdp_prediction'}).loc[:, ['state','date', 'mdp_prediction']]
+    
+        df = df.merge(mdp_output, how='left', on=['state', 'date'])
+        df.mdp_prediction = np.where([a and b for a, b in zip(df.mdp_prediction.isnull(), df.date <= training_cutoff)], df.cases, df.mdp_prediction)
+        print('MDP Model Complete.')
 else:
     print('MDP Model Skipped.')
 #############################################################################
