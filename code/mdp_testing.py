@@ -17,6 +17,7 @@ import numpy as np
 from datetime import datetime
 from datetime import timedelta
 import math
+from datetime import timedelta
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import GridSearchCV
 #############################################################################
@@ -679,6 +680,38 @@ def all_paths(df, df_new, pfeatures, opt=True, plot=True):
                           columns = ['state', 'sequence', 'ratios', 'error'])
     return df_seq
 
+
+# plot_pred() takes a trained model, a specific US state name, and the df_true
+# (sorted by TIME), and plots the predicted versus true cases for n_days 
+def plot_pred(model, state, df_true, n_days):
+    h = int(np.round(n_days/model.d_avg))
+    df_true.loc[:, [model.date_col]]= pd.to_datetime(df_true[model.date_col])
+    date = model.df[model.df[model.region_col]== state].iloc[-1, 1]
+    cases = model.df[model.df[model.region_col]== state].iloc[-1, 2]
+    dates = [date]
+    cases_pred = [cases]
+    
+    s = model.df_trained[model.df_trained[model.region_col]==state].iloc[-1, -2]
+    r = 1
+    for i in range(h):
+        dates.append(date + timedelta((i+1)*model.d_avg))
+        r = r*np.exp(model.R_df.loc[s])
+        cases_pred.append(cases*r)
+        s = model.P_df.loc[s,0].values[0]
+    
+    
+    fig, ax = plt.subplots()
+    ax.plot(df_true.loc[df_true['state']==state][model.date_col], \
+            df_true.loc[df_true['state']==state][model.target_col], \
+            label = 'True '+model.target_col)
+    ax.plot(dates, cases_pred, label='Predicted '+model.target_col)
+    ax.set_title('%s True vs Predicted '%state + model.target_col)
+    ax.set_xlabel('Date')
+    ax.set_ylabel(model.target_col)
+    plt.xticks(rotation=45, ha='right')
+    plt.legend()
+    plt.show()
+    return
 #############################################################################
 
 

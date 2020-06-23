@@ -149,10 +149,15 @@ def createSamples(df,#, # dataframe: original full dataframe
 
 
     # create action
-    df_new['ACTION'] = 0
-    #df_new['ACTION'] = pd.cut(df_new['StringencyChange'], bins = action_thresh, right = False, labels = [-1, 0, 1, 2])
-    #df_new['ACTION'] = df_new['ACTION'].shift(-1)
-    #df_new.loc[df_new['ID'] != df_new['ID'].shift(-1), 'ACTION'] = 0
+    if len(action_thresh) == 0:
+        df_new['ACTION'] = 0
+        pfeatures = len(df_new.columns)-5
+    else:
+        actions = list(range(0, len(action_thresh)-1)) #[0, 1] #[0, 5000, 100000]
+        df_new[features_cols[0]+'_change'] = df_new[features_cols[0]+'-1']-\
+            df_new[features_cols[0]+'-2']
+        df_new['ACTION'] = pd.cut(df_new[features_cols[0]+'_change'], bins = action_thresh, right = False, labels = actions)
+        pfeatures = len(df_new.columns)-6
 
     df_new = df_new[df_new['r_t'] != 0]
     df_new = df_new.reset_index()
@@ -164,7 +169,7 @@ def createSamples(df,#, # dataframe: original full dataframe
     # Drop all rows with empty cells
     #df_new.dropna(inplace=True)
 
-    return df_new, len(df_new.columns)-5 #CHECK if this is still correct!! 
+    return df_new, pfeatures #CHECK if this is still correct!! 
 
 
 
