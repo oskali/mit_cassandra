@@ -9,6 +9,7 @@ Created on Thu May 28 20:29:42 2020
 # Load Libraries
 import numpy as np
 import pandas as pd
+import os
 import datetime
 import warnings
 from copy import deepcopy
@@ -23,7 +24,8 @@ from twostage_utils import (train_state_models, matrix_agg_predict)
 
 #############################################################################
 #%%
-path = 'C:/Users/omars/Desktop/covid19_georgia/large_data/input/'
+# path = 'C:/Users/omars/Desktop/covid19_georgia/large_data/input/'
+path = os.path.join(os.path.dirname(os.getcwd()), 'data', 'input')
 file = '06_15_2020_states_combined.csv'
 training_cutoff = '2020-05-25'
 nmin = 20
@@ -32,10 +34,10 @@ if deterministic:
 	deterministic_label = ''
 else:
 	deterministic_label = 'markov_'
-run_sir = True
-run_knn = True
+run_sir = False
+run_knn = False
 run_mdp = True
-run_scnd = True
+run_scnd = False
 target = 'deaths'
 mdp_region_col = 'state' # str, col name of region (e.g. 'state')
 mdp_date_col = 'date' # str, col name of time (e.g. 'date')
@@ -54,7 +56,7 @@ cols_to_keep = ['state',
 
 #############################################################################
 #%%
-df_orig = pd.read_csv(path + file)
+df_orig = pd.read_csv(os.path.join(path, file))
 #############################################################################
 
 #############################################################################
@@ -143,7 +145,7 @@ if run_mdp:
         for i in range(pred_out):
             mdp_output = mdp_output.append(mdp.predict_all(n_days=i))
     
-        mdp_output = mdp_output.rename(columns={'TIME': 'date', target:'mdp_prediction'}).loc[:, ['state','date', 'mdp_prediction']]
+        mdp_output = mdp_output.rename(columns={'TIME': 'date', target: 'mdp_prediction'}).loc[:, ['state','date', 'mdp_prediction']]
     
         df = df.merge(mdp_output, how='left', on=['state', 'date'])
         df.mdp_prediction = np.where([a and b for a, b in zip(df.mdp_prediction.isnull(), df.date <= training_cutoff)], df.cases, df.mdp_prediction)
