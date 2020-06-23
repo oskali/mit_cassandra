@@ -14,11 +14,16 @@ data.
 import pandas as pd
 import numpy as np
 from datetime import timedelta
+from copy import deepcopy
+import datetime
 
 from mdp_states_functions import *
 from mdp_testing import *
+import os
 #############################################################################
 
+class PredictionError(Exception):
+    pass
 class MDP_model:
     def __init__(self):
         self.df = None # original dataframe from data
@@ -176,10 +181,100 @@ class MDP_model:
         df = self.df
         df = df[[self.region_col,'TIME',self.target_col]]
         df = df.groupby(self.region_col).last()
-        df.reset_index(inplace = True)
+        df.reset_index(inplace=True)
         df['TIME'] = df['TIME'] + timedelta(n_days)
         df[self.target_col] = df[self.region_col].apply(lambda st: int(self.predict(st,n_days)))
         return df
+
+
+    # predict_class_date() takes a given state and a date and returns the predicted target
+    def predict_class_date(self,
+                    region_first_last_dates, # tuple (region, first_date, last_date), e.g (Alabama, Timestamp('2020-03-24 00:00:00'), Timestamp('2020-06-22 00:00:00'))
+                           date, # target date for prediciton, e.g. (Timestamp('2020-05-24 00:00:00'))
+                           verbose=0):
+
+        region, first_date, last_date = region_first_last_dates
+        try:
+            date = datetime.strptime(date,'%Y-%m-%d')
+        except TypeError:
+            pass
+
+        # Case 1 : the input date occurs before the first available date for a given region
+        try :
+            assert date >= first_date
+        except AssertionError:
+            if verbose:
+                print("Prediction Error type I ('{}', '{}'): the input occurs before the first available ('{}') date in the training set".format(region,
+                                                                                                                                          str(date),
+                                                                                                                                          str(first_date)
+                                                                                                                                           ))
+            raise PredictionError  # test
+
+        # Case 2 : the input date occurs within the range of input dates for a given region
+        if date <= last_date:
+
+            # compute the closest training date
+            n_days = (last_date - date).days
+            lag = ((- n_days) % self.d_avg)
+            pos = n_days // self.d_avg + (lag > 0)
+            clst_past_date = last_date - timedelta(pos * self.d_avg)
+
+            # get the observation :
+            try:
+                clst_past_pred = self.df_trained[(self.df_trained[self.region_col] == region)
+                                                 & (self.df_trained.TIME == clst_past_date)]
+                assert (not clst_past_pred.empty)  # verify that the closest date is actually in the training date
+
+                s = clst_past_pred["CLUSTER"]
+                target = clst_past_pred[self.target_col].values[0] * (np.exp(self.R_df.loc[s].values[0])**(float(lag)/3))
+                return target
+
+            except AssertionError:
+                if verbose:
+                    print("Prediction Error type II ('{}', '{}'): The computed in-sample closest date '{}' is not in the training set".format(region,
+                                                                                                                                          str(date),
+                                                                                                                                          str(clst_past_date)
+                                                                                                                                           ))
+                raise PredictionError
+
+        # Case 3 : the date has not been observed yet :
+        n_days = (date-last_date).days
+        return self.predict(region, n_days)
+
+    # predict_class() takes a dictionary of states and time horizon and returns their predicted number of cases
+    def predict_class(self,
+                      state_dict, # dictionary containing states and corresponding dates to predict the target
+                      verbose=0):
+        assert isinstance(state_dict, dict), " the 'state_dict' must be a dictionary"
+
+        # instantiate the prediction dataframe
+        pred_df = pd.DataFrame(columns=[self.region_col,'TIME',self.target_col])
+
+        # get the last dates for each states
+        df = self.df.copy()
+        df_last = df[[self.region_col, 'TIME', self.target_col]].groupby(self.region_col).last().reset_index().set_index(self.region_col)
+        df_first = df[[self.region_col, 'TIME', self.target_col]].groupby(self.region_col).first().reset_index().set_index(self.region_col)
+        region_set = set(df[self.region_col].values)
+
+        for region, dates in state_dict.items():
+            try:
+                assert region in region_set
+
+            # the state doesn't appear not in the region set
+            except AssertionError:
+                if verbose:
+                    print("The state '{}' is not in the trained region set".format(region))
+                continue  # skip skip to the next region
+
+            first_date = df_first.loc[region, "TIME"]
+            last_date = df_last.loc[region, "TIME"]
+            for date in dates:
+                try:
+                    pred = self.predict_class_date((region, first_date, last_date), date, verbose=verbose)
+                    pred_df = pred_df.append({self.region_col: region, "TIME": date, self.target_col: pred}, ignore_index=True)
+                except PredictionError:
+                    pass
+        return pred_df
 
 
 # model_testing() takes in n_days we want to predict on, all the model training
@@ -242,3 +337,99 @@ def model_testing(file, # csv file with data OR data frame
     
     return m, error
 #############################################################################
+
+
+if __name__ == "__main__":
+    from utils import models, metrics
+    import warnings
+    warnings.filterwarnings("ignore")  # to avoid Python deprecated version warnings
+
+    # path = 'C:/Users/omars/Desktop/covid19_georgia/large_data/input/'
+    path = os.path.join(os.path.dirname(os.getcwd()), 'data', 'input')
+    file = '06_15_2020_states_combined.csv'
+    training_cutoff = '2020-05-25'
+    nmin = 20
+    deterministic = True
+    if deterministic:
+        deterministic_label = ''
+    else:
+        deterministic_label = 'markov_'
+    target = 'deaths'
+    mdp_region_col = 'state' # str, col name of region (e.g. 'state')
+    mdp_date_col = 'date' # str, col name of time (e.g. 'date')
+    mdp_features_cols = [] # list of strs: feature columns
+
+    sgm = .1
+    n_iter_mdp = 50
+    n_iter_ci = 10
+    ci_range = 0.75
+
+    cols_to_keep = ['state',
+                    'date',
+                    target,
+                    'prevalence'] + [model + '_' + metric for model in models for metric in metrics]
+
+    df_orig = pd.read_csv(os.path.join(path, file))
+    print('Data Wrangling in Progress...')
+    df = deepcopy(df_orig)
+    df.columns = map(str.lower, df.columns)
+    #df = df.query('cases >= @nmin')
+    df= df[df[target] >= nmin]
+    df['date'] = df['date'].apply(lambda x: datetime.strptime(x,'%Y-%m-%d'))
+    df_orig['date'] = df_orig['date'].apply(lambda x: datetime.strptime(x,'%Y-%m-%d'))
+    df = df.sort_values(by = ['state','date'])
+    states = sorted(list(set(df['state'])))
+    pop_df = df.loc[:, ['state', 'population']]
+    pop_dic = {pop_df .iloc[i, 0] : pop_df .iloc[i, 1] for i in range(pop_df .shape[0])}
+    features = list(df.columns[5:35])
+
+    df = df.loc[:, df.columns[df.isnull().sum() * 100 / len(df) < 20]]
+    features = list(set(features).intersection(set(df.columns)))
+
+    df_train = df[df['date'] <= training_cutoff]
+    df_test = df[df['date'] > training_cutoff]
+    pred_out = len(set(df_test.date))
+    day_0 = str(df_test.date.min())[:10]
+    print('Data Wrangling Complete.')
+
+    # ####### test fitting methods ##########
+    print('MDP Model Training in Progress...')
+    # df_train = df_orig[df_orig['date'] <= training_cutoff].drop(columns='people_tested').dropna(axis=0)
+    df_train = df_orig[df_orig['date'] <= training_cutoff]
+    mdp = MDP_model()
+    mdp_abort=False
+    try:
+        mdp.fit(df_train,
+                target_col = target, # str: col name of target (i.e. 'deaths')
+                region_col = mdp_region_col, # str, col name of region (i.e. 'state')
+                date_col = mdp_date_col, # str, col name of time (i.e. 'date')
+                features_cols = mdp_features_cols, # list of strs: feature columns
+                h=5,
+                n_iter=n_iter_mdp,
+                d_avg=3,
+                distance_threshold = 0.1)
+    except ValueError:
+        print('ERROR: Feature columns have missing values! Please drop' \
+              ' rows or fill in missing data.')
+        print('MDP Model Aborted.')
+        mdp_abort=True
+        run_mdp = False
+
+    # ####### test prediction methods ##########
+    run_predict_all = False
+    run_predict_class = True
+
+    # test predict all :
+    if run_predict_all:
+        if not mdp_abort:
+            mdp_output = pd.DataFrame()
+            for i in range(pred_out):
+                mdp_output = mdp_output.append(mdp.predict_all(n_days=i))
+
+    # test predict class :
+    if run_predict_class:
+        example_dict = {"Alabama": ["2019-06-14", "2020-05-14", "2020-07-01"]}
+        mdp_output = mdp.predict_class(example_dict, verbose=1)
+
+        print(mdp_output)
+    print('MDP Model (test) Complete.')
