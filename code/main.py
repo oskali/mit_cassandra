@@ -134,8 +134,8 @@ if run_mdp:
                 n_iter=n_iter_mdp,
                 d_avg=3,
                 distance_threshold = 0.1)
-    except ValueError:
-        print('MDP Model Aborted.')
+    except:
+        print('MDP Model Aborted - check ERROR message.')
         mdp_abort=True
         run_mdp = False
     if not mdp_abort:
