@@ -51,14 +51,16 @@ def predict_cluster(df_new, # dataframe: trained clusters
     m = GridSearchCV(m, params,cv = 5, iid=True) #will return warning if 'idd' param not set to true
 
 #    m = DecisionTreeClassifier(max_depth = 10)
-    
-    m.fit(X, y)
-    #except ValueError:
+    try:
+        m.fit(X, y)
+    except ValueError:
+        print('ERROR: Feature columns have missing values! Please drop' \
+              ' rows or fill in missing data.', flush=True)
         #print('Warning: Feature Columns missing values!', flush=True)
         #df_new.dropna(inplace=True)
         #X = df_new.iloc[:, 2:2+pfeatures]
         #y = df_new['CLUSTER']
-        #m.fit(X, y)
+        m.fit(X, y)
     return m
 
 
@@ -219,8 +221,12 @@ def training_value_error(df_new, #Outpul of algorithm
 # expected value error given actions and a predicted initial cluster
 # Returns a float of sqrt average value error per ID
 def testing_value_error(df_test, df_new, model, pfeatures,relative=False,h=5):
-    #try:
-    df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
+    try:
+        df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
+    except ValueError:
+        print('ERROR: Feature columns have missing values! Please drop' \
+              ' rows or fill in missing data.', flush=True)
+        df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
     #except ValueError:
         #print('Warning: Feature Columns missing values!')
         #df_test.dropna(inplace=True)
@@ -293,8 +299,12 @@ def testing_value_error(df_test, df_new, model, pfeatures,relative=False,h=5):
 
 
 def error_per_ID(df_test, df_new, model, pfeatures,relative=False,h=5):
-    #try:
-    df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
+    try:
+        df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
+    except ValueError:
+        print('ERROR: Feature columns have missing values! Please drop' \
+              ' rows or fill in missing data.', flush=True)
+        df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
     #except ValueError:
         #print('Warning: Feature Columns missing values!')
         #df_test.dropna(inplace=True)

@@ -135,8 +135,6 @@ if run_mdp:
                 d_avg=3,
                 distance_threshold = 0.1)
     except ValueError:
-        print('ERROR: Feature columns have missing values! Please drop' \
-              ' rows or fill in missing data.')
         print('MDP Model Aborted.')
         mdp_abort=True
         run_mdp = False
