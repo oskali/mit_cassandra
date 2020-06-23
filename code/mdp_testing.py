@@ -14,11 +14,21 @@ Created on Sun Apr 26 23:13:09 2020
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+from datetime import datetime
+from datetime import timedelta
 import math
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import GridSearchCV
 #############################################################################
 
+#############################################################################
+# Class for Prediction
+
+# new Exception for prediction error
+class PredictionError(Exception):
+    pass
+
+#############################################################################
 
 #############################################################################
 # Functions for Predictions
@@ -90,6 +100,61 @@ def get_MDP(df_new):
     P_df['NEXT_CLUSTER'] = transition_df.apply(lambda x: x[2])
     R_df = df_new.groupby('CLUSTER')['RISK'].mean()
     return P_df,R_df
+
+# predict_class_date() takes a given state and a date and returns the predicted target
+def predict_region_date(self, # MDP_model object
+                        region_first_last_dates, # tuple (region, first_date, last_date), e.g (Alabama, Timestamp('2020-03-24 00:00:00'), Timestamp('2020-06-22 00:00:00'))
+                        date, # target date for prediciton, e.g. (Timestamp('2020-05-24 00:00:00'))
+                        verbose=0):
+
+        region, first_date, last_date = region_first_last_dates
+        try:
+            date = datetime.strptime(date,'%Y-%m-%d')
+        except TypeError:
+            pass
+
+        # Case 1 : the input date occurs before the first available date for a given region
+        try :
+            assert date >= first_date
+        except AssertionError:
+            if verbose:
+                print("Prediction Error type I ('{}', '{}'): the input occurs before the first available ('{}') date in the training set".format(region,
+                                                                                                                                          str(date),
+                                                                                                                                          str(first_date)
+                                                                                                                                           ))
+            raise PredictionError  # test
+
+        # Case 2 : the input date occurs within the range of input dates for a given region
+        if date <= last_date:
+
+            # compute the closest training date
+            n_days = (last_date - date).days
+            lag = ((- n_days) % self.d_avg)
+            pos = n_days // self.d_avg + (lag > 0)
+            clst_past_date = last_date - timedelta(pos * self.d_avg)
+
+            # get the observation :
+            try:
+                clst_past_pred = self.df_trained[(self.df_trained[self.region_col] == region)
+                                                 & (self.df_trained.TIME == clst_past_date)]
+                assert (not clst_past_pred.empty)  # verify that the closest date is actually in the training date
+
+                s = clst_past_pred["CLUSTER"]
+                target = clst_past_pred[self.target_col].values[0] * (np.exp(self.R_df.loc[s].values[0])**(float(lag)/3))
+                return np.ceil(target)
+
+            except AssertionError:
+                if verbose:
+                    print("Prediction Error type II ('{}', '{}'): The computed in-sample closest date '{}' is not in the training set".format(region,
+                                                                                                                                          str(date),
+                                                                                                                                          str(clst_past_date)
+                                                                                                                                           ))
+                raise PredictionError
+
+        # Case 3 : the date has not been observed yet :
+        n_days = (date-last_date).days
+        return np.ceil(self.predict(region, n_days))
+
 #############################################################################
 
 
