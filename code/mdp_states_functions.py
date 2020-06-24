@@ -39,14 +39,12 @@ from mdp_testing import *
 # Funtions for Initialization
 
 
-# createSamples() takes the original dataframe from combined data, new_cols
+# createSamples() takes the original dataframe from combined data, 
 # the names of columns of features to keep, the treshold values to determine
-# what type of action is made based on StrincencyIndex, d_delay the day lag
-# before calculating death impact, d_avg the number of days after d_delay to
-# calculate daily average, and returns a data frame with desired features
-# as well as "Death" and "Action" category
-# input dataframe df, and list new_cols with the names of columns to keep
-# returns new dataframe with only the desired columns, number of features considered, end date of dataset
+# what type of action is made based on the FIRST feature of features_cols, 
+# d_avg the number of days used to compress datapoints, and returns a data frame with 
+# desired features and history, ratio values and history, and 'RISK' and 'ACTION'
+# returns new dataframe with only the desired columns, number of features considered
 def createSamples(df,#, # dataframe: original full dataframe
                   #new_cols, # str list: names of columns to be considered
                   target_col, # str: col name of target (i.e. 'deaths')
@@ -68,7 +66,10 @@ def createSamples(df,#, # dataframe: original full dataframe
     
 
     #new_cols = ['state', 'date', 'cases', 'mobility_score']
-    new_cols = [region_col] + ['TIME'] + [target_col] + features_cols
+    if target_col not in features_cols:
+        new_cols = [region_col] + ['TIME'] + [target_col] + features_cols
+    else:
+        new_cols = [region_col] + ['TIME'] + features_cols
     df_new = df[new_cols]
 
     #df_new.rename(columns = {df_new.columns[1]: 'TIME'}, inplace = True)
@@ -96,7 +97,7 @@ def createSamples(df,#, # dataframe: original full dataframe
     cols = df_new.columns
     #print('cols', cols)
     dictio = {i:'last' for i in cols}
-    for key in [target_col]+features_cols:
+    for key in set([target_col]+features_cols):
         dictio[key] = 'mean'
     #dictio['StringencyChange'] = 'sum'
     #del dictio['TIME']
@@ -114,8 +115,8 @@ def createSamples(df,#, # dataframe: original full dataframe
 
     
     # creating target-1, target-2, etc.
-    df_new[target_col+'-1'] = df_new[target_col].shift(1)
-    df_new[target_col+'-2'] = df_new[target_col].shift(2)
+    #df_new[target_col+'-1'] = df_new[target_col].shift(1)
+    #df_new[target_col+'-2'] = df_new[target_col].shift(2)
 
     # creating mobility-1, mobility-2 etc.
     for f in features_cols:
@@ -129,9 +130,9 @@ def createSamples(df,#, # dataframe: original full dataframe
     df_new['r_t-2'] = df_new['r_t'].shift(2)
 
     df_new.loc[df_new['ID'] != df_new['ID'].shift(1), \
-               ['r_t', 'r_t-1', target_col+'-1']] = 0
+               ['r_t', 'r_t-1']] = 0
     df_new.loc[df_new['ID'] != df_new['ID'].shift(2), \
-               ['r_t-1', 'r_t-2', target_col+'-2']] = 0
+               ['r_t-1', 'r_t-2']] = 0
     df_new.loc[df_new['ID'] != df_new['ID'].shift(3), \
                ['r_t-2']] = 0
         
@@ -163,13 +164,18 @@ def createSamples(df,#, # dataframe: original full dataframe
     df_new = df_new.reset_index()
     df_new = df_new.drop(columns=['index'])
     # moving region col to the end, since not a feature
-    df_new = df_new[[c for c in df_new if c not in [region_col]]
-       + [region_col]]
+    if target_col not in features_cols:
+        df_new = df_new[[c for c in df_new if c not in [region_col, target_col]]
+           + [region_col] + [target_col]]
+        pfeatures -= 1
+    else:
+        df_new = df_new[[c for c in df_new if c not in [region_col]]
+           + [region_col]]
     
     # Drop all rows with empty cells
     #df_new.dropna(inplace=True)
 
-    return df_new, pfeatures #CHECK if this is still correct!! 
+    return df_new, pfeatures
 
 
 

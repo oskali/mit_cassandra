@@ -42,6 +42,8 @@ target = 'deaths'
 mdp_region_col = 'state' # str, col name of region (e.g. 'state')
 mdp_date_col = 'date' # str, col name of time (e.g. 'date')
 mdp_features_cols = [] # list of strs: feature columns
+            # include target here if want it to be a feature
+            # FIRST item in list dicates how actions decided if action_thresh provided
 
 sgm = .1
 n_iter_mdp = 50
@@ -128,7 +130,7 @@ if run_mdp:
     mdp_abort=False
     try:
         mdp.fit(df_train,
-                target_col = target, # str: col name of target (i.e. 'deaths')
+                target_col = target, # str: col name of target (i.e. 'deaths') NOT automatically included in features
                 region_col = mdp_region_col, # str, col name of region (i.e. 'state')
                 date_col = mdp_date_col, # str, col name of time (i.e. 'date')
                 features_cols = mdp_features_cols, # list of strs: feature columns
