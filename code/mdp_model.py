@@ -13,6 +13,7 @@ data.
 # Load Libraries
 import pandas as pd
 import numpy as np
+from itertools import product
 from datetime import timedelta
 from copy import deepcopy
 import datetime
@@ -22,8 +23,6 @@ from mdp_testing import *
 import os
 #############################################################################
 
-class PredictionError(Exception):
-    pass
 class MDP_model:
     def __init__(self):
         self.df = None # original dataframe from data
@@ -186,69 +185,20 @@ class MDP_model:
         df[self.target_col] = df[self.region_col].apply(lambda st: int(self.predict(st,n_days)))
         return df
 
-
-    # predict_class_date() takes a given state and a date and returns the predicted target
-    def predict_class_date(self,
-                    region_first_last_dates, # tuple (region, first_date, last_date), e.g (Alabama, Timestamp('2020-03-24 00:00:00'), Timestamp('2020-06-22 00:00:00'))
-                           date, # target date for prediciton, e.g. (Timestamp('2020-05-24 00:00:00'))
-                           verbose=0):
-
-        region, first_date, last_date = region_first_last_dates
-        try:
-            date = datetime.strptime(date,'%Y-%m-%d')
-        except TypeError:
-            pass
-
-        # Case 1 : the input date occurs before the first available date for a given region
-        try :
-            assert date >= first_date
-        except AssertionError:
-            if verbose:
-                print("Prediction Error type I ('{}', '{}'): the input occurs before the first available ('{}') date in the training set".format(region,
-                                                                                                                                          str(date),
-                                                                                                                                          str(first_date)
-                                                                                                                                           ))
-            raise PredictionError  # test
-
-        # Case 2 : the input date occurs within the range of input dates for a given region
-        if date <= last_date:
-
-            # compute the closest training date
-            n_days = (last_date - date).days
-            lag = ((- n_days) % self.d_avg)
-            pos = n_days // self.d_avg + (lag > 0)
-            clst_past_date = last_date - timedelta(pos * self.d_avg)
-
-            # get the observation :
-            try:
-                clst_past_pred = self.df_trained[(self.df_trained[self.region_col] == region)
-                                                 & (self.df_trained.TIME == clst_past_date)]
-                assert (not clst_past_pred.empty)  # verify that the closest date is actually in the training date
-
-                s = clst_past_pred["CLUSTER"]
-                target = clst_past_pred[self.target_col].values[0] * (np.exp(self.R_df.loc[s].values[0])**(float(lag)/3))
-                return target
-
-            except AssertionError:
-                if verbose:
-                    print("Prediction Error type II ('{}', '{}'): The computed in-sample closest date '{}' is not in the training set".format(region,
-                                                                                                                                          str(date),
-                                                                                                                                          str(clst_past_date)
-                                                                                                                                           ))
-                raise PredictionError
-
-        # Case 3 : the date has not been observed yet :
-        n_days = (date-last_date).days
-        return self.predict(region, n_days)
-
     # predict_class() takes a dictionary of states and time horizon and returns their predicted number of cases
-    def predict_class(self,
-                      state_dict, # dictionary containing states and corresponding dates to predict the target
+    def predict_dates(self,
+                      region_dates, # tuple containing states and corresponding dates to predict the target
                       verbose=0):
-        assert isinstance(state_dict, dict), " the 'state_dict' must be a dictionary"
 
         # instantiate the prediction dataframe
-        pred_df = pd.DataFrame(columns=[self.region_col,'TIME',self.target_col])
+        pred_df = pd.DataFrame(columns=[self.region_col, 'TIME', self.target_col])
+
+        try :
+            regions, dates = region_dates
+        except :  # whatever error
+            if verbose :
+                print("Prediction error : wrong input format, must be a tuple")
+            return pred_df
 
         # get the last dates for each states
         df = self.df.copy()
@@ -256,21 +206,21 @@ class MDP_model:
         df_first = df[[self.region_col, 'TIME', self.target_col]].groupby(self.region_col).first().reset_index().set_index(self.region_col)
         region_set = set(df[self.region_col].values)
 
-        for region, dates in state_dict.items():
+        for region in regions:
             try:
                 assert region in region_set
 
             # the state doesn't appear not in the region set
             except AssertionError:
                 if verbose:
-                    print("The state '{}' is not in the trained region set".format(region))
+                    print("The region '{}' is not in the trained region set".format(region))
                 continue  # skip skip to the next region
 
             first_date = df_first.loc[region, "TIME"]
             last_date = df_last.loc[region, "TIME"]
             for date in dates:
                 try:
-                    pred = self.predict_class_date((region, first_date, last_date), date, verbose=verbose)
+                    pred = predict_region_date(self, (region, first_date, last_date), date, verbose=verbose)
                     pred_df = pred_df.append({self.region_col: region, "TIME": date, self.target_col: pred}, ignore_index=True)
                 except PredictionError:
                     pass
@@ -428,8 +378,8 @@ if __name__ == "__main__":
 
     # test predict class :
     if run_predict_class:
-        example_dict = {"Alabama": ["2019-06-14", "2020-05-14", "2020-07-01"]}
-        mdp_output = mdp.predict_class(example_dict, verbose=1)
+        example_dict = (["Alabama", "Gabon", "Iowa", "Massachusetts"], ["2019-06-14", "2020-05-14", "2020-07-01"])
+        mdp_output = mdp.predict_dates(example_dict, verbose=1)
 
         print(mdp_output)
     print('MDP Model (test) Complete.')
