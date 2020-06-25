@@ -13,145 +13,154 @@ data.
 # Load Libraries
 import pandas as pd
 import numpy as np
-from itertools import product
 from datetime import timedelta
 from copy import deepcopy
 import datetime
 
-from mdp_states_functions import *
-from mdp_testing import *
+from mdp_states_functions import createSamples, initializeClusters, splitter, fit_CV
+from mdp_testing import predict_cluster, get_MDP, predict_region_date, PredictionError
 import os
 #############################################################################
 
 class MDP_model:
-    def __init__(self):
-        self.df = None # original dataframe from data
-        self.pfeatures = None # number of features
-        self.d_avg = None # number of days to average and compress datapoints
-        self.CV_error = None # error at minimum point of CV
-        self.df_trained = None # dataframe after optimal training
-        self.m = None # model for predicting cluster number from features
-        self.P_df = None #Transition function of the learnt MDP
-        self.R_df = None #Reward function of the learnt MDP
-        self.verbose = False
-        self.region_col = None # str: i.e. 'state'
-        self.target_col = None # str: i.e. 'cases'
-        self.date_col = None # str: i.e. 'date'
+    def __init__(self,
+                 days_avg=None,
+                 horizon=5,
+                 n_iter=40,
+                 n_folds_cv=5,
+                 clustering_distance_threshold=0.05,
+                 splitting_threshold=0.,
+                 classification_algorithm='DecisionTreeClassifier',
+                 clustering_algorithm='Agglomerative',
+                 n_clusters=None,
+                 action_thresh=[],
+                 date_colname='date',
+                 region_colname='state',
+                 features_list=[],
+                 target_colname='cases',
+                 random_state=42,
+                 verbose=False):
 
-    # fit() takes in parameters for prediction, and trains the model on the
-    # optimal clustering for a given horizon h
+        self.days_avg = days_avg  # number of days to average and compress datapoints
+        self.horizon = horizon  # done
+        self.n_iter = n_iter  # done
+        self.n_folds_cv = n_folds_cv  # done
+        self.clustering_distance_threshold = clustering_distance_threshold  # clustering diameter for Agglomerative clustering
+        self.splitting_threshold = splitting_threshold  # done
+        self.classification_algorithm = classification_algorithm  # done
+        self.clustering_algorithm = clustering_algorithm  # clustering method from Agglomerative, KMeans, and Birch
+        self.n_clusters = n_clusters  # number of clusters for KMeans
+        self.action_thresh = action_thresh  # done
+        self.date_colname = date_colname  # done
+        self.region_colname = region_colname  # column name of the region, i.e. 'state'
+        self.features_list = features_list  # list of the features that are considered to be trained
+        self.target_colname = target_colname  # done
+        self.random_state = random_state  # done
+        self.verbose = verbose  # print out the intermediate steps
+
+        # training attributes
+        self.CV_error = None  # error at minimum point of CV
+        self.classifier = None  # model for predicting cluster number from features # done
+        self.P_df = None  # Transition function of the learnt MDP
+        self.R_df = None  # Reward function of the learnt MDP
+        self.optimal_cluster_size = None
+
+        # data attributes
+        self.df = None  # original dataframe from data
+        self.df_trained = None  # dataframe after optimal training
+        self.pfeatures = None  # number of features
+
     def fit(self,
-            file, # csv file with data OR data frame
-            target_col, # str: col name of target (i.e. 'deaths')
-            region_col, # str, col name of region (i.e. 'state')
-            date_col, # str, col name of time (i.e. 'date')
-            features_cols, # list of str: i.e. (['mobility', 'testing'])
-            h=5, # time horizon = n_days/d_avg
-            n_iter=40, # number of iterations
-            d_avg=3, # int: number of days to average data over
-            distance_threshold = 0.05, # clustering diameter for Agglomerative clustering
-            action_thresh = [], # list of cutoffs for each action bin
-            cv=5, # number for cross validation
-            th=0, # splitting threshold
-            classification = 'DecisionTreeClassifier', # classification method
-            clustering='Agglomerative',# clustering method from Agglomerative, KMeans, and Birch
-            n_clusters = None, # number of clusters for KMeans
-            random_state = 0):
+            data, # csv file with data OR data frame
+            ):
 
         # load data
-        if type(file) == str:
-            df = pd.read_csv(file)
-        else:
-            df = file
+        if type(data) == str:
+            data = pd.read_csv(data)
         # creates samples from dataframe
-        df, pfeatures = createSamples(df, 
-                                      target_col,
-                                      region_col,
-                                      date_col,
-                                      features_cols,
-                                      action_thresh, 
-                                      d_avg)
+        df, pfeatures = createSamples(data,
+                                      self.target_colname,
+                                      self.region_colname,
+                                      self.date_colname,
+                                      self.features_list,
+                                      self.action_thresh,
+                                      self.days_avg)
+
         self.df = df
         self.pfeatures = pfeatures
-        self.d_avg = d_avg
-        self.target_col = target_col
-        self.region_col = region_col
-        self.date_col = date_col
 
         # run cross validation on the data to find best clusters
-        cv_training_error,cv_testing_error=fit_CV(df,
-                                              pfeatures,
-                                              th,
-                                              clustering,
-                                              distance_threshold,
-                                              classification,
-                                              n_iter,
-                                              n_clusters,
-                                              random_state,
-                                              h = h,
-                                              OutputFlag = 0,
-                                              cv=cv)
+        cv_training_error, cv_testing_error = fit_CV(df,
+                                                     self.pfeatures,
+                                                     self.splitting_threshold,
+                                                     self.clustering_algorithm,
+                                                     self.clustering_distance_threshold,
+                                                     self.classification_algorithm,
+                                                     self.n_iter,
+                                                     self.n_clusters,
+                                                     self.random_state,
+                                                     h=self.horizon,
+                                                     OutputFlag=self.verbose,
+                                                     cv=self.n_folds_cv)
 
         # find the best cluster
         try:
             k = cv_testing_error.idxmin()
             self.CV_error = cv_testing_error.loc[k]
         except:
-            k = n_iter
-        self.opt_k = k
+            k = self.n_iter
+
+        # update the optimal number of clusters
+        self.optimal_cluster_size = k
         if self.verbose:
             print('minimum iterations:', k)
 
         # error corresponding to chosen model
-        
 
         # actual training on all the data
         df_init = initializeClusters(self.df,
-                                clustering=clustering,
-                                n_clusters=n_clusters,
-                                distance_threshold = distance_threshold,
-                                random_state=random_state)
+                                     clustering=self.clustering_algorithm,
+                                     n_clusters=self.n_clusters,
+                                     distance_threshold=self.clustering_distance_threshold,
+                                     random_state=self.random_state)
 
         df_new,training_error,testing_error = splitter(df_init,
-                                          pfeatures=self.pfeatures,
-                                          th=th,
-                                          df_test = None,
-                                          testing = False,
-                                          classification=classification,
-                                          it = k,
-                                          h=h,
-                                          OutputFlag = 0)
+                                                       pfeatures=self.pfeatures,
+                                                       th=self.splitting_threshold,
+                                                       df_test=None,
+                                                       testing=False,
+                                                       classification=self.classification_algorithm,
+                                                       it=k,
+                                                       h=self.horizon,
+                                                       OutputFlag=0)
 
         # storing trained dataset and predict_cluster function
         self.df_trained = df_new
-        self.m = predict_cluster(self.df_trained, self.pfeatures)
+        self.classifier = predict_cluster(self.df_trained, self.pfeatures)
 
         # store P_df and R_df values
         P_df,R_df = get_MDP(self.df_trained)
         self.P_df = P_df
         self.R_df = R_df
 
-
     # predict() takes a state name and a time horizon, and returns the predicted
     # number of cases after h steps from the most recent datapoint
-    def predict(self,
-                region, # str: i.e. US state for prediction to be made
-                n_days): # int: time horizon (number of days) for prediction
-                        # preferably a multiple of d_avg (default 3)
+    def predict_region_ndays(self,
+                region,  # str: i.e. US state for prediction to be made
+                n_days):  # int: time horizon (number of days) for prediction
+        # preferably a multiple of days_avg (default 3)
+        h = int(np.round(n_days/self.days_avg))
+        delta = n_days - self.days_avg*h
 
-        h = int(np.round(n_days/self.d_avg))
-        delta = n_days - self.d_avg*h
         # get initial cases for the state at the latest datapoint
-        target = self.df[self.df[self.region_col]== region].iloc[-1, 2]
-        date = self.df[self.df[self.region_col]== region].iloc[-1, 1]
-        
+        target = self.df[self.df[self.region_colname] == region].iloc[-1, :][self.target_colname]
+        date = self.df[self.df[self.region_colname] == region].iloc[-1, 1]
+
         if self.verbose:
-            print('current date:', date,'| current %s:'%self.target_col, target)
+            print('current date:', date,'| current %s:'%self.target_colname, target)
 
         # cluster the this last point
-        s = self.df_trained[self.df_trained[self.region_col]==region].iloc[-1, -2]
-        
-        #s = int(self.m.predict([self.df[self.df['state']== state].iloc[-1, 2:2+self.pfeatures]]))
+        s = self.df_trained[self.df_trained[self.region_colname]==region].iloc[-1, -2]
         if self.verbose:
             print('predicted initial cluster', s)
 
@@ -171,40 +180,33 @@ class MDP_model:
             print('Prediction for date:', date + timedelta(n_days),'| target:', pred)
         return pred
 
-
     # predict_all() takes a time horizon, and returns the predicted number of
     # cases after h steps from the most recent datapoint for all states
-    def predict_all(self,
-                    n_days): # time horizon for prediction, preferably a multiple of d_avg (default 3)
-        h = int(np.round(n_days/self.d_avg))
+    def predict_allregions_ndays(self,
+                    n_days): # time horizon for prediction, preferably a multiple of days_avg (default 3)
         df = self.df
-        df = df[[self.region_col,'TIME',self.target_col]]
-        df = df.groupby(self.region_col).last()
+        df = df[[self.region_colname,'TIME',self.target_colname]]
+        df = df.groupby(self.region_colname).last()
         df.reset_index(inplace=True)
         df['TIME'] = df['TIME'] + timedelta(n_days)
-        df[self.target_col] = df[self.region_col].apply(lambda st: int(self.predict(st,n_days)))
+        df[self.target_colname] = df[self.region_colname].apply(
+            lambda region: int(self.predict_region_ndays(region, n_days)))
         return df
 
     # predict_class() takes a dictionary of states and time horizon and returns their predicted number of cases
-    def predict_dates(self,
-                      region_dates, # tuple containing states and corresponding dates to predict the target
-                      verbose=0):
+    def predict(self,
+                regions,  # list of states to predict the target
+                dates,  # list of dates to predict the target
+                ):
 
         # instantiate the prediction dataframe
-        pred_df = pd.DataFrame(columns=[self.region_col, 'TIME', self.target_col])
-
-        try :
-            regions, dates = region_dates
-        except :  # whatever error
-            if verbose :
-                print("Prediction error : wrong input format, must be a tuple")
-            return pred_df
+        pred_df = pd.DataFrame(columns=[self.region_colname, 'TIME', self.target_colname])
 
         # get the last dates for each states
         df = self.df.copy()
-        df_last = df[[self.region_col, 'TIME', self.target_col]].groupby(self.region_col).last().reset_index().set_index(self.region_col)
-        df_first = df[[self.region_col, 'TIME', self.target_col]].groupby(self.region_col).first().reset_index().set_index(self.region_col)
-        region_set = set(df[self.region_col].values)
+        df_last = df[[self.region_colname, 'TIME', self.target_colname]].groupby(self.region_colname).last().reset_index().set_index(self.region_colname)
+        df_first = df[[self.region_colname, 'TIME', self.target_colname]].groupby(self.region_colname).first().reset_index().set_index(self.region_colname)
+        region_set = set(df[self.region_colname].values)
 
         for region in regions:
             try:
@@ -212,7 +214,7 @@ class MDP_model:
 
             # the state doesn't appear not in the region set
             except AssertionError:
-                if verbose:
+                if self.verbose:
                     print("The region '{}' is not in the trained region set".format(region))
                 continue  # skip skip to the next region
 
@@ -220,73 +222,11 @@ class MDP_model:
             last_date = df_last.loc[region, "TIME"]
             for date in dates:
                 try:
-                    pred = predict_region_date(self, (region, first_date, last_date), date, verbose=verbose)
-                    pred_df = pred_df.append({self.region_col: region, "TIME": date, self.target_col: pred}, ignore_index=True)
+                    pred = predict_region_date(self, (region, first_date, last_date), date, verbose=self.verbose)
+                    pred_df = pred_df.append({self.region_colname: region, "TIME": date, self.target_colname: pred}, ignore_index=True)
                 except PredictionError:
                     pass
         return pred_df
-
-
-# model_testing() takes in n_days we want to predict on, all the model training
-# parameters, creates the appropriate training data, and runs the fit and predict
-# functions. Returns an instance of the trained model, and the mape error df
-def model_testing(file, # csv file with data OR data frame
-                  target_col, # str: col name of target (i.e. 'deaths')
-            region_col, # str, col name of region (i.e. 'state')
-            date_col, # str, col name of time (i.e. 'date')
-            features_cols, # list of str: i.e. (['mobility', 'testing'])
-            n_days, # int: n_days for prediction (cut the data here)
-            h, # time horizon to get best prediction
-            n_iter=40, # number of iterations
-            d_avg=3, # int: number of days to average data over
-            distance_threshold = 0.1, # clustering diameter for Agglomerative clustering
-            action_thresh = [], # list of cutoffs for each action bin
-            cv=5, # number for cross validation
-            th=0, # splitting threshold
-            classification = 'DecisionTreeClassifier', # classification method
-            clustering='Agglomerative',# clustering method from Agglomerative, KMeans, and Birch
-            n_clusters = None, # number of clusters for KMeans
-            random_state = 0):
-
-    # load data
-    if type(file) == str:
-        df = pd.read_csv(file)
-    else:
-        df = file
-
-    # take out dates for prediction
-    df.loc[:, [date_col]]= pd.to_datetime(df[date_col])
-    split_date = df[date_col].max() - timedelta(n_days)
-    df_train = df.loc[df[date_col] <= split_date]
-
-    m = MDP_model()
-    m.fit(df_train, # csv file with data OR data frame
-            target_col, # str: col name of target (i.e. 'deaths')
-            region_col, # str, col name of region (i.e. 'state')
-            date_col, # str, col name of time (i.e. 'date')
-            features_cols, # list of str: i.e. (['mobility', 'testing'])
-            h, # time horizon
-            n_iter, # max # of clusters
-            d_avg, # int: number of days to average data over
-            distance_threshold, # clustering diameter for Agglomerative clustering
-            action_thresh, # list of cutoffs for each action bin
-            cv, # number for cross validation
-            th, # splitting threshold
-            classification, # classification method
-            clustering,# clustering method from Agglomerative, KMeans, and Birch
-            n_clusters, # number of clusters for KMeans
-            random_state)
-    
-    # create df_pred and df_true with the appropriate dates and sorted by state
-    df_pred = m.predict_all(n_days)
-    df_pred.set_index(region_col, inplace=True)
-    date = df_pred['TIME'].max()
-    df_true = df.loc[df[date_col]==date].sort_values(by=[region_col])
-    df_true.set_index(region_col, inplace=True)
-    error = mape(df_pred, df_true, m.target_col)
-    
-    return m, error
-#############################################################################
 
 
 if __name__ == "__main__":
@@ -304,10 +244,10 @@ if __name__ == "__main__":
         deterministic_label = ''
     else:
         deterministic_label = 'markov_'
-    target = 'deaths'
-    mdp_region_col = 'state' # str, col name of region (e.g. 'state')
-    mdp_date_col = 'date' # str, col name of time (e.g. 'date')
-    mdp_features_cols = [] # list of strs: feature columns
+    target_colname = 'deaths'
+    mdp_region_colname = 'state' # str, col name of region (e.g. 'state')
+    mdp_date_colname = 'date' # str, col name of time (e.g. 'date')
+    mdp_features_list = [] # list of strs: feature columns
 
     sgm = .1
     n_iter_mdp = 50
@@ -316,7 +256,7 @@ if __name__ == "__main__":
 
     cols_to_keep = ['state',
                     'date',
-                    target,
+                    target_colname,
                     'prevalence'] + [model + '_' + metric for model in models for metric in metrics]
 
     df_orig = pd.read_csv(os.path.join(path, file))
@@ -324,10 +264,10 @@ if __name__ == "__main__":
     df = deepcopy(df_orig)
     df.columns = map(str.lower, df.columns)
     #df = df.query('cases >= @nmin')
-    df= df[df[target] >= nmin]
-    df['date'] = df['date'].apply(lambda x: datetime.strptime(x,'%Y-%m-%d'))
-    df_orig['date'] = df_orig['date'].apply(lambda x: datetime.strptime(x,'%Y-%m-%d'))
-    df = df.sort_values(by = ['state','date'])
+    df= df[df[target_colname] >= nmin]
+    df['date'] = df['date'].apply(lambda x: datetime.datetime.strptime(x,'%Y-%m-%d'))
+    df_orig['date'] = df_orig['date'].apply(lambda x: datetime.datetime.strptime(x,'%Y-%m-%d'))
+    df = df.sort_values(by=['state', 'date'])
     states = sorted(list(set(df['state'])))
     pop_df = df.loc[:, ['state', 'population']]
     pop_dic = {pop_df .iloc[i, 0] : pop_df .iloc[i, 1] for i in range(pop_df .shape[0])}
@@ -346,27 +286,30 @@ if __name__ == "__main__":
     print('MDP Model Training in Progress...')
     # df_train = df_orig[df_orig['date'] <= training_cutoff].drop(columns='people_tested').dropna(axis=0)
     df_train = df_orig[df_orig['date'] <= training_cutoff]
-    mdp = MDP_model()
+    mdp = MDP_model(
+        target_colname=target_colname,  # str: col name of target_colname (i.e. 'deaths')
+        region_colname=mdp_region_colname,  # str, col name of region (i.e. 'state')
+        date_colname=mdp_date_colname,  # str, col name of time (i.e. 'date')
+        features_list=mdp_features_list,  # list of strs: feature columns
+        horizon=5,
+        n_iter=n_iter_mdp,
+        days_avg=3,
+        n_folds_cv=3,
+        clustering_distance_threshold=0.1,
+        verbose=False)
+
     mdp_abort=False
     try:
-        mdp.fit(df_train,
-                target_col = target, # str: col name of target (i.e. 'deaths')
-                region_col = mdp_region_col, # str, col name of region (i.e. 'state')
-                date_col = mdp_date_col, # str, col name of time (i.e. 'date')
-                features_cols = mdp_features_cols, # list of strs: feature columns
-                h=5,
-                n_iter=n_iter_mdp,
-                d_avg=3,
-                distance_threshold = 0.1)
+        mdp.fit(df_train)
     except ValueError:
-        print('ERROR: Feature columns have missing values! Please drop' \
-              ' rows or fill in missing data.')
+        print('ERROR: Feature columns have missing values! Please drop'
+              'rows or fill in missing data.')
         print('MDP Model Aborted.')
-        mdp_abort=True
+        mdp_abort = True
         run_mdp = False
 
     # ####### test prediction methods ##########
-    run_predict_all = False
+    run_predict_all = True
     run_predict_class = True
 
     # test predict all :
@@ -374,12 +317,14 @@ if __name__ == "__main__":
         if not mdp_abort:
             mdp_output = pd.DataFrame()
             for i in range(pred_out):
-                mdp_output = mdp_output.append(mdp.predict_all(n_days=i))
+                mdp_output = mdp_output.append(mdp.predict_allregions_ndays(n_days=i))
+            print(mdp_output)
 
     # test predict class :
     if run_predict_class:
-        example_dict = (["Alabama", "Gabon", "Iowa", "Massachusetts"], ["2019-06-14", "2020-05-14", "2020-07-01"])
-        mdp_output = mdp.predict_dates(example_dict, verbose=1)
+        if not mdp_abort:
+            example_dict = (["Alabama", "Gabon", "Iowa", "Massachusetts"], ["2019-06-14", "2020-05-14", "2020-07-01"])
+            mdp_output = mdp.predict(*example_dict)
 
-        print(mdp_output)
+            print(mdp_output)
     print('MDP Model (test) Complete.')

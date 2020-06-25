@@ -16,7 +16,7 @@ import pandas as pd
 import numpy as np
 import matplotlib as plt
 import random
-# from tqdm import tqdm #progress bar
+from tqdm import tqdm  # progress bar
 import binascii
 from copy import deepcopy
 from sklearn.cluster import KMeans, AgglomerativeClustering, Birch
@@ -39,41 +39,41 @@ from mdp_testing import *
 # Funtions for Initialization
 
 
-# createSamples() takes the original dataframe from combined data, 
+# createSamples() takes the original dataframe from combined data,
 # the names of columns of features to keep, the treshold values to determine
-# what type of action is made based on the FIRST feature of features_cols, 
-# d_avg the number of days used to compress datapoints, and returns a data frame with 
+# what type of action is made based on the FIRST feature of features_list,
+# days_avg the number of days used to compress datapoints, and returns a data frame with
 # desired features and history, ratio values and history, and 'RISK' and 'ACTION'
 # returns new dataframe with only the desired columns, number of features considered
 def createSamples(df,#, # dataframe: original full dataframe
                   #new_cols, # str list: names of columns to be considered
-                  target_col, # str: col name of target (i.e. 'deaths')
-                  region_col, # str, col name of region (i.e. 'state')
-                  date_col, # str, col name of time (i.e. 'date')
-                  features_cols, # list of str: i.e. (['mobility', 'testing'])
+                  target_colname, # str: col name of target_colname (i.e. 'deaths')
+                  region_colname, # str, col name of region (i.e. 'state')
+                  date_colname, # str, col name of time (i.e. 'date')
+                  features_list, # list of str: i.e. (['mobility', 'testing'])
                   action_thresh, # int list: defining size of jumps in stringency
                   #d_delay, # int: day lag before calculating death impact
-                  d_avg): # int: # of days to average when reporting death
-    
-    df.rename(columns={date_col: 'TIME'}, inplace = True)
-    df = df[df[region_col]!='Guam']
-    df = df[df[region_col]!='Northern Mariana Islands']
-    df = df[df[region_col]!='Puerto Rico']
-    df = df[df[region_col]!='Diamond Princess']
-    df = df[df[region_col]!='Grand Princess']
-    df = df[df[region_col]!='American Samoa']
-    df = df[df[region_col]!='Virgin Islands']
-    
+                  days_avg): # int: # of days to average when reporting death
+
+    df.rename(columns={date_colname: 'TIME'}, inplace = True)
+    df = df[df[region_colname]!='Guam']
+    df = df[df[region_colname]!='Northern Mariana Islands']
+    df = df[df[region_colname]!='Puerto Rico']
+    df = df[df[region_colname]!='Diamond Princess']
+    df = df[df[region_colname]!='Grand Princess']
+    df = df[df[region_colname]!='American Samoa']
+    df = df[df[region_colname]!='Virgin Islands']
+
 
     #new_cols = ['state', 'date', 'cases', 'mobility_score']
-    if target_col not in features_cols:
-        new_cols = [region_col] + ['TIME'] + [target_col] + features_cols
+    if target_colname not in features_list:
+        new_cols = [region_colname] + ['TIME'] + [target_colname] + features_list
     else:
-        new_cols = [region_col] + ['TIME'] + features_cols
+        new_cols = [region_colname] + ['TIME'] + features_list
     df_new = df[new_cols]
 
     #df_new.rename(columns = {df_new.columns[1]: 'TIME'}, inplace = True)
-    ids = df_new.groupby([region_col]).ngroup()
+    ids = df_new.groupby([region_colname]).ngroup()
     df_new.insert(0, 'ID', ids, True)
 
     #print(df.columns)
@@ -97,11 +97,11 @@ def createSamples(df,#, # dataframe: original full dataframe
     cols = df_new.columns
     #print('cols', cols)
     dictio = {i:'last' for i in cols}
-    for key in set([target_col]+features_cols):
+    for key in set([target_colname]+features_list):
         dictio[key] = 'mean'
     #dictio['StringencyChange'] = 'sum'
     #del dictio['TIME']
-    df_new = g.resample('%sD' %d_avg).agg(dictio)
+    df_new = g.resample('%sD' %days_avg).agg(dictio)
     #df_new = g.resample('3D').mean()
     # print('new', df_new)
     df_new = df_new.drop(columns=['ID'])
@@ -113,19 +113,19 @@ def createSamples(df,#, # dataframe: original full dataframe
     # averaging mobility score
     #df_new['mobility_score'] = df_new['mobility_score'].rolling(4).sum()/4
 
-    
-    # creating target-1, target-2, etc.
-    #df_new[target_col+'-1'] = df_new[target_col].shift(1)
-    #df_new[target_col+'-2'] = df_new[target_col].shift(2)
+
+    # creating target_colname-1, target_colname-2, etc.
+    #df_new[target_colname+'-1'] = df_new[target_colname].shift(1)
+    #df_new[target_colname+'-2'] = df_new[target_colname].shift(2)
 
     # creating mobility-1, mobility-2 etc.
-    for f in features_cols:
+    for f in features_list:
         df_new[f+'-1'] = df_new[f].shift(1)
         df_new[f+'-2'] = df_new[f].shift(2)
 
     # creating r_t, r_t-1, etc ratio values from cases
-    df_new = df_new[df_new[target_col] != 0]
-    df_new['r_t'] = df_new[target_col]/df_new[target_col].shift(1)
+    df_new = df_new[df_new[target_colname] != 0]
+    df_new['r_t'] = df_new[target_colname]/df_new[target_colname].shift(1)
     df_new['r_t-1'] = df_new['r_t'].shift(1)
     df_new['r_t-2'] = df_new['r_t'].shift(2)
 
@@ -135,15 +135,15 @@ def createSamples(df,#, # dataframe: original full dataframe
                ['r_t-1', 'r_t-2']] = 0
     df_new.loc[df_new['ID'] != df_new['ID'].shift(3), \
                ['r_t-2']] = 0
-        
-    for f in features_cols:
+
+    for f in features_list:
         df_new.loc[df_new['ID'] != df_new['ID'].shift(1), \
                [f+'-1', f+'-2']] = df_new[f]
-        
+
         df_new.loc[df_new['ID'] != df_new['ID'].shift(2), \
            [f+'-2']] = df_new[f+'-1']
-        
-    
+
+
 
     # Here we assign initial clustering by r_t
     df_new['RISK'] = np.log(df_new['r_t'])
@@ -155,23 +155,23 @@ def createSamples(df,#, # dataframe: original full dataframe
         pfeatures = len(df_new.columns)-5
     else:
         actions = list(range(0, len(action_thresh)-1)) #[0, 1] #[0, 5000, 100000]
-        df_new[features_cols[0]+'_change'] = df_new[features_cols[0]+'-1']-\
-            df_new[features_cols[0]+'-2']
-        df_new['ACTION'] = pd.cut(df_new[features_cols[0]+'_change'], bins = action_thresh, right = False, labels = actions)
+        df_new[features_list[0]+'_change'] = df_new[features_list[0]+'-1']-\
+            df_new[features_list[0]+'-2']
+        df_new['ACTION'] = pd.cut(df_new[features_list[0]+'_change'], bins = action_thresh, right = False, labels = actions)
         pfeatures = len(df_new.columns)-6
 
     df_new = df_new[df_new['r_t'] != 0]
     df_new = df_new.reset_index()
     df_new = df_new.drop(columns=['index'])
     # moving region col to the end, since not a feature
-    if target_col not in features_cols:
-        df_new = df_new[[c for c in df_new if c not in [region_col, target_col]]
-           + [region_col] + [target_col]]
+    if target_colname not in features_list:
+        df_new = df_new[[c for c in df_new if c not in [region_colname, target_colname]]
+           + [region_colname] + [target_colname]]
         pfeatures -= 1
     else:
-        df_new = df_new[[c for c in df_new if c not in [region_col]]
-           + [region_col]]
-    
+        df_new = df_new[[c for c in df_new if c not in [region_colname]]
+           + [region_colname]]
+
     # Drop all rows with empty cells
     #df_new.dropna(inplace=True)
 
@@ -201,7 +201,7 @@ def split_train_test_by_id(data, # dataframe: all the data
 def initializeClusters(df,  # pandas dataFrame: MUST contain a "RISK" column
                        clustering='Agglomerative',  # string: clustering algorithm
                        n_clusters= None,
-                       distance_threshold= 0.1,# number of clusters
+                       distance_threshold= 0.1,  # number of clusters
                        random_state=0):  # random seed for the clustering
     df = df.copy()
     if clustering == 'KMeans':
@@ -210,7 +210,7 @@ def initializeClusters(df,  # pandas dataFrame: MUST contain a "RISK" column
                         np.array(df.RISK).reshape(-1, 1)).labels_
     elif clustering == 'Agglomerative':
         output = AgglomerativeClustering(
-            n_clusters=n_clusters, distance_threshold = distance_threshold).fit(
+            n_clusters=n_clusters, distance_threshold=distance_threshold).fit(
                     np.array(df.RISK).reshape(-1, 1)).labels_
     elif clustering == 'Birch':
         output = Birch(
@@ -268,7 +268,7 @@ def multimode(data):
     maxcount, mode_items = next(groupby(counts, key=itemgetter(1)), (0, []))
     return list(map(itemgetter(0), mode_items))
 
-# split() takes as input a dataframe, an initial cluster, an action, a target
+# split() takes as input a dataframe, an initial cluster, an action, a target_colname
 # cluster that is a contradiction c, a time horizon T, then number of features,
 # and an iterator k (that is the indexer of the next cluster), as well as the
 # predictive classification algorithm used
@@ -277,7 +277,7 @@ def multimode(data):
 def split(df,  # pandas dataFrame
           i,  # integer: initial cluster
           a,  # integer: action taken
-          c,  # integer: target cluster
+          c,  # integer: target_colname cluster
           pfeatures,  # integer: number of features
           k,  # integer: intedexer for next cluster
           classification='LogisticRegression'):  # string: classification aglo
@@ -371,7 +371,10 @@ def splitter(df,  # pandas dataFrame
     df_new = deepcopy(df)
 
     # Setting progress bar--------------
-    split_bar = range(it-k)
+    if OutputFlag:
+        split_bar = tqdm(range(it-k))
+    else:
+        split_bar = range(it-k)
     # split_bar.set_description("Splitting...")
     # Setting progress bar--------------
     for i in split_bar:
@@ -454,22 +457,22 @@ def splitter(df,  # pandas dataFrame
         if testing:
             ax2.plot(its, testing_error, label = "Testing Error")
         if n>0:
-            ax2.axvline(x=n,linestyle='--',color='r') #Plotting vertical line at #cluster =n
+            ax2.axvline(x=n, linestyle='--', color='r') #Plotting vertical line at #cluster =n
         ax2.set_ylim(0)
         ax2.set_xlabel('# of Clusters')
         ax2.set_ylabel('Cases MAPE error')
         ax2.set_title('MAPE error by number of clusters')
         ax2.legend()
         plt.show()
-    
-    
+
+
     df_train_error = pd.DataFrame(list(zip(its, training_error)), \
                                   columns = ['Clusters', 'Error'])
     if testing:
         df_test_error = pd.DataFrame(list(zip(its, testing_error)), \
                                   columns = ['Clusters', 'Error'])
         return (df_new,df_train_error,df_test_error)
-    
+
     return(df_new,training_error,testing_error)
 
 #############################################################################
@@ -478,7 +481,7 @@ def fit_CV(df,
           pfeatures,
           th,
           clustering,
-          distance_threshold,
+          clustering_distance_threshold,
           classification,
           n_iter,
           n_clusters,
@@ -492,7 +495,7 @@ def fit_CV(df,
     df_training_error = pd.DataFrame(columns=['Clusters'])
     df_testing_error = pd.DataFrame(columns=['Clusters'])
     testing_errors = []
-    
+
     gkf = GroupKFold(n_splits=cv)
 
     # shuffle ID's and create a new column 'ID_shuffle'
@@ -511,10 +514,10 @@ def fit_CV(df,
         #################################################################
         # Initialize Clusters
         df_init = initializeClusters(df_train,
-                                clustering=clustering,
-                                n_clusters=n_clusters,
-                                distance_threshold = distance_threshold,
-                                random_state=random_state)
+                                     clustering=clustering,
+                                     n_clusters=n_clusters,
+                                     distance_threshold = clustering_distance_threshold,
+                                     random_state=random_state)
         k = df_init['CLUSTER'].nunique()
         #################################################################
 
@@ -529,13 +532,11 @@ def fit_CV(df,
                                           classification=classification,
                                           it=n_iter,
                                           h=h,
-                                          OutputFlag = 0,
+                                          OutputFlag = OutputFlag,
                                           n=n,
                                           plot = plot)
-        df_training_error = df_training_error.merge(training_error, \
-                                                    how='outer', on=['Clusters'])
-        df_testing_error = df_testing_error.merge(testing_error, \
-                                                  how='outer', on=['Clusters'])
+        df_training_error = df_training_error.merge(training_error, how='outer', on=['Clusters'])
+        df_testing_error = df_testing_error.merge(testing_error, how='outer', on=['Clusters'])
 
         m = predict_cluster(df_new, pfeatures)
         df_err, E_v = error_per_ID(df_test, df_new, m, pfeatures, relative=True, h=h)
@@ -551,8 +552,8 @@ def fit_CV(df,
     cv_testing_error = np.mean(df_testing_error, axis=1)
     #print(cv_training_error)
     #print(cv_testing_error)
-    
-    
+
+
     if plot:
         fig1, ax1 = plt.subplots()
         #its = np.arange(k+1,k+1+len(cv_training_error))
@@ -562,7 +563,7 @@ def fit_CV(df,
         #ax1.plot(its, training_acc, label = "Training Accuracy")
         #ax1.plot(its, testing_acc, label = "Testing Accuracy")
         if n>0:
-            ax1.axvline(x=n,linestyle='--',color='r') #Plotting vertical line at #cluster =n
+            ax1.axvline(x=n, linestyle='--', color='r') #Plotting vertical line at #cluster =n
         ax1.set_ylim(0)
         ax1.set_xlabel('# of Clusters')
         ax1.set_ylabel('Mean CV Error or Accuracy %')
