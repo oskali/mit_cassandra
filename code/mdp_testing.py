@@ -102,15 +102,17 @@ def get_MDP(df_new):
     R_df = df_new.groupby('CLUSTER')['RISK'].mean()
     return P_df,R_df
 
-# predict_class_date() takes a given state and a date and returns the predicted target
+
+# Auxiliary function for deployment
+# predict_region_date() takes a given state and a date and returns the predicted target_colname
 def predict_region_date(self, # MDP_model object
                         region_first_last_dates, # tuple (region, first_date, last_date), e.g (Alabama, Timestamp('2020-03-24 00:00:00'), Timestamp('2020-06-22 00:00:00'))
-                        date, # target date for prediciton, e.g. (Timestamp('2020-05-24 00:00:00'))
+                        date, # target_colname date for prediciton, e.g. (Timestamp('2020-05-24 00:00:00'))
                         verbose=0):
 
         region, first_date, last_date = region_first_last_dates
         try:
-            date = datetime.strptime(date,'%Y-%m-%d')
+            date = datetime.strptime(date, '%Y-%m-%d')
         except TypeError:
             pass
 
@@ -130,18 +132,18 @@ def predict_region_date(self, # MDP_model object
 
             # compute the closest training date
             n_days = (last_date - date).days
-            lag = ((- n_days) % self.d_avg)
-            pos = n_days // self.d_avg + (lag > 0)
-            clst_past_date = last_date - timedelta(pos * self.d_avg)
+            lag = ((- n_days) % self.days_avg)
+            pos = n_days // self.days_avg + (lag > 0)
+            clst_past_date = last_date - timedelta(pos * self.days_avg)
 
             # get the observation :
             try:
-                clst_past_pred = self.df_trained[(self.df_trained[self.region_col] == region)
+                clst_past_pred = self.df_trained[(self.df_trained[self.region_colname] == region)
                                                  & (self.df_trained.TIME == clst_past_date)]
                 assert (not clst_past_pred.empty)  # verify that the closest date is actually in the training date
 
                 s = clst_past_pred["CLUSTER"]
-                target = clst_past_pred[self.target_col].values[0] * (np.exp(self.R_df.loc[s].values[0])**(float(lag)/3))
+                target = clst_past_pred[self.target_colname].values[0] * (np.exp(self.R_df.loc[s].values[0])**(float(lag)/3))
                 return np.ceil(target)
 
             except AssertionError:
@@ -154,7 +156,7 @@ def predict_region_date(self, # MDP_model object
 
         # Case 3 : the date has not been observed yet :
         n_days = (date-last_date).days
-        return np.ceil(self.predict(region, n_days))
+        return np.ceil(self.predict_region_ndays(region, n_days))
 
 #############################################################################
 
@@ -298,7 +300,7 @@ def testing_value_error(df_test, df_new, model, pfeatures,relative=False,h=5):
         #df_test.dropna(inplace=True)
         #model.predict(df_test.iloc[:, 2:2+pfeatures])
         #df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
-    
+
     E_v = 0
     P_df,R_df = get_MDP(df_new)
     df2 = df_test.reset_index()
@@ -382,8 +384,8 @@ def error_per_ID(df_test, df_new, model, pfeatures,relative=False,h=5):
     df2 = df2.groupby(['ID']).first()
     N_test = df2.shape[0]
 #    print(df2)
-    
-    
+
+
     V_true,V_estim,V_err,C_err,State = [],[],[],[],[]
 
     for i in range(N_test):
@@ -682,32 +684,32 @@ def all_paths(df, df_new, pfeatures, opt=True, plot=True):
 
 
 # plot_pred() takes a trained model, a specific US state name, and the df_true
-# (sorted by TIME), and plots the predicted versus true cases for n_days 
+# (sorted by TIME), and plots the predicted versus true cases for n_days
 def plot_pred(model, state, df_true, n_days):
-    h = int(np.round(n_days/model.d_avg))
-    df_true.loc[:, [model.date_col]]= pd.to_datetime(df_true[model.date_col])
-    date = model.df[model.df[model.region_col]== state].iloc[-1, 1]
-    cases = model.df[model.df[model.region_col]== state].iloc[-1, 2]
+    h = int(np.round(n_days/model.days_avg))
+    df_true.loc[:, [model.date_colname]]= pd.to_datetime(df_true[model.date_colname])
+    date = model.df[model.df[model.region]== state].iloc[-1, 1]
+    cases = model.df[model.df[model.region]== state].iloc[-1, 2]
     dates = [date]
     cases_pred = [cases]
-    
-    s = model.df_trained[model.df_trained[model.region_col]==state].iloc[-1, -2]
+
+    s = model.df_trained[model.df_trained[model.region]==state].iloc[-1, -2]
     r = 1
     for i in range(h):
-        dates.append(date + timedelta((i+1)*model.d_avg))
+        dates.append(date + timedelta((i+1)*model.days_avg))
         r = r*np.exp(model.R_df.loc[s])
         cases_pred.append(cases*r)
         s = model.P_df.loc[s,0].values[0]
-    
-    
+
+
     fig, ax = plt.subplots()
-    ax.plot(df_true.loc[df_true['state']==state][model.date_col], \
-            df_true.loc[df_true['state']==state][model.target_col], \
-            label = 'True '+model.target_col)
-    ax.plot(dates, cases_pred, label='Predicted '+model.target_col)
-    ax.set_title('%s True vs Predicted '%state + model.target_col)
+    ax.plot(df_true.loc[df_true['state']==state][model.date_colname], \
+            df_true.loc[df_true['state']==state][model.target_colname], \
+            label = 'True '+model.target_colname)
+    ax.plot(dates, cases_pred, label='Predicted '+model.target_colname)
+    ax.set_title('%s True vs Predicted '%state + model.target_colname)
     ax.set_xlabel('Date')
-    ax.set_ylabel(model.target_col)
+    ax.set_ylabel(model.target_colname)
     plt.xticks(rotation=45, ha='right')
     plt.legend()
     plt.show()
@@ -725,8 +727,8 @@ def show_state(df_new,df,state,pfeatures):
     st['CLUSTER'] = model.predict(st.iloc[:,2:pfeatures+2])
     return st[['TIME','cases','RISK','CLUSTER', 'r_t']]
 
-def mape(df_pred,df_true, target_col):
-    df_pred['real '+target_col] = df_true[target_col]
-    df_pred['rel_error'] = abs(df_pred[target_col]-df_true[target_col])/df_true[target_col]
+def mape(df_pred,df_true, target_colname):
+    df_pred['real '+target_colname] = df_true[target_colname]
+    df_pred['rel_error'] = abs(df_pred[target_colname]-df_true[target_colname])/df_true[target_colname]
     return df_pred
 #############################################################################
