@@ -92,18 +92,34 @@ class MDP_model:
         self.pfeatures = pfeatures
 
         # run cross validation on the data to find best clusters
+        #
+        # def fit_CV(df,
+        #        pfeatures,
+        #        th,
+        #        clustering,
+        #        clustering_distance_threshold,
+        #        classification,
+        #        n_iter,
+        #        n_clusters,
+        #        h=5,
+        #        OutputFlag = 0,
+        #        cv=5,
+        #        n=-1,
+        #        random_state=1234,
+        #        plot=False):
         cv_training_error, cv_testing_error = fit_CV(df,
-                                                     self.pfeatures,
-                                                     self.splitting_threshold,
-                                                     self.clustering_algorithm,
-                                                     self.clustering_distance_threshold,
-                                                     self.classification_algorithm,
-                                                     self.n_iter,
-                                                     self.n_clusters,
-                                                     self.random_state,
+                                                     pfeatures=self.pfeatures,
+                                                     th=self.splitting_threshold,
+                                                     clustering=self.clustering_algorithm,
+                                                     clustering_distance_threshold=self.clustering_distance_threshold,
+                                                     classification=self.classification_algorithm,
+                                                     n_iter=self.n_iter,
+                                                     n_clusters=self.n_clusters,
                                                      h=self.horizon,
                                                      OutputFlag=self.verbose,
-                                                     cv=self.n_folds_cv)
+                                                     cv=self.n_folds_cv,
+                                                     random_state=self.random_state,
+                                                     )
 
         # find the best cluster
         try:
@@ -298,7 +314,8 @@ if __name__ == "__main__":
         days_avg=3,
         n_folds_cv=3,
         clustering_distance_threshold=0.1,
-        verbose=False)
+        verbose=False,
+        random_state=1234)
 
     mdp_abort=False
     try:

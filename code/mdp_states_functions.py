@@ -281,7 +281,8 @@ def split(df,  # pandas dataFrame
           c,  # integer: target_colname cluster
           pfeatures,  # integer: number of features
           k,  # integer: intedexer for next cluster
-          classification='LogisticRegression'):  # string: classification aglo
+          classification='LogisticRegression',
+          random_state=0):  # string: classification aglo
 
     g1 = df[(df['CLUSTER'] == i) & (
             df['ACTION'] == a) & (df['NEXT_CLUSTER'] == c)]
@@ -309,15 +310,15 @@ def split(df,  # pandas dataFrame
     tr_y = training.iloc[:, -1:]
 
     if classification == 'LogisticRegression':
-        m = LogisticRegression(solver='liblinear')
+        m = LogisticRegression(solver='liblinear', random_state=random_state)
     elif classification == 'LogisticRegressionCV':
-        m = LogisticRegressionCV()
+        m = LogisticRegressionCV(random_state=random_state)
     elif classification == 'DecisionTreeClassifier':
-        m = DecisionTreeClassifier()
+        m = DecisionTreeClassifier(random_state=random_state)
     elif classification == 'RandomForestClassifier':
-        m = RandomForestClassifier()
+        m = RandomForestClassifier(random_state=random_state)
     elif classification == 'XGBClassifier':
-        m = XGBClassifier()
+        m = XGBClassifier(random_state=random_state)
 
     else:
         m = LogisticRegression(solver='liblinear')
@@ -359,6 +360,7 @@ def splitter(df,  # pandas dataFrame
              h=5,
              OutputFlag = 1,
              n=-1,
+             random_state=0,
              plot = False):  #If we plot error
     # initializing lists for error & accuracy data
     training_R2 = []
@@ -394,7 +396,7 @@ def splitter(df,  # pandas dataFrame
 
             # if OutputFlag == 1:
                 # print('Cluster splitted', c,'| Action causing contradiction:', a, '| Cluster most elements went to:', b)
-            df_new = split(df_new, c, a, b, pfeatures, nc, classification)
+            df_new = split(df_new, c, a, b, pfeatures, nc, classification, random_state=random_state)
 
             # error and accuracy calculations
 
@@ -479,19 +481,19 @@ def splitter(df,  # pandas dataFrame
 #############################################################################
 # Splitter algorithm with cross-validation
 def fit_CV(df,
-          pfeatures,
-          th,
-          clustering,
-          clustering_distance_threshold,
-          classification,
-          n_iter,
-          n_clusters,
-          random_state,
-          h=5,
-          OutputFlag = 0,
-          cv=5,
-          n=-1,
-          plot = False):
+           pfeatures,
+           th,
+           clustering,
+           clustering_distance_threshold,
+           classification,
+           n_iter,
+           n_clusters,
+           h=5,
+           OutputFlag = 0,
+           cv=5,
+           n=-1,
+           random_state=1234,
+           plot=False):
 
     df_training_error = pd.DataFrame(columns=['Clusters'])
     df_testing_error = pd.DataFrame(columns=['Clusters'])
@@ -517,7 +519,7 @@ def fit_CV(df,
         df_init = initializeClusters(df_train,
                                      clustering=clustering,
                                      n_clusters=n_clusters,
-                                     distance_threshold = clustering_distance_threshold,
+                                     distance_threshold=clustering_distance_threshold,
                                      random_state=random_state)
         k = df_init['CLUSTER'].nunique()
         #################################################################
@@ -526,16 +528,17 @@ def fit_CV(df,
         # Run Iterative Learning Algorithm
 
         df_new,training_error,testing_error = splitter(df_init,
-                                          pfeatures,
-                                          th,
-                                          df_test,
-                                          testing = True,
-                                          classification=classification,
-                                          it=n_iter,
-                                          h=h,
-                                          OutputFlag = OutputFlag,
-                                          n=n,
-                                          plot = plot)
+                                                       pfeatures,
+                                                       th,
+                                                       df_test,
+                                                       testing=True,
+                                                       classification=classification,
+                                                       it=n_iter,
+                                                       h=h,
+                                                       OutputFlag=OutputFlag,
+                                                       n=n,
+                                                       random_state=random_state,
+                                                       plot=plot)
         df_training_error = df_training_error.merge(training_error, how='outer', on=['Clusters'])
         df_testing_error = df_testing_error.merge(testing_error, how='outer', on=['Clusters'])
 
@@ -558,9 +561,9 @@ def fit_CV(df,
     if plot:
         fig1, ax1 = plt.subplots()
         #its = np.arange(k+1,k+1+len(cv_training_error))
-        ax1.plot(cv_training_error.index.values, cv_training_error, label= "CV Training Error")
+        ax1.plot(cv_training_error.index.values, cv_training_error, label="CV Training Error")
         #ax1.plot(its, cv_testing_error, label = "CV Testing Error")
-        ax1.plot(cv_testing_error.index.values, cv_testing_error, label= "CV Testing Error")
+        ax1.plot(cv_testing_error.index.values, cv_testing_error, label="CV Testing Error")
         #ax1.plot(its, training_acc, label = "Training Accuracy")
         #ax1.plot(its, testing_acc, label = "Testing Accuracy")
         if n>0:
