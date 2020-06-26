@@ -18,8 +18,10 @@ from datetime import timedelta
 from copy import deepcopy
 import datetime
 
-from mdp_states_functions import *
-from mdp_testing import *
+from mdp_states_functions import createSamples, fit_CV, initializeClusters, \
+        splitter
+from mdp_testing import predict_cluster, get_MDP, predict_region_date, mape, \
+        PredictionError
 import os
 #############################################################################
 
@@ -307,7 +309,7 @@ if __name__ == "__main__":
     target = 'deaths'
     mdp_region_col = 'state' # str, col name of region (e.g. 'state')
     mdp_date_col = 'date' # str, col name of time (e.g. 'date')
-    mdp_features_cols = [] # list of strs: feature columns
+    mdp_features_cols = ['deaths'] # list of strs: feature columns
 
     sgm = .1
     n_iter_mdp = 50
