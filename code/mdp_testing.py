@@ -162,6 +162,38 @@ def predict_region_date(self, # MDP_model object
 
 
 #############################################################################
+# Function for plotting
+
+def plot_pred(model, state, df_true, n_days):
+    h = int(np.round(n_days/model.days_avg))
+    df_true.loc[:, [model.date_colname]]= pd.to_datetime(df_true[model.date_colname])
+    date = model.df[model.df[model.region_colname]== state].iloc[-1, 1]
+    cases = model.df[model.df[model.region_colname]== state].iloc[-1][model.target_colname]
+    dates = [date]
+    cases_pred = [cases]
+
+    s = model.df_trained[model.df_trained[model.region_colname]==state].iloc[-1, -2]
+    r = 1
+    for i in range(h):
+        dates.append(date + timedelta((i+1)*model.days_avg))
+        r = r*np.exp(model.R_df.loc[s])
+        cases_pred.append(cases*r)
+        s = model.P_df.loc[s,0].values[0]
+
+
+    fig, ax = plt.subplots()
+    ax.plot(df_true.loc[df_true['state']==state][model.date_colname], \
+            df_true.loc[df_true['state']==state][model.target_colname], \
+            label = 'True '+model.target_colname)
+    ax.plot(dates, cases_pred, label='Predicted '+model.target_colname)
+    ax.set_title('%s True vs Predicted '%state + model.target_colname)
+    ax.set_xlabel('Date')
+    ax.set_ylabel(model.target_colname)
+    plt.xticks(rotation=45, ha='right')
+    plt.legend()
+    plt.show()
+
+#############################################################################
 # Functions for Accuracy and Purity
 
 # training_accuracy() takes in a clustered dataframe df_new, and returns the
