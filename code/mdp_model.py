@@ -17,8 +17,10 @@ from datetime import timedelta
 from copy import deepcopy
 import datetime
 
-from mdp_states_functions import createSamples, initializeClusters, splitter, fit_CV
-from mdp_testing import predict_cluster, get_MDP, predict_region_date, PredictionError
+from mdp_states_functions import createSamples, fit_CV, initializeClusters, \
+        splitter
+from mdp_testing import predict_cluster, get_MDP, predict_region_date, mape, \
+        PredictionError
 import os
 #############################################################################
 

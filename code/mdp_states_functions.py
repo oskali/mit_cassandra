@@ -24,14 +24,15 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import GridSearchCV, GroupKFold
+from sklearn.model_selection import GroupKFold
 #from xgboost import XGBClassifier
 from collections import Counter
 from itertools import groupby
 from operator import itemgetter
 from datetime import datetime
 
-from mdp_testing import *
+from mdp_testing import R2_value_training, training_value_error,  \
+    predict_cluster, R2_value_testing, testing_value_error, error_per_ID
 #############################################################################
 
 
