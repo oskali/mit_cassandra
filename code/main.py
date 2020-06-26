@@ -34,19 +34,28 @@ if deterministic:
 	deterministic_label = ''
 else:
 	deterministic_label = 'markov_'
-run_sir = False
-run_knn = False
+run_sir = True
+run_knn = True
 run_mdp = True
 run_scnd = False
 target = 'deaths'
-mdp_region_col = 'state' # str, col name of region (e.g. 'state')
-mdp_date_col = 'date' # str, col name of time (e.g. 'date')
-mdp_features_cols = [] # list of strs: feature columns
-            # include target here if want it to be a feature
-            # FIRST item in list dicates how actions decided if action_thresh provided
+
+# MDP parameters
+mdp_region_colname = 'state' # str, col name of region (e.g. 'state')
+mdp_date_colname = 'date' # str, col name of time (e.g. 'date')
+mdp_features_list = [] # list of strs: feature columns
+n_iter_mdp = 100
+horizon=5
+days_avg=3
+n_folds_cv=3
+clustering_distance_threshold=0.05
+verbose=False
+random_state=1234
+
+# include target here if want it to be a feature
+# FIRST item in list dicates how actions decided if action_thresh provided
 
 sgm = .1
-n_iter_mdp = 50
 n_iter_ci = 10
 ci_range = 0.75
 
@@ -124,20 +133,24 @@ else:
 #%%
 if run_mdp:
     print('MDP Model Training in Progress...')
-    #df_train = df_orig[df_orig['date'] <= training_cutoff].drop(columns='people_tested').dropna(axis=0)
+    # df_train = df_orig[df_orig['date'] <= training_cutoff].drop(columns='people_tested').dropna(axis=0)
     df_train = df_orig[df_orig['date'] <= training_cutoff]
-    mdp = MDP_model()
-    mdp_abort=False
+    mdp = MDP_model(
+        target_colname=target,  # str: col name of target_colname (i.e. 'deaths')
+        region_colname=mdp_region_colname,  # str, col name of region (i.e. 'state')
+        date_colname=mdp_date_colname,  # str, col name of time (i.e. 'date')
+        features_list=mdp_features_list,  # list of strs: feature columns
+        n_iter=n_iter_mdp,
+        horizon=horizon,
+        days_avg=days_avg,
+        n_folds_cv=n_folds_cv,
+        clustering_distance_threshold=clustering_distance_threshold,
+        random_state=random_state,
+        verbose=False)
+
+    mdp_abort = False
     try:
-        mdp.fit(df_train,
-                target_col = target, # str: col name of target (i.e. 'deaths') NOT automatically included in features
-                region_col = mdp_region_col, # str, col name of region (i.e. 'state')
-                date_col = mdp_date_col, # str, col name of time (i.e. 'date')
-                features_cols = mdp_features_cols, # list of strs: feature columns
-                h=5,
-                n_iter=n_iter_mdp,
-                d_avg=3,
-                distance_threshold = 0.1)
+        mdp.fit(df_train)
     except:
         print('MDP Model Aborted - check ERROR message.')
         mdp_abort=True
@@ -145,7 +158,7 @@ if run_mdp:
     if not mdp_abort:
         mdp_output = pd.DataFrame()
         for i in range(pred_out):
-            mdp_output = mdp_output.append(mdp.predict_all(n_days=i))
+            mdp_output = mdp_output.append(mdp.predict_allregions_ndays(n_days=i))
     
         mdp_output = mdp_output.rename(columns={'TIME': 'date', target: 'mdp_prediction'}).loc[:, ['state','date', 'mdp_prediction']]
     
@@ -289,18 +302,17 @@ for _ in tqdm(range(n_iter_ci)):
         aggl[i].append(list(aggp)[i])
 
 
-
 df['sir_ci'] = [norm.interval(ci_range, loc=np.nanmean(sirl[i]), scale=np.nanstd(sirl[i])) for i in range(n)]
 df['knn_ci'] = [norm.interval(ci_range, loc=np.nanmean(knnl[i]), scale=np.nanstd(knnl[i])) for i in range(n)]
 df['mdp_ci'] = [norm.interval(ci_range, loc=np.nanmean(mdpl[i]), scale=np.nanstd(mdpl[i])) for i in range(n)]
 df['agg_ci'] = [norm.interval(ci_range, loc=np.nanmean(aggl[i]), scale=np.nanstd(aggl[i])) for i in range(n)]
 
 finalDf = finalDf.merge(df.loc[:, ['state',
-                         'date',
-                         'sir_ci',
-                         'knn_ci',
-                         'mdp_ci',
-                         'agg_ci']] ,how='left', on=['state', 'date'])
+                                   'date',
+                                   'sir_ci',
+                                   'knn_ci',
+                                   'mdp_ci',
+                                   'agg_ci']] ,how='left', on=['state', 'date'])
 
 for model_str in ['sir', 'knn', 'mdp', 'agg']:
     finalDf[model_str + '_lower'] = finalDf[model_str + '_ci'].apply(lambda x: x[0])
