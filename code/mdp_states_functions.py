@@ -220,8 +220,8 @@ def initializeClusters(df,  # pandas dataFrame: MUST contain a "RISK" column
     else:
         output = LabelEncoder().fit_transform(np.array(df.RISK).reshape(-1, 1))
     df['CLUSTER'] = output
-    df['NEXT_CLUSTER'] = df['CLUSTER'].shift(-1)
-    df.loc[df['ID'] != df['ID'].shift(-1), 'NEXT_CLUSTER'] = 'None'
+    df['NEXT_CLUSTER'] = df.groupby('ID')['CLUSTER'].shift(-1)
+    # df.loc[df['ID'] != df['ID'].shift(-1), 'NEXT_CLUSTER'] = 'None'
     return(df)
 #############################################################################
 
@@ -502,7 +502,7 @@ def fit_CV(df,
     gkf = GroupKFold(n_splits=cv)
 
     # shuffle ID's and create a new column 'ID_shuffle'
-    random.seed(datetime.now())
+    random.seed(random_state)
     g = [df for _, df in df.groupby('ID')]
     random.shuffle(g)
     df = pd.concat(g).reset_index(drop=True)
@@ -512,8 +512,8 @@ def fit_CV(df,
     for train_idx, test_idx in gkf.split(df, y=None, groups=df['ID_shuffle']):
         # cv_bar.set_description("Cross-Validation... | Test set # %i" %i)
 
-        df_train = df[df.index.isin(train_idx)]
-        df_test = df[df.index.isin(test_idx)]
+        df_train = df.loc[train_idx]
+        df_test = df.loc[test_idx]
         #################################################################
         # Initialize Clusters
         df_init = initializeClusters(df_train,

@@ -263,10 +263,10 @@ if __name__ == "__main__":
     target_colname = 'deaths'
     mdp_region_colname = 'state' # str, col name of region (e.g. 'state')
     mdp_date_colname = 'date' # str, col name of time (e.g. 'date')
-    mdp_features_list = [] # list of strs: feature columns
+    mdp_features_list = ["home_time"] # list of strs: feature columns
 
     sgm = .1
-    n_iter_mdp = 20
+    n_iter_mdp = 100
     n_iter_ci = 10
     ci_range = 0.75
 
@@ -315,7 +315,7 @@ if __name__ == "__main__":
         verbose=True,
         random_state=1234)
 
-    mdp_abort=False
+    mdp_abort = False
     try:
         mdp.fit(df_train)
     except ValueError:
