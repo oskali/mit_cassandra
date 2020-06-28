@@ -105,7 +105,7 @@ def get_MDP(df_new):
 
 # Auxiliary function for deployment
 # predict_region_date() takes a given state and a date and returns the predicted target_colname
-def predict_region_date(self, # MDP_model object
+def predict_region_date(mdp, # MDP_model object
                         region_first_last_dates, # tuple (region, first_date, last_date), e.g (Alabama, Timestamp('2020-03-24 00:00:00'), Timestamp('2020-06-22 00:00:00'))
                         date, # target_colname date for prediciton, e.g. (Timestamp('2020-05-24 00:00:00'))
                         verbose=0):
@@ -120,7 +120,7 @@ def predict_region_date(self, # MDP_model object
         try :
             assert date >= last_date
             n_days = (date-last_date).days
-            return np.ceil(self.predict_region_ndays(region, n_days))
+            return np.ceil(mdp.predict_region_ndays(region, n_days))
         except AssertionError:
             if verbose:
                 print("Prediction Error type I ('{}', '{}'): the input occurs before the last available ('{}') date of the training set".format(region,
