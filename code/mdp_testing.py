@@ -110,7 +110,7 @@ def predict_region_date(self, # MDP_model object
                         date, # target_colname date for prediciton, e.g. (Timestamp('2020-05-24 00:00:00'))
                         verbose=0):
 
-        region, first_date, last_date = region_first_last_dates
+        region, last_date = region_first_last_dates
         try:
             date = datetime.strptime(date, '%Y-%m-%d')
         except TypeError:
@@ -118,45 +118,45 @@ def predict_region_date(self, # MDP_model object
 
         # Case 1 : the input date occurs before the first available date for a given region
         try :
-            assert date >= first_date
+            assert date >= last_date
+            n_days = (date-last_date).days
+            return np.ceil(self.predict_region_ndays(region, n_days))
         except AssertionError:
             if verbose:
-                print("Prediction Error type I ('{}', '{}'): the input occurs before the first available ('{}') date in the training set".format(region,
+                print("Prediction Error type I ('{}', '{}'): the input occurs before the last available ('{}') date of the training set".format(region,
                                                                                                                                           str(date),
-                                                                                                                                          str(first_date)
-                                                                                                                                           ))
+                                                                                                                                          str(last_date)                                                                                                                        ))
             raise PredictionError  # test
 
         # Case 2 : the input date occurs within the range of input dates for a given region
-        if date <= last_date:
-
-            # compute the closest training date
-            n_days = (last_date - date).days
-            lag = ((- n_days) % self.days_avg)
-            pos = n_days // self.days_avg + (lag > 0)
-            clst_past_date = last_date - timedelta(pos * self.days_avg)
-
-            # get the observation :
-            try:
-                clst_past_pred = self.df_trained[(self.df_trained[self.region_colname] == region)
-                                                 & (self.df_trained.TIME == clst_past_date)]
-                assert (not clst_past_pred.empty)  # verify that the closest date is actually in the training date
-
-                s = clst_past_pred["CLUSTER"]
-                target = clst_past_pred[self.target_colname].values[0] * (np.exp(self.R_df.loc[s].values[0])**(float(lag)/3))
-                return np.ceil(target)
-
-            except AssertionError:
-                if verbose:
-                    print("Prediction Error type II ('{}', '{}'): The computed in-sample closest date '{}' is not in the training set".format(region,
-                                                                                                                                          str(date),
-                                                                                                                                          str(clst_past_date)
-                                                                                                                                           ))
-                raise PredictionError
+        # if date <= last_date:
+        #
+        #     # compute the closest training date
+        #     n_days = (last_date - date).days
+        #     lag = ((- n_days) % self.days_avg)
+        #     pos = n_days // self.days_avg + (lag > 0)
+        #     clst_past_date = last_date - timedelta(pos * self.days_avg)
+        #
+        #     # get the observation :
+        #     try:
+        #         clst_past_pred = self.df_trained[(self.df_trained[self.region_colname] == region)
+        #                                          & (self.df_trained.TIME == clst_past_date)]
+        #         assert (not clst_past_pred.empty)  # verify that the closest date is actually in the training date
+        #
+        #         s = clst_past_pred["CLUSTER"]
+        #         target = clst_past_pred[self.target_colname].values[0] * (np.exp(self.R_df.loc[s].values[0])**(float(lag)/3))
+        #         return np.ceil(target)
+        #
+        #     except AssertionError:
+        #         if verbose:
+        #             print("Prediction Error type II ('{}', '{}'): The computed in-sample closest date '{}' is not in the training set".format(region,
+        #                                                                                                                                   str(date),
+        #                                                                                                                                   str(clst_past_date)
+        #                                                                                                                                    ))
+        #         raise PredictionError
 
         # Case 3 : the date has not been observed yet :
-        n_days = (date-last_date).days
-        return np.ceil(self.predict_region_ndays(region, n_days))
+
 
 #############################################################################
 

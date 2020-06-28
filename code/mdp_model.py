@@ -68,7 +68,6 @@ class MDP_model:
         self.optimal_cluster_size = None
 
         # data attributes
-        self.df = None  # original dataframe from data
         self.df_trained = None  # dataframe after optimal training
         self.pfeatures = None  # number of features
 
@@ -88,7 +87,7 @@ class MDP_model:
                                       self.action_thresh,
                                       self.days_avg)
 
-        self.df = df
+        # self.df = df
         self.pfeatures = pfeatures
 
         # run cross validation on the data to find best clusters
@@ -136,7 +135,7 @@ class MDP_model:
         # error corresponding to chosen model
 
         # actual training on all the data
-        df_init = initializeClusters(self.df,
+        df_init = initializeClusters(df,
                                      clustering=self.clustering_algorithm,
                                      n_clusters=self.n_clusters,
                                      distance_threshold=self.clustering_distance_threshold,
@@ -161,6 +160,9 @@ class MDP_model:
         self.P_df = P_df
         self.R_df = R_df
 
+        # store only the last states for prediction
+        self.df_trained = self.df_trained.groupby(self.region_colname).last()
+
     # predict() takes a state name and a time horizon, and returns the predicted
     # number of cases after h steps from the most recent datapoint
     def predict_region_ndays(self,
@@ -171,14 +173,14 @@ class MDP_model:
         delta = n_days - self.days_avg*h
 
         # get initial cases for the state at the latest datapoint
-        target = self.df[self.df[self.region_colname] == region].iloc[-1, :][self.target_colname]
-        date = self.df[self.df[self.region_colname] == region].iloc[-1, 1]
+        target = self.df_trained.loc[region, self.target_colname]
+        date = self.df_trained.loc[region, "TIME"]
 
         if self.verbose:
             print('current date:', date,'| current %s:'%self.target_colname, target)
 
         # cluster the this last point
-        s = self.df_trained[self.df_trained[self.region_colname]==region].iloc[-1, -2]
+        s = self.df_trained.loc[region, "CLUSTER"]
         if self.verbose:
             print('predicted initial cluster', s)
 
@@ -202,12 +204,10 @@ class MDP_model:
     # cases after h steps from the most recent datapoint for all states
     def predict_allregions_ndays(self,
                     n_days): # time horizon for prediction, preferably a multiple of days_avg (default 3)
-        df = self.df
-        df = df[[self.region_colname,'TIME',self.target_colname]]
-        df = df.groupby(self.region_colname).last()
-        df.reset_index(inplace=True)
+        df = self.df_trained.copy()
+        df = df[['TIME', self.target_colname]]
         df['TIME'] = df['TIME'] + timedelta(n_days)
-        df[self.target_colname] = df[self.region_colname].apply(
+        df[self.target_colname] = df.index.map(
             lambda region: int(self.predict_region_ndays(region, n_days)))
         return df
 
@@ -221,10 +221,9 @@ class MDP_model:
         pred_df = pd.DataFrame(columns=[self.region_colname, 'TIME', self.target_colname])
 
         # get the last dates for each states
-        df = self.df.copy()
-        df_last = df[[self.region_colname, 'TIME', self.target_colname]].groupby(self.region_colname).last().reset_index().set_index(self.region_colname)
-        df_first = df[[self.region_colname, 'TIME', self.target_colname]].groupby(self.region_colname).first().reset_index().set_index(self.region_colname)
-        region_set = set(df[self.region_colname].values)
+        # df_last = df[[self.region_colname, 'TIME', self.target_colname]].groupby(self.region_colname).last().reset_index().set_index(self.region_colname)
+        # df_first = df[[self.region_colname, 'TIME', self.target_colname]].groupby(self.region_colname).first().reset_index().set_index(self.region_colname)
+        region_set = set(self.df_trained.index)
 
         for region in regions:
             try:
@@ -236,11 +235,10 @@ class MDP_model:
                     print("The region '{}' is not in the trained region set".format(region))
                 continue  # skip skip to the next region
 
-            first_date = df_first.loc[region, "TIME"]
-            last_date = df_last.loc[region, "TIME"]
+            last_date = self.df_trained.loc[region, "TIME"]
             for date in dates:
                 try:
-                    pred = predict_region_date(self, (region, first_date, last_date), date, verbose=self.verbose)
+                    pred = predict_region_date(self, (region, last_date), date, verbose=self.verbose)
                     pred_df = pred_df.append({self.region_colname: region, "TIME": date, self.target_colname: pred}, ignore_index=True)
                 except PredictionError:
                     pass
@@ -268,7 +266,7 @@ if __name__ == "__main__":
     mdp_features_list = [] # list of strs: feature columns
 
     sgm = .1
-    n_iter_mdp = 50
+    n_iter_mdp = 20
     n_iter_ci = 10
     ci_range = 0.75
 
@@ -312,9 +310,9 @@ if __name__ == "__main__":
         horizon=5,
         n_iter=n_iter_mdp,
         days_avg=3,
-        n_folds_cv=3,
+        n_folds_cv=2,
         clustering_distance_threshold=0.1,
-        verbose=False,
+        verbose=True,
         random_state=1234)
 
     mdp_abort=False

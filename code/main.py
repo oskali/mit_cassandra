@@ -160,7 +160,7 @@ if run_mdp:
         for i in range(pred_out):
             mdp_output = mdp_output.append(mdp.predict_allregions_ndays(n_days=i))
     
-        mdp_output = mdp_output.rename(columns={'TIME': 'date', target: 'mdp_prediction'}).loc[:, ['state','date', 'mdp_prediction']]
+        mdp_output = mdp_output.rename(columns={'TIME': 'date', target: 'mdp_prediction'}).reset_index().loc[:, ['state','date', 'mdp_prediction']]
     
         df = df.merge(mdp_output, how='left', on=['state', 'date'])
         df.mdp_prediction = np.where([a and b for a, b in zip(df.mdp_prediction.isnull(), df.date <= training_cutoff)], df.cases, df.mdp_prediction)
