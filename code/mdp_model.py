@@ -1,32 +1,25 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon May 25 19:47:03 2020
+Created on Wed Jun 24 16:21:17 2020
 
-Model Class that runs the Iterative Clustering algorithm on COVID States
-
-data.
-
-@author: janiceyang
+@author: janiceyang, omars
 """
-#############################################################################
-# Load Libraries
+
+#%% Libraries
+
 import pandas as pd
 import numpy as np
 from datetime import timedelta
-from copy import deepcopy
-import datetime
-
 from mdp_states_functions import createSamples, fit_CV, initializeClusters, \
         splitter
-from mdp_testing import predict_cluster, get_MDP, predict_region_date, mape, \
+from mdp_testing import predict_cluster, get_MDP, predict_region_date, \
         PredictionError
-import os
-#############################################################################
 
-class MDP_model:
+#%% Model
+
+class MDPModel:
     def __init__(self,
-                 days_avg=None,
+                 days_avg=3,
                  horizon=5,
                  n_iter=40,
                  n_folds_cv=5,
@@ -220,9 +213,6 @@ class MDP_model:
         # instantiate the prediction dataframe
         pred_df = pd.DataFrame(columns=[self.region_colname, 'TIME', self.target_colname])
 
-        # get the last dates for each states
-        # df_last = df[[self.region_colname, 'TIME', self.target_colname]].groupby(self.region_colname).last().reset_index().set_index(self.region_colname)
-        # df_first = df[[self.region_colname, 'TIME', self.target_colname]].groupby(self.region_colname).first().reset_index().set_index(self.region_colname)
         region_set = set(self.df_trained.index)
 
         for region in regions:
@@ -242,106 +232,8 @@ class MDP_model:
                     pred_df = pred_df.append({self.region_colname: region, "TIME": date, self.target_colname: pred}, ignore_index=True)
                 except PredictionError:
                     pass
-        return pred_df
 
+        pred_df.rename(columns={'TIME': self.date_colname}, inplace = True)
+        pred_dic = {state: pred_df[pred_df[self.region_colname] == state].set_index([self.date_colname])[self.target_colname] for state in pred_df[self.region_colname].unique()}
 
-if __name__ == "__main__":
-    from utils import models, metrics
-    import warnings
-    warnings.filterwarnings("ignore")  # to avoid Python deprecated version warnings
-
-    # path = 'C:/Users/omars/Desktop/covid19_georgia/large_data/input/'
-    path = os.path.join(os.path.dirname(os.getcwd()), 'data', 'input')
-    file = '06_15_2020_states_combined.csv'
-    training_cutoff = '2020-05-25'
-    nmin = 20
-    deterministic = True
-    if deterministic:
-        deterministic_label = ''
-    else:
-        deterministic_label = 'markov_'
-    target_colname = 'deaths'
-    mdp_region_colname = 'state' # str, col name of region (e.g. 'state')
-    mdp_date_colname = 'date' # str, col name of time (e.g. 'date')
-    mdp_features_list = ["home_time"] # list of strs: feature columns
-
-    sgm = .1
-    n_iter_mdp = 100
-    n_iter_ci = 10
-    ci_range = 0.75
-
-    cols_to_keep = ['state',
-                    'date',
-                    target_colname,
-                    'prevalence'] + [model + '_' + metric for model in models for metric in metrics]
-
-    df_orig = pd.read_csv(os.path.join(path, file))
-    print('Data Wrangling in Progress...')
-    df = deepcopy(df_orig)
-    df.columns = map(str.lower, df.columns)
-    #df = df.query('cases >= @nmin')
-    df= df[df[target_colname] >= nmin]
-    df['date'] = df['date'].apply(lambda x: datetime.datetime.strptime(x,'%Y-%m-%d'))
-    df_orig['date'] = df_orig['date'].apply(lambda x: datetime.datetime.strptime(x,'%Y-%m-%d'))
-    df = df.sort_values(by=['state', 'date'])
-    states = sorted(list(set(df['state'])))
-    pop_df = df.loc[:, ['state', 'population']]
-    pop_dic = {pop_df .iloc[i, 0] : pop_df .iloc[i, 1] for i in range(pop_df .shape[0])}
-    features = list(df.columns[5:35])
-
-    df = df.loc[:, df.columns[df.isnull().sum() * 100 / len(df) < 20]]
-    features = list(set(features).intersection(set(df.columns)))
-
-    df_train = df[df['date'] <= training_cutoff]
-    df_test = df[df['date'] > training_cutoff]
-    pred_out = len(set(df_test.date))
-    day_0 = str(df_test.date.min())[:10]
-    print('Data Wrangling Complete.')
-
-    # ####### test fitting methods ##########
-    print('MDP Model Training in Progress...')
-    # df_train = df_orig[df_orig['date'] <= training_cutoff].drop(columns='people_tested').dropna(axis=0)
-    df_train = df_orig[df_orig['date'] <= training_cutoff]
-    mdp = MDP_model(
-        target_colname=target_colname,  # str: col name of target_colname (i.e. 'deaths')
-        region_colname=mdp_region_colname,  # str, col name of region (i.e. 'state')
-        date_colname=mdp_date_colname,  # str, col name of time (i.e. 'date')
-        features_list=mdp_features_list,  # list of strs: feature columns
-        horizon=5,
-        n_iter=n_iter_mdp,
-        days_avg=3,
-        n_folds_cv=2,
-        clustering_distance_threshold=0.1,
-        verbose=True,
-        random_state=1234)
-
-    mdp_abort = False
-    try:
-        mdp.fit(df_train)
-    except ValueError:
-        print('ERROR: Feature columns have missing values! Please drop'
-              'rows or fill in missing data.')
-        print('MDP Model Aborted.')
-        mdp_abort = True
-        run_mdp = False
-
-    # ####### test prediction methods ##########
-    run_predict_all = True
-    run_predict_class = True
-
-    # test predict all :
-    if run_predict_all:
-        if not mdp_abort:
-            mdp_output = pd.DataFrame()
-            for i in range(pred_out):
-                mdp_output = mdp_output.append(mdp.predict_allregions_ndays(n_days=i))
-            print(mdp_output)
-
-    # test predict class :
-    if run_predict_class:
-        if not mdp_abort:
-            example_dict = (["Alabama", "Gabon", "Iowa", "Massachusetts"], ["2019-06-14", "2020-05-14", "2020-07-01"])
-            mdp_output = mdp.predict(*example_dict)
-
-            print(mdp_output)
-    print('MDP Model (test) Complete.')
+        return pred_dic

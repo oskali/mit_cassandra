@@ -1,15 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-This file is intended to perform various testing measurements on the output of
-
-the MDP Clustering Algorithm.
-
 Created on Sun Apr 26 23:13:09 2020
 
-@author: Amine
+@author: Amine, omars
 """
-#############################################################################
-# Load Libraries
+
+#%% Libraries
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -17,22 +13,14 @@ import numpy as np
 from datetime import datetime
 from datetime import timedelta
 import math
-from datetime import timedelta
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import GridSearchCV
-#############################################################################
 
-#############################################################################
-# Class for Prediction
-
-# new Exception for prediction error
+#%% New Exception for Prediction Error
 class PredictionError(Exception):
     pass
 
-#############################################################################
-
-#############################################################################
-# Functions for Predictions
+#%% Helper Functions for Prediction
 
 # get_predictions() takes in a clustered dataframe df_new, and maps each
 # CLUSTER to an OG_CLUSTER that has the most elements
@@ -128,41 +116,7 @@ def predict_region_date(mdp, # MDP_model object
                                                                                                                                           str(last_date)                                                                                                                        ))
             raise PredictionError  # test
 
-        # Case 2 : the input date occurs within the range of input dates for a given region
-        # if date <= last_date:
-        #
-        #     # compute the closest training date
-        #     n_days = (last_date - date).days
-        #     lag = ((- n_days) % self.days_avg)
-        #     pos = n_days // self.days_avg + (lag > 0)
-        #     clst_past_date = last_date - timedelta(pos * self.days_avg)
-        #
-        #     # get the observation :
-        #     try:
-        #         clst_past_pred = self.df_trained[(self.df_trained[self.region_colname] == region)
-        #                                          & (self.df_trained.TIME == clst_past_date)]
-        #         assert (not clst_past_pred.empty)  # verify that the closest date is actually in the training date
-        #
-        #         s = clst_past_pred["CLUSTER"]
-        #         target = clst_past_pred[self.target_colname].values[0] * (np.exp(self.R_df.loc[s].values[0])**(float(lag)/3))
-        #         return np.ceil(target)
-        #
-        #     except AssertionError:
-        #         if verbose:
-        #             print("Prediction Error type II ('{}', '{}'): The computed in-sample closest date '{}' is not in the training set".format(region,
-        #                                                                                                                                   str(date),
-        #                                                                                                                                   str(clst_past_date)
-        #                                                                                                                                    ))
-        #         raise PredictionError
-
-        # Case 3 : the date has not been observed yet :
-
-
-#############################################################################
-
-
-#############################################################################
-# Function for plotting
+#%% Function for Plotting
 
 def plot_pred(model, state, df_true, n_days):
     h = int(np.round(n_days/model.days_avg))
@@ -193,8 +147,7 @@ def plot_pred(model, state, df_true, n_days):
     plt.legend()
     plt.show()
 
-#############################################################################
-# Functions for Accuracy and Purity
+#%% Functions for Accuracy and Purity measures
 
 # training_accuracy() takes in a clustered dataframe df_new, and returns the
 # average training accuracy of all clusters (float) and a dataframe of
@@ -247,11 +200,8 @@ def purity(df):
     .value_counts(normalize=True)).reset_index(level=0)
     su.columns= ['CLUSTER','Purity']
     return su.groupby('CLUSTER')['Purity'].max()
-#############################################################################
 
-
-#############################################################################
-# Functions for Error
+#%% Functions for Value Error
 
 # training_value_error() takes in a clustered dataframe, and computes the
 # E((\hat{v}-v)^2) expected error in estimating values (risk) given actions
@@ -495,12 +445,7 @@ def error_per_ID(df_test, df_new, model, pfeatures,relative=False,h=5):
     #return np.sqrt(E_v)
     return df_err,E_v
 
-
-#############################################################################
-
-
-#############################################################################
-# Functions for R2 Values
+#%% Functions for R2 Values
 
 # R2_value_training() takes in a clustered dataframe, and returns a float
 # of the R-squared value between the expected value and true value of samples
@@ -599,11 +544,8 @@ def R2_value_testing(df_test, df_new, model, pfeatures):
     v_mean = V_true.mean()
     SS_tot = sum((V_true-v_mean)**2)/N
     return max(1- E_v/SS_tot,0)
-#############################################################################
 
-
-#############################################################################
-# Functions for Plotting
+#%% Functions for Plotting Features
 
 # plot_features() takes in a dataframe of two features, and plots the data
 # to illustrate the noise in each original cluster
@@ -638,8 +580,10 @@ def plot_path(df_new, df, state, h, pfeatures, plot=True):
         try:
             s = P_df.loc[s,0].values[0]
             s_seq.append(s)
+        # except TypeError:
+        #         print('WARNING: Trying to predict next state from state',s,'taking action',a,', but this transition is never seen in the data. Data point:',i,t)
         except TypeError:
-                print('WARNING: Trying to predict next state from state',s,'taking action',a,', but this transition is never seen in the data. Data point:',i,t)
+                print('WARNING: Unobserved transition')
         #a = df_test['ACTION'].loc[index + t]
         v_estim.append(math.exp(R_df.loc[s]))
         t += 1
@@ -746,10 +690,9 @@ def plot_pred(model, state, df_true, n_days):
     plt.legend()
     plt.show()
     return
-#############################################################################
 
+#%% Post Hoc Analysis Functions
 
-#############################################################################
 def cluster_size(df):
     return df.groupby('CLUSTER')['RISK'].agg(['count','mean','std','min','max'])
 
@@ -763,4 +706,3 @@ def mape(df_pred,df_true, target_colname):
     df_pred['real '+target_colname] = df_true[target_colname]
     df_pred['rel_error'] = abs(df_pred[target_colname]-df_true[target_colname])/df_true[target_colname]
     return df_pred
-#############################################################################
