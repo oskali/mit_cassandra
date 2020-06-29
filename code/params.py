@@ -13,7 +13,7 @@ from datetime import datetime
 USER = 'omar'
 
 if USER == 'omar':
-    df_path = 'C:\\Users\\omars\\Desktop\\covid19_georgia\\covid19_team2-restrucuturing\\covid19_team2\\data\\input\\06_15_2020_states_combined.csv'
+    df_path = r'C:\Users\david\Desktop\MIT\Courses\Research internship\covid19_team2\data\input\06_15_2020_states_combined.csv'
 
 #%% Target and column names
 
@@ -31,12 +31,12 @@ unformatted_dates = ['2020-07-01', '2020-08-15'] # dates to predict
 
 #%% Load and Save Parameters
 
-train_knn = True
+train_knn = False
 train_mdp = True
-train_sir = True
-load_knn = True
+train_sir = False
+load_knn = False
 load_mdp = True
-load_sir = True
+load_sir = False
 sir_file = 'sir.pickle'
 knn_file = 'knn.pickle'
 mdp_file = 'mdp.pickle'
@@ -55,7 +55,7 @@ deterministic=True
 #%% Parameters MDP
 days_avg=3
 horizon=5
-n_iter=40
+n_iter=100
 n_folds_cv=5
 clustering_distance_threshold=0.05
 splitting_threshold=0.
@@ -63,7 +63,7 @@ classification_algorithm='DecisionTreeClassifier'
 clustering_algorithm='Agglomerative'
 n_clusters=None
 action_thresh=[]
-features_list=[]
+features_list=["home_time", "part_time"]
 verbose=False
 features = []
 

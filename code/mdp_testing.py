@@ -1,5 +1,20 @@
 # -*- coding: utf-8 -*-
 """
+This file is intended to perform various testing measurements on the output of
+
+the MDP Clustering Algorithm.
+
+Created on Sun Apr 26 23:13:09 2020
+
+@author: Amine
+"""
+#############################################################################
+# Load Libraries
+
+import pandas as pd
+import matplotlib.pyplot as plt
+# -*- coding: utf-8 -*-
+"""
 Created on Sun Apr 26 23:13:09 2020
 
 @author: Amine, omars
@@ -42,7 +57,7 @@ def predict_cluster(df_new, # dataframe: trained clusters
     y = df_new['CLUSTER']
 
     params = {
-    'max_depth': [3, 4, 6, 10,None]
+    'max_depth': [3, 4, 6, 10, None]
     }
 
     m = DecisionTreeClassifier()
@@ -80,11 +95,11 @@ def predict_value_of_cluster(P_df,R_df, # df: MDP parameters
 # P_df and R_df that represent the parameters of the estimated MDP
 def get_MDP(df_new):
     # removing None values when counting where clusters go
-    df0 = df_new[df_new['NEXT_CLUSTER']!='None']
-    transition_df = df0.groupby(['CLUSTER','ACTION','NEXT_CLUSTER'])['RISK'].count()
+    # df0 = df_new[df_new['NEXT_CLUSTER'] != 'None']
+    transition_df = df_new.dropna(subset=['NEXT_CLUSTER']).groupby(['CLUSTER', 'ACTION', 'NEXT_CLUSTER'])['RISK'].count()
 
-    # next cluster given how most datapionts transition for the given action
-    transition_df = transition_df.groupby(['CLUSTER','ACTION']).idxmax()
+    # next cluster given how most datapoints transition for the given action
+    transition_df = transition_df.groupby(['CLUSTER', 'ACTION']).idxmax()
     P_df = pd.DataFrame()
     P_df['NEXT_CLUSTER'] = transition_df.apply(lambda x: x[2])
     R_df = df_new.groupby('CLUSTER')['RISK'].mean()
@@ -116,8 +131,8 @@ def predict_region_date(mdp, # MDP_model object
                                                                                                                                           str(last_date)                                                                                                                        ))
             raise PredictionError  # test
 
-#%% Function for Plotting
 
+# plot prediction target vs. true target
 def plot_pred(model, state, df_true, n_days):
     h = int(np.round(n_days/model.days_avg))
     df_true.loc[:, [model.date_colname]]= pd.to_datetime(df_true[model.date_colname])
@@ -147,7 +162,8 @@ def plot_pred(model, state, df_true, n_days):
     plt.legend()
     plt.show()
 
-#%% Functions for Accuracy and Purity measures
+#############################################################################
+# Functions for Accuracy and Purity
 
 # training_accuracy() takes in a clustered dataframe df_new, and returns the
 # average training accuracy of all clusters (float) and a dataframe of
@@ -200,8 +216,11 @@ def purity(df):
     .value_counts(normalize=True)).reset_index(level=0)
     su.columns= ['CLUSTER','Purity']
     return su.groupby('CLUSTER')['Purity'].max()
+#############################################################################
 
-#%% Functions for Value Error
+
+#############################################################################
+# Functions for Error
 
 # training_value_error() takes in a clustered dataframe, and computes the
 # E((\hat{v}-v)^2) expected error in estimating values (risk) given actions
@@ -332,7 +351,6 @@ def testing_value_error(df_test, df_new, model, pfeatures,relative=False,h=5):
             if df_test['ID'].loc[index+t] != df_test['ID'].loc[index+t+1]:
                 break
 
-
             t += 1
         if relative:
             #E_v = E_v + ((math.exp(v_true)-math.exp(v_estim))/math.exp(v_true))**2
@@ -445,13 +463,18 @@ def error_per_ID(df_test, df_new, model, pfeatures,relative=False,h=5):
     #return np.sqrt(E_v)
     return df_err,E_v
 
-#%% Functions for R2 Values
+
+#############################################################################
+
+
+#############################################################################
+# Functions for R2 Values
 
 # R2_value_training() takes in a clustered dataframe, and returns a float
 # of the R-squared value between the expected value and true value of samples
 def R2_value_training(df_new):
     E_v = 0
-    P_df,R_df = get_MDP(df_new)
+    P_df, R_df = get_MDP(df_new)
     df2 = df_new.reset_index()
     df2 = df2.groupby(['ID']).first()
     N = df2.shape[0]
@@ -544,8 +567,11 @@ def R2_value_testing(df_test, df_new, model, pfeatures):
     v_mean = V_true.mean()
     SS_tot = sum((V_true-v_mean)**2)/N
     return max(1- E_v/SS_tot,0)
+#############################################################################
 
-#%% Functions for Plotting Features
+
+#############################################################################
+# Functions for Plotting
 
 # plot_features() takes in a dataframe of two features, and plots the data
 # to illustrate the noise in each original cluster
@@ -580,10 +606,8 @@ def plot_path(df_new, df, state, h, pfeatures, plot=True):
         try:
             s = P_df.loc[s,0].values[0]
             s_seq.append(s)
-        # except TypeError:
-        #         print('WARNING: Trying to predict next state from state',s,'taking action',a,', but this transition is never seen in the data. Data point:',i,t)
         except TypeError:
-                print('WARNING: Unobserved transition')
+                print('WARNING: Trying to predict next state from state',s,'taking action',a,', but this transition is never seen in the data. Data point:',i,t)
         #a = df_test['ACTION'].loc[index + t]
         v_estim.append(math.exp(R_df.loc[s]))
         t += 1
@@ -690,9 +714,10 @@ def plot_pred(model, state, df_true, n_days):
     plt.legend()
     plt.show()
     return
+#############################################################################
 
-#%% Post Hoc Analysis Functions
 
+#############################################################################
 def cluster_size(df):
     return df.groupby('CLUSTER')['RISK'].agg(['count','mean','std','min','max'])
 
@@ -706,3 +731,4 @@ def mape(df_pred,df_true, target_colname):
     df_pred['real '+target_colname] = df_true[target_colname]
     df_pred['rel_error'] = abs(df_pred[target_colname]-df_true[target_colname])/df_true[target_colname]
     return df_pred
+#############################################################################

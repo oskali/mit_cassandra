@@ -10,7 +10,8 @@ Created on Wed Jun 24 16:21:17 2020
 import pandas as pd
 import numpy as np
 from datetime import timedelta
-from mdp_states_functions import createSamples, fit_CV, initializeClusters, \
+
+from mdp_states_functions import createSamples, fit_cv, initializeClusters, \
         splitter
 from mdp_testing import predict_cluster, get_MDP, predict_region_date, \
         PredictionError
@@ -19,7 +20,7 @@ from mdp_testing import predict_cluster, get_MDP, predict_region_date, \
 
 class MDPModel:
     def __init__(self,
-                 days_avg=3,
+                 days_avg=None,
                  horizon=5,
                  n_iter=40,
                  n_folds_cv=5,
@@ -34,6 +35,7 @@ class MDPModel:
                  features_list=[],
                  target_colname='cases',
                  random_state=42,
+                 n_jobs=1,
                  verbose=False):
 
         self.days_avg = days_avg  # number of days to average and compress datapoints
@@ -63,6 +65,7 @@ class MDPModel:
         # data attributes
         self.df_trained = None  # dataframe after optimal training
         self.pfeatures = None  # number of features
+        self.n_jobs = n_jobs  # number of jobs for multiprocessing
 
     def fit(self,
             data, # csv file with data OR data frame
@@ -99,9 +102,9 @@ class MDPModel:
         #        n=-1,
         #        random_state=1234,
         #        plot=False):
-        cv_training_error, cv_testing_error = fit_CV(df,
+        cv_training_error, cv_testing_error = fit_cv(df,
                                                      pfeatures=self.pfeatures,
-                                                     th=self.splitting_threshold,
+                                                     splitting_threshold=self.splitting_threshold,
                                                      clustering=self.clustering_algorithm,
                                                      clustering_distance_threshold=self.clustering_distance_threshold,
                                                      classification=self.classification_algorithm,
@@ -111,6 +114,7 @@ class MDPModel:
                                                      OutputFlag=self.verbose,
                                                      cv=self.n_folds_cv,
                                                      random_state=self.random_state,
+                                                     n_jobs=self.n_jobs,
                                                      )
 
         # find the best cluster
@@ -128,24 +132,24 @@ class MDPModel:
         # error corresponding to chosen model
 
         # actual training on all the data
-        df_init = initializeClusters(df,
-                                     clustering=self.clustering_algorithm,
-                                     n_clusters=self.n_clusters,
-                                     distance_threshold=self.clustering_distance_threshold,
-                                     random_state=self.random_state)
+        df_trained = initializeClusters(df,
+                                        clustering=self.clustering_algorithm,
+                                        n_clusters=self.n_clusters,
+                                        distance_threshold=self.clustering_distance_threshold,
+                                        random_state=self.random_state)
 
-        df_new,training_error,testing_error = splitter(df_init,
-                                                       pfeatures=self.pfeatures,
-                                                       th=self.splitting_threshold,
-                                                       df_test=None,
-                                                       testing=False,
-                                                       classification=self.classification_algorithm,
-                                                       it=k,
-                                                       h=self.horizon,
-                                                       OutputFlag=0)
+        df_trained, training_error, testing_error = splitter(df_trained,
+                                                             pfeatures=self.pfeatures,
+                                                             th=self.splitting_threshold,
+                                                             df_test=None,
+                                                             testing=False,
+                                                             classification=self.classification_algorithm,
+                                                             it=k,
+                                                             h=self.horizon,
+                                                             OutputFlag=0)
 
         # storing trained dataset and predict_cluster function
-        self.df_trained = df_new
+        self.df_trained = df_trained
         self.classifier = predict_cluster(self.df_trained, self.pfeatures)
 
         # store P_df and R_df values
@@ -196,7 +200,7 @@ class MDPModel:
     # predict_all() takes a time horizon, and returns the predicted number of
     # cases after h steps from the most recent datapoint for all states
     def predict_allregions_ndays(self,
-                    n_days): # time horizon for prediction, preferably a multiple of days_avg (default 3)
+                                 n_days): # time horizon for prediction, preferably a multiple of days_avg (default 3)
         df = self.df_trained.copy()
         df = df[['TIME', self.target_colname]]
         df['TIME'] = df['TIME'] + timedelta(n_days)
@@ -213,6 +217,9 @@ class MDPModel:
         # instantiate the prediction dataframe
         pred_df = pd.DataFrame(columns=[self.region_colname, 'TIME', self.target_colname])
 
+        # get the last dates for each states
+        # df_last = df[[self.region_colname, 'TIME', self.target_colname]].groupby(self.region_colname).last().reset_index().set_index(self.region_colname)
+        # df_first = df[[self.region_colname, 'TIME', self.target_colname]].groupby(self.region_colname).first().reset_index().set_index(self.region_colname)
         region_set = set(self.df_trained.index)
 
         for region in regions:
@@ -232,8 +239,7 @@ class MDPModel:
                     pred_df = pred_df.append({self.region_colname: region, "TIME": date, self.target_colname: pred}, ignore_index=True)
                 except PredictionError:
                     pass
-
-        pred_df.rename(columns={'TIME': self.date_colname}, inplace = True)
+        pred_df.rename(columns={'TIME': self.date_colname}, inplace=True)
         pred_dic = {state: pred_df[pred_df[self.region_colname] == state].set_index([self.date_colname])[self.target_colname] for state in pred_df[self.region_colname].unique()}
 
         return pred_dic
