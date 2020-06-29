@@ -1,17 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-This file is the main file to run the MDP clustering algorithm
-
-Specific to State COVID-19 Research.
-
-Specific verion includes new updates on clustering functions.
-
 Created on Sun April 7 18:51:20 2020
 
 @author: omars
 """
-#############################################################################
-# Load Libraries
+
+#%% Libraries
 import pandas as pd
 import numpy as np
 import matplotlib as plt
@@ -25,19 +19,15 @@ from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GroupKFold
-#from xgboost import XGBClassifier
+from xgboost import XGBClassifier
 from collections import Counter
 from itertools import groupby
 from operator import itemgetter
 from datetime import datetime
-
 from mdp_testing import R2_value_training, training_value_error,  \
     predict_cluster, R2_value_testing, testing_value_error, error_per_ID
-#############################################################################
 
-
-#############################################################################
-# Funtions for Initialization
+#%% Funtions for Initialization
 
 
 # createSamples() takes the original dataframe from combined data,
@@ -46,7 +36,7 @@ from mdp_testing import R2_value_training, training_value_error,  \
 # days_avg the number of days used to compress datapoints, and returns a data frame with
 # desired features and history, ratio values and history, and 'RISK' and 'ACTION'
 # returns new dataframe with only the desired columns, number of features considered
-def createSamples(df,#, # dataframe: original full dataframe
+def createSamples(df_input,#, # dataframe: original full dataframe
                   #new_cols, # str list: names of columns to be considered
                   target_colname, # str: col name of target_colname (i.e. 'deaths')
                   region_colname, # str, col name of region (i.e. 'state')
@@ -56,6 +46,7 @@ def createSamples(df,#, # dataframe: original full dataframe
                   #d_delay, # int: day lag before calculating death impact
                   days_avg): # int: # of days to average when reporting death
 
+    df = deepcopy(df_input)
     df.rename(columns={date_colname: 'TIME'}, inplace = True)
     df = df[df[region_colname]!='Guam']
     df = df[df[region_colname]!='Northern Mariana Islands']
@@ -178,8 +169,6 @@ def createSamples(df,#, # dataframe: original full dataframe
 
     return df_new, pfeatures
 
-
-
 # split_train_test_by_id() takes in a dataframe of all the data,
 # returns Testing and Training dataset dataframes with the ratio of testing
 # data defined by float test_ratio
@@ -223,11 +212,8 @@ def initializeClusters(df,  # pandas dataFrame: MUST contain a "RISK" column
     df['NEXT_CLUSTER'] = df['CLUSTER'].shift(-1)
     df.loc[df['ID'] != df['ID'].shift(-1), 'NEXT_CLUSTER'] = 'None'
     return(df)
-#############################################################################
 
-
-#############################################################################
-# Function for the Iterations
+#%% Function for the Iterations
 
 # findConstradiction() takes as input a dataframe and returns the tuple with
 # initial cluster and action that have the most number of contradictions or
@@ -340,10 +326,7 @@ def split(df,  # pandas dataFrame
 
     return(df)
 
-
-
-#############################################################################
-
+#%% Splitter algorithm
 # splitter() is the wrap-up function. Takes as parameters a dataframe df,
 # a time-horizon T, a number of features pfeatures, an indexer k, and a max
 # number of iterations and performs the algorithm until all contradictions are
@@ -439,20 +422,8 @@ def splitter(df,  # pandas dataFrame
 
     # plotting functions
     ## Plotting accuracy and value R2
-#    fig1, ax1 = plt.subplots()
     its = np.arange(k+1, nc+1)
-#    ax1.plot(its, training_R2, label= "Training R2")
-#    if testing:
-#        ax1.plot(its, testing_R2, label = "Testing R2")
-#    #ax1.plot(its, training_acc, label = "Training Accuracy")
-#    #ax1.plot(its, testing_acc, label = "Testing Accuracy")
-#    if n>0:
-#        ax1.axvline(x=n,linestyle='--',color='r') #Plotting vertical line at #cluster =n
-#    ax1.set_ylim(0,1)
-#    ax1.set_xlabel('# of Clusters')
-#    ax1.set_ylabel('R2 or Accuracy %')
-#    ax1.set_title('R2 and Accuracy During Splitting')
-#    ax1.legend()
+
     ## Plotting value error E((v_est - v_true)^2) FOR COVID: plotting MAPE
     if plot:
         fig2, ax2 = plt.subplots()
@@ -478,8 +449,7 @@ def splitter(df,  # pandas dataFrame
 
     return(df_new,training_error,testing_error)
 
-#############################################################################
-# Splitter algorithm with cross-validation
+#%% Splitter algorithm with cross-validation
 def fit_CV(df,
            pfeatures,
            th,
@@ -514,17 +484,14 @@ def fit_CV(df,
 
         df_train = df[df.index.isin(train_idx)]
         df_test = df[df.index.isin(test_idx)]
-        #################################################################
+
         # Initialize Clusters
         df_init = initializeClusters(df_train,
                                      clustering=clustering,
                                      n_clusters=n_clusters,
                                      distance_threshold=clustering_distance_threshold,
                                      random_state=random_state)
-        k = df_init['CLUSTER'].nunique()
-        #################################################################
 
-        #################################################################
         # Run Iterative Learning Algorithm
 
         df_new,training_error,testing_error = splitter(df_init,
@@ -573,11 +540,8 @@ def fit_CV(df,
         ax1.set_ylabel('Mean CV Error or Accuracy %')
         ax1.set_title('Mean CV Error and Accuracy During Splitting')
         ax1.legend()
-    
+
     #for t in testing_errors:
     #    print(t)
-    
-    return (cv_training_error,cv_testing_error)
 
-    #return (list_training_error,list_testing_error,df_new, df_test)
-#############################################################################
+    return (cv_training_error,cv_testing_error)
