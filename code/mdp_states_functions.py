@@ -19,7 +19,7 @@ from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GroupKFold
-# from xgboost import XGBClassifier
+from xgboost import XGBClassifier
 from collections import Counter
 from itertools import groupby
 from operator import itemgetter
@@ -584,7 +584,10 @@ def fit_cv(df,
             # E_v ?
 
     else:  # n_jobs > 1
-        pool = mp.Pool(processes=n_jobs)
+        if n_jobs == -1 :
+            pool = mp.Pool(processes=mp.cpu_count())
+        else:
+            pool = mp.Pool(processes=n_jobs)
         fit_cv_fold_pool = partial(fit_cv_fold,
                                    df=df,
                                    clustering=clustering,
