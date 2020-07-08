@@ -42,11 +42,11 @@ class KNNModel():
         state_df = self.state_df[[self.region, self.date,self.target]].groupby([self.region, self.date]).sum().reset_index()
         state_df = state_df.sort_values(by = [self.region, self.date])
         is_100 = state_df[self.target] >= 100
-        state_df = state_df[is_100]
+        state_df1 = state_df[is_100]
         array = np.arange(len(state_df[self.date]))
         state_df.reindex(array)
 
-        final_df = state_df
+        final_df = state_df1
         m0=0
         m = [0]
         for state2 in final_df[self.region].unique():
@@ -56,16 +56,16 @@ class KNNModel():
             m.append(m0)
         dat = final_df[self.date]
         numdat = dat.values
-        startdates = []
-        for i in range(len(m)-1):
-            startdates.append(numdat[m[i]+15])
-
+        startdates = dict()
+        for state2 in final_df[self.region].unique():
+            for i in range(len(m)-1):
+                startdates[state2] = numdat[m[i]+15]
         deterministic = self.deterministic
 
         # print("Split Date and Day_0 for the given code is", split_date, day_0)
 
 
-        df_simple, df_with_growth_rates = predict_covid(df = final_df, start_date = startdates, memory = 7, forward_days = forward_days, split_date = split_date, day_0 = day_0, real_GR = True, deterministic = deterministic, r = 1, date_col=self.date, region_col=self.region, target_col=self.target)
+        df_simple, df_with_growth_rates = predict_covid(df = state_df, start_date = startdates, memory = 7, forward_days = forward_days, split_date = split_date, day_0 = day_0, real_GR = True, deterministic = deterministic, r = 1, date_col=self.date, region_col=self.region, target_col=self.target)
         df_simple[self.date] = df_simple[self.date].apply(lambda x: datetime.strptime(x[:10], '%Y-%m-%d'))
 
         out = dict()
