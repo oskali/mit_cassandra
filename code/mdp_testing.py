@@ -13,15 +13,29 @@ Created on Sun Apr 26 23:13:09 2020
 
 import pandas as pd
 import matplotlib.pyplot as plt
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Apr 26 23:13:09 2020
+
+@author: Amine, omars
+"""
+
+#%% Libraries
+
+import pandas as pd
+import matplotlib.pyplot as plt
 import numpy as np
+from datetime import datetime
+from datetime import timedelta
 import math
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import GridSearchCV
-#############################################################################
 
+#%% New Exception for Prediction Error
+class PredictionError(Exception):
+    pass
 
-#############################################################################
-# Functions for Predictions
+#%% Helper Functions for Prediction
 
 # get_predictions() takes in a clustered dataframe df_new, and maps each
 # CLUSTER to an OG_CLUSTER that has the most elements
@@ -43,7 +57,7 @@ def predict_cluster(df_new, # dataframe: trained clusters
     y = df_new['CLUSTER']
 
     params = {
-    'max_depth': [3, 4, 6, 10,None]
+    'max_depth': [3, 4, 6, 10, None]
     }
 
     m = DecisionTreeClassifier()
@@ -51,7 +65,16 @@ def predict_cluster(df_new, # dataframe: trained clusters
     m = GridSearchCV(m, params,cv = 5, iid=True) #will return warning if 'idd' param not set to true
 
 #    m = DecisionTreeClassifier(max_depth = 10)
-    m.fit(X, y)
+    try:
+        m.fit(X, y)
+    except ValueError:
+        print('ERROR: Feature columns have missing values! Please drop' \
+              ' rows or fill in missing data.', flush=True)
+        #print('Warning: Feature Columns missing values!', flush=True)
+        #df_new.dropna(inplace=True)
+        #X = df_new.iloc[:, 2:2+pfeatures]
+        #y = df_new['CLUSTER']
+        m.fit(X, y)
     return m
 
 
@@ -72,17 +95,72 @@ def predict_value_of_cluster(P_df,R_df, # df: MDP parameters
 # P_df and R_df that represent the parameters of the estimated MDP
 def get_MDP(df_new):
     # removing None values when counting where clusters go
-    df0 = df_new[df_new['NEXT_CLUSTER']!='None']
-    transition_df = df0.groupby(['CLUSTER','ACTION','NEXT_CLUSTER'])['RISK'].count()
+    # df0 = df_new[df_new['NEXT_CLUSTER'] != 'None']
+    transition_df = df_new.dropna(subset=['NEXT_CLUSTER']).groupby(['CLUSTER', 'ACTION', 'NEXT_CLUSTER'])['RISK'].count()
 
-    # next cluster given how most datapionts transition for the given action
-    transition_df = transition_df.groupby(['CLUSTER','ACTION']).idxmax()
+    # next cluster given how most datapoints transition for the given action
+    transition_df = transition_df.groupby(['CLUSTER', 'ACTION']).idxmax()
     P_df = pd.DataFrame()
     P_df['NEXT_CLUSTER'] = transition_df.apply(lambda x: x[2])
     R_df = df_new.groupby('CLUSTER')['RISK'].mean()
     return P_df,R_df
-#############################################################################
 
+
+# Auxiliary function for deployment
+# predict_region_date() takes a given state and a date and returns the predicted target_colname
+def predict_region_date(mdp, # MDP_model object
+                        region_first_last_dates, # tuple (region, first_date, last_date), e.g (Alabama, Timestamp('2020-03-24 00:00:00'), Timestamp('2020-06-22 00:00:00'))
+                        date, # target_colname date for prediciton, e.g. (Timestamp('2020-05-24 00:00:00'))
+                        verbose=0):
+
+        region, last_date = region_first_last_dates
+        try:
+            date = datetime.strptime(date, '%Y-%m-%d')
+        except TypeError:
+            pass
+
+        # Case 1 : the input date occurs before the first available date for a given region
+        try :
+            assert date >= last_date
+            n_days = (date-last_date).days
+            return np.ceil(mdp.predict_region_ndays(region, n_days))
+        except AssertionError:
+            if verbose:
+                print("Prediction Error type I ('{}', '{}'): the input occurs before the last available ('{}') date of the training set".format(region,
+                                                                                                                                          str(date),
+                                                                                                                                          str(last_date)                                                                                                                        ))
+            raise PredictionError  # test
+
+
+# plot prediction target vs. true target
+def plot_pred(model, state, df_true, n_days):
+    h = int(np.round(n_days/model.days_avg))
+    df_true.loc[:, [model.date_colname]]= pd.to_datetime(df_true[model.date_colname])
+    date = model.df[model.df[model.region_colname]== state].iloc[-1, 1]
+    cases = model.df[model.df[model.region_colname]== state].iloc[-1][model.target_colname]
+    dates = [date]
+    cases_pred = [cases]
+
+    s = model.df_trained[model.df_trained[model.region_colname]==state].iloc[-1, -2]
+    r = 1
+    for i in range(h):
+        dates.append(date + timedelta((i+1)*model.days_avg))
+        r = r*np.exp(model.R_df.loc[s])
+        cases_pred.append(cases*r)
+        s = model.P_df.loc[s,0].values[0]
+
+
+    fig, ax = plt.subplots()
+    ax.plot(df_true.loc[df_true['state']==state][model.date_colname], \
+            df_true.loc[df_true['state']==state][model.target_colname], \
+            label = 'True '+model.target_colname)
+    ax.plot(dates, cases_pred, label='Predicted '+model.target_colname)
+    ax.set_title('%s True vs Predicted '%state + model.target_colname)
+    ax.set_xlabel('Date')
+    ax.set_ylabel(model.target_colname)
+    plt.xticks(rotation=45, ha='right')
+    plt.legend()
+    plt.show()
 
 #############################################################################
 # Functions for Accuracy and Purity
@@ -212,6 +290,18 @@ def training_value_error(df_new, #Outpul of algorithm
 # expected value error given actions and a predicted initial cluster
 # Returns a float of sqrt average value error per ID
 def testing_value_error(df_test, df_new, model, pfeatures,relative=False,h=5):
+    try:
+        df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
+    except ValueError:
+        print('ERROR: Feature columns have missing values! Please drop' \
+              ' rows or fill in missing data.', flush=True)
+        df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
+    #except ValueError:
+        #print('Warning: Feature Columns missing values!')
+        #df_test.dropna(inplace=True)
+        #model.predict(df_test.iloc[:, 2:2+pfeatures])
+        #df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
+
     E_v = 0
     P_df,R_df = get_MDP(df_new)
     df2 = df_test.reset_index()
@@ -219,7 +309,6 @@ def testing_value_error(df_test, df_new, model, pfeatures,relative=False,h=5):
     N_test = df2.shape[0]
 #    print(df2)
 
-    df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
     for i in range(N_test):
 #        print('new item')
         # initializing index of first state for each ID
@@ -262,7 +351,6 @@ def testing_value_error(df_test, df_new, model, pfeatures,relative=False,h=5):
             if df_test['ID'].loc[index+t] != df_test['ID'].loc[index+t+1]:
                 break
 
-
             t += 1
         if relative:
             #E_v = E_v + ((math.exp(v_true)-math.exp(v_estim))/math.exp(v_true))**2
@@ -279,6 +367,17 @@ def testing_value_error(df_test, df_new, model, pfeatures,relative=False,h=5):
 
 
 def error_per_ID(df_test, df_new, model, pfeatures,relative=False,h=5):
+    try:
+        df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
+    except ValueError:
+        print('ERROR: Feature columns have missing values! Please drop' \
+              ' rows or fill in missing data.', flush=True)
+        df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
+    #except ValueError:
+        #print('Warning: Feature Columns missing values!')
+        #df_test.dropna(inplace=True)
+        #model.predict(df_test.iloc[:, 2:2+pfeatures])
+        #df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
     E_v = 0
     P_df,R_df = get_MDP(df_new)
     df2 = df_test.reset_index()
@@ -286,7 +385,7 @@ def error_per_ID(df_test, df_new, model, pfeatures,relative=False,h=5):
     N_test = df2.shape[0]
 #    print(df2)
 
-    df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
+
     V_true,V_estim,V_err,C_err,State = [],[],[],[],[]
 
     for i in range(N_test):
@@ -375,7 +474,7 @@ def error_per_ID(df_test, df_new, model, pfeatures,relative=False,h=5):
 # of the R-squared value between the expected value and true value of samples
 def R2_value_training(df_new):
     E_v = 0
-    P_df,R_df = get_MDP(df_new)
+    P_df, R_df = get_MDP(df_new)
     df2 = df_new.reset_index()
     df2 = df2.groupby(['ID']).first()
     N = df2.shape[0]
@@ -583,6 +682,38 @@ def all_paths(df, df_new, pfeatures, opt=True, plot=True):
                           columns = ['state', 'sequence', 'ratios', 'error'])
     return df_seq
 
+
+# plot_pred() takes a trained model, a specific US state name, and the df_true
+# (sorted by TIME), and plots the predicted versus true cases for n_days
+def plot_pred(model, state, df_true, n_days):
+    h = int(np.round(n_days/model.days_avg))
+    df_true.loc[:, [model.date_colname]]= pd.to_datetime(df_true[model.date_colname])
+    date = model.df[model.df[model.region]== state].iloc[-1, 1]
+    cases = model.df[model.df[model.region]== state].iloc[-1, 2]
+    dates = [date]
+    cases_pred = [cases]
+
+    s = model.df_trained[model.df_trained[model.region]==state].iloc[-1, -2]
+    r = 1
+    for i in range(h):
+        dates.append(date + timedelta((i+1)*model.days_avg))
+        r = r*np.exp(model.R_df.loc[s])
+        cases_pred.append(cases*r)
+        s = model.P_df.loc[s,0].values[0]
+
+
+    fig, ax = plt.subplots()
+    ax.plot(df_true.loc[df_true['state']==state][model.date_colname], \
+            df_true.loc[df_true['state']==state][model.target_colname], \
+            label = 'True '+model.target_colname)
+    ax.plot(dates, cases_pred, label='Predicted '+model.target_colname)
+    ax.set_title('%s True vs Predicted '%state + model.target_colname)
+    ax.set_xlabel('Date')
+    ax.set_ylabel(model.target_colname)
+    plt.xticks(rotation=45, ha='right')
+    plt.legend()
+    plt.show()
+    return
 #############################################################################
 
 
@@ -596,8 +727,8 @@ def show_state(df_new,df,state,pfeatures):
     st['CLUSTER'] = model.predict(st.iloc[:,2:pfeatures+2])
     return st[['TIME','cases','RISK','CLUSTER', 'r_t']]
 
-def mape(df_pred,df_true):
-    df_pred['real cases'] = df_true['cases']
-    df_pred['rel_error'] = abs(df_pred['cases']-df_true['cases'])/df_true['cases']
+def mape(df_pred,df_true, target_colname):
+    df_pred['real '+target_colname] = df_true[target_colname]
+    df_pred['rel_error'] = abs(df_pred[target_colname]-df_true[target_colname])/df_true[target_colname]
     return df_pred
 #############################################################################
