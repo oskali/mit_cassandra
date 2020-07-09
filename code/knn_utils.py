@@ -13,7 +13,6 @@ from random import choices
 
 #%% Helper Functions
 
-
 def wmape(y_true, y_pred):
     y_true, y_pred = np.array(y_true), np.array(y_pred).astype('float')
     return sum((np.abs(y_true - y_pred)) * 100) / sum(y_true)
@@ -109,9 +108,10 @@ def get_best_parameters(df, memory, split_date, forward_days, r, col_date='date'
                 # once we determine first date for each state, we will modify the March 22 hard coding
                     train = get_in_date_range(df, first_date = '2020-04-10', last_date = mod_date(split_date, -r), date_col=col_date)
                     test = get_in_date_range(df, first_date = mod_date(split_date, -r), last_date = split_date, date_col=col_date)
-                    test0 = test.copy()
+                    x_train = train[features].dropna()
                     #np.isnan(x_train.values.any())
                     y_train = train[~train[features].isna().any(axis=1)].GrowthRate
+                    np.isnan(y_train)
                     x_test = test[features]
                     y_test = test.GrowthRate
                     if (test.shape[0] != 0 and train.shape[0] != 0):
@@ -136,19 +136,31 @@ def match_to_real_growth(df, start_date, threshold, n, p, func, memory, forward_
     # on first iteration (i=0) previous_final_test is the original df, on future iterations (i>0) it contains the predictions for t+0 through t+i-1
     previous_final_test = df
     for i in range(forward_days):
+        jj = 0
         features = feature_choices[i:i+memory]
         real_features = ['GrowthRate_t-' + str(j+1) for j in range(memory)]
 
         # current_final_test is the df where we add all the state predictions for the current iteration (day)
         current_final_test = pd.DataFrame()
-        for state1 in start_date:
+        for state1 in df[region_col].unique():
+            alpha = 0
+            train_data_out_of_state = pd.DataFrame()
+
             # when we have a specific first_date for each state, we will update the hard coded march 22
             #d1 = df.Date[0]
             # the distinction between in state and out of state only has an effect when the day_0 is before the split_date
             #for in state train data, we can use anything before the day_0
-            train_data_in_state = get_in_date_range(df.loc[df.state == state1], first_date=start_date[state1], last_date = day_0, date_col = date_col)
+            train_data_in_state = get_in_date_range(df.loc[df[region_col] == state1], first_date=start_date[jj], last_date = day_0, date_col = date_col)
             # for out of state train data, we can use anything before the split_date'
-            train_data_out_of_state = (get_in_date_range(df.loc[df.state != state1], first_date=start_date[state1], last_date = split_date, date_col=date_col))
+
+            for state2 in df[region_col].unique():
+                if(state1 != state2):
+                    if(alpha != jj):
+                        train_data_out_of_state = train_data_out_of_state.append(get_in_date_range(df.loc[df[region_col] == state2], first_date=start_date[alpha], last_date = split_date, date_col=date_col))
+                        alpha+=1
+                    else:
+                        alpha+=1
+
             train = pd.concat([train_data_in_state, train_data_out_of_state], sort = False)
             #print(len(train))
 
@@ -188,6 +200,7 @@ def match_to_real_growth(df, start_date, threshold, n, p, func, memory, forward_
             test0['pred_forward_day_'+str(i)] = y_pred # add the new prediction as a new column
             #pred_high_day_i and pred_low_day_i
 #             x_test = x_test.rename(columns = undo_rename(features)) # make sure that original column names are not changed when they are changed in the copy
+            jj = jj+1
 
             current_final_test = pd.concat([current_final_test, test0], sort = False)
         previous_final_test = current_final_test
@@ -198,6 +211,7 @@ def match_to_real_growth(df, start_date, threshold, n, p, func, memory, forward_
 def predict_covid(df, start_date, memory = 10, forward_days = 14, split_date = '2020-05-01', day_0 = '2020-05-01', real_GR = False, deterministic = True, r = 1, date_col='date', region_col='state', target_col='cases'):
     '''
     everything before split_date is train
+
     '''
 
     #This section of code creates the forward and back features

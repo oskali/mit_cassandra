@@ -13,13 +13,14 @@ import pandas as pd
 from copy import deepcopy
 import scipy.optimize as optimize
 from datetime import timedelta
-from sklearn.metrics import mean_squared_log_error
+#from sklearn.metrics import mean_squared_log_error
 from sklearn.metrics import mean_squared_error
 from math import sqrt
 
 
 #%% Helper Functions
-#ode differential equations
+
+# ODE Differential Equations
 def model(ini, time_step, params):
 	Y = np.zeros(5) #column vector for the state variables
 	X = ini
@@ -31,8 +32,8 @@ def model(ini, time_step, params):
 	S = X[0]
 	E = X[1]
 	I = X[2]
-	R = X[3]
-	D = X[4]
+	#R = X[3]
+	#D = X[4]
 
 	Y[0] = 0 - (beta*S*I)/params[2] #S
 	Y[1] = (beta*S*I)/params[2] - a*E #E
@@ -41,7 +42,7 @@ def model(ini, time_step, params):
 	Y[4] = mu*I #D
 	return Y
 
-#set up initial compartments
+# Set-up Initial Compartments
 def inifcn(params, cases, deaths):
 	S0 = params[2] - cases[0] - deaths[0]
 	E0 = 0.0
@@ -51,12 +52,12 @@ def inifcn(params, cases, deaths):
 	X0 = [S0, E0, I0, R0, D0]
 	return X0
 
-#retrieve cumlative case compartments (active, recovered, dead)
+# Retrieve Cumlative Case Compartments (active, recovered, dead)
 def finfcn(res):
 	return res[:,2], res[:,3], res[:,4]
 
-#objective function to optimize hyperparameters
-def NLL(params, cases, deaths, times): #loss function
+# Objective Function
+def NLL(params, cases, deaths, times): # loss function
 	params = np.abs(params)
 	cases = np.array(cases)
 	deaths = np.array(deaths)
@@ -97,7 +98,7 @@ class SIRModel():
 			self.trained_param = None
 
 		def fit(self,
-				df, 
+				df,
 				retrain_warmstart = False):
 
 			dataset = deepcopy(df)
@@ -116,7 +117,7 @@ class SIRModel():
 					full_times = [j for j in range(len(train_full_set))]
 					full_cases = train_full_set.loc[:, "active"].values
 					full_dead = train_full_set.loc[:, "deaths"].values
-					
+
 					train_set, valid_set= np.split(train_full_set, [int(self.train_valid_split *len(train_full_set))])
 
 					timer = [j for j in range(len(train_set))]
@@ -127,9 +128,9 @@ class SIRModel():
 					valid_times = [j for j in range(len(valid_set))]
 					valid_cases = valid_set.loc[:, "active"].values
 					valid_dead = valid_set.loc[:, "deaths"].values
-					
+
 					region_pop = population[region]
-					
+
 					if self.trained_warmstart == None or retrain_warmstart == True:
 						param_list = []
 						mse_list = []
@@ -142,7 +143,7 @@ class SIRModel():
 										params = np.abs(optimizer.x)
 										ini = inifcn(params, train_cases, train_dead)
 										param_list.append([self.betavals[betaindex],self.gammavals[gammaindex],self.avals[aindex],self.muvals[muindex]])
-										train_est = ode(model, ini, times, args=(params,)) 
+										train_est = ode(model, ini, times, args=(params,))
 										valid_ini = train_est[len(train_est)-1,:]
 										valid_est = ode(model, valid_ini, valid_times, args=(params,))
 										active, recovered, dead = finfcn(valid_est)
@@ -156,20 +157,20 @@ class SIRModel():
 						a = param_list[minindex][2]
 						mu = param_list[minindex][3]
 						params = [beta, gamma, region_pop, a, mu]
-						paramnames = ['beta', 'gamma', 'k', 'a', 'mu']
+						#paramnames = ['beta', 'gamma', 'k', 'a', 'mu']
 						warmstart[region] = params
 						self.trained_warmstart = warmstart
 					else:
 						params = self.trained_warmstart[region]
 
-			   
+
 					optimizer = optimize.minimize(NLL, params, args=(full_cases, full_dead, full_times), method=self.optimizer)
 					paramests = np.abs(optimizer.x)
 					iniests = inifcn(params, full_cases, full_dead)
 					xest = ode(model, iniests, full_times, args=(paramests,))
 
 					output[region] = [paramests, xest[0,:], xest[len(xest)-1,:], train_full_set.date.iloc[0], train_full_set.date.iloc[len(train_full_set) - 1]]
-					
+
 					self.trained_param = output
 
 
