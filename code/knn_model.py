@@ -40,6 +40,7 @@ class KNNModel():
         forward_days = (max(dates)-split_date).days + 1
 
         state_df = self.state_df[[self.region, self.date,self.target]].groupby([self.region, self.date]).sum().reset_index()
+        state_df = state_df.loc[~state_df[self.region].isin(['West Virginia','District of Columbia','Puerto Rico','American Samoa', 'Diamond Princess','Grand Princess','Guam','Northern Mariana Islands','Virgin Islands'])]
         state_df = state_df.sort_values(by = [self.region, self.date])
         is_100 = state_df[self.target] >= 100
         state_df1 = state_df[is_100]
