@@ -41,6 +41,7 @@ def load_data(file=df_path,
         df_test = df[df[date] > training_cutoff]
     else:
         df_test = df[[a and b for a, b in zip(df[date] > training_cutoff, df[date] <= validation_cutoff)]]
+        df = df[df[date] <= validation_cutoff]
     return(df, df_train, df_test)
 
 def dict_to_df(output,

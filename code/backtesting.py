@@ -52,7 +52,8 @@ if load_ci:
     high_output = ci.sample(output, 'high')
     for model in models:
         output[model + '_low'] = low_output[model]
-        output[model + '_high'] = high_output[model]
+        output[model+ '_high'] = high_output[model]
+        output[model+ '_sample'] = sampled_output[model]
 
 df_agg = dict_to_df(output,
                     df_test)

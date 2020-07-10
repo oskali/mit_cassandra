@@ -23,7 +23,7 @@ from xgboost import XGBClassifier
 from collections import Counter
 from itertools import groupby
 from operator import itemgetter
-from datetime import datetime
+#from datetime import datetime
 
 import multiprocessing as mp
 from functools import partial
@@ -42,7 +42,7 @@ from mdp_testing import R2_value_training, training_value_error,  \
 # days_avg the number of days used to compress datapoints, and returns a data frame with
 # desired features and history, ratio values and history, and 'RISK' and 'ACTION'
 # returns new dataframe with only the desired columns, number of features considered
-def createSamples(df,#, # dataframe: original full dataframe
+def createSamples(df_ini,#, # dataframe: original full dataframe
                   #new_cols, # str list: names of columns to be considered
                   target_colname, # str: col name of target_colname (i.e. 'deaths')
                   region_colname, # str, col name of region (i.e. 'state')
@@ -52,6 +52,7 @@ def createSamples(df,#, # dataframe: original full dataframe
                   #d_delay, # int: day lag before calculating death impact
                   days_avg): # int: # of days to average when reporting death
 
+    df = deepcopy(df_ini)
     df.rename(columns={date_colname: 'TIME'}, inplace = True)
     df = df[df[region_colname]!='Guam']
     df = df[df[region_colname]!='Northern Mariana Islands']

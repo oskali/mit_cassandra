@@ -10,6 +10,7 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 from knn_utils import predict_covid
+from copy import deepcopy
 
 #%% Model
 
@@ -76,5 +77,9 @@ class KNNModel():
                 df = df_simple[[a and b for a, b in zip(df_simple[self.region]==state1, df_simple[self.date] == date1)]]
                 pred= (df['pred_' + self.target]).to_string(index=False)
                 out[state1][date1] = pred
-        output = {region: pd.DataFrame(out[region].values(), index=out[region].keys())[0][pd.DataFrame(out[region].values(), index=out[region].keys())[0] != 'Series([], )'] for region in out.keys()}
+        output = {region: pd.DataFrame([float(x) if str(x).find('S') < 0 else x for x in out[region].values()], index=out[region].keys())[0][pd.DataFrame(out[region].values(), index=out[region].keys())[0] != 'Series([], )'] for region in out.keys()}
+        filter_regions = deepcopy(list(output.keys()))
+        for region in filter_regions:
+            if len(output[region]) == 0:
+                del output[region]
         return output
