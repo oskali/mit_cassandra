@@ -30,7 +30,7 @@ elif USER == 'lpgt':
 
 #%% Target and column names
 
-target_col = 'cases'
+target_col = 'deaths'
 date_col='date'
 region_col='state'
 population='population'
@@ -96,7 +96,7 @@ knn_params_dict = \
 #%% Parameters MDP
 days_avg=3
 horizon=10
-n_iter=200
+n_iter=100
 n_folds_cv=6
 clustering_distance_threshold=0.1
 splitting_threshold=0.
@@ -107,7 +107,7 @@ action_thresh=[]
 features_list=[]
 verbose=False
 features = []
-n_jobs =os
+n_jobs =1
 
 mdp_params_dict = \
     {
