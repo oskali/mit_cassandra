@@ -75,7 +75,7 @@ class MDPModel:
         if type(data) == str:
             data = pd.read_csv(data)
         # creates samples from dataframe
-        df, pfeatures = createSamples(data,
+        df, pfeatures = createSamples(data.copy(),
                                       self.target_colname,
                                       self.region_colname,
                                       self.date_colname,
