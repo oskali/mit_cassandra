@@ -15,10 +15,15 @@ from sklearn.svm import SVR, LinearSVR
 
 #%% User and path
 
-USER = 'omar'
+USER = 'david'
 
 if USER == 'omar':
     df_path = 'C:\\Users\\omars\\Desktop\\covid19_georgia\\covid19_team2-restrucuturing\\covid19_team2\\data\\input\\07_08_2020_states_combined.csv'
+
+if USER == 'david':
+    import os
+    df_path = os.path.join(os.path.dirname(os.getcwd()), "data", "input", "07_08_2020_states_combined.csv")
+
 
 elif USER == 'lpgt':
     df_path = r'../data/input/06_15_2020_MA_only.csv'
@@ -40,11 +45,11 @@ unformatted_dates = ['2020-07-01', '2020-08-15'] # dates to predict
 
 #%% Load and Save Parameters
 
-train_knn = True
+train_knn = False
 train_mdp = True
-train_sir = True
-train_agg = True
-train_ci = True
+train_sir = False
+train_agg = False
+train_ci = False
 load_knn = True
 load_mdp = True
 load_sir = True
@@ -65,10 +70,10 @@ optimizer='Nelder-Mead'
 sir_params_dict = \
     {
         "nmin": nmin,
-        'date':date_col,
-		'region':region_col,
-		'target':target_col,
-		'population':population,
+        'date': date_col,
+		'region': region_col,
+		'target': target_col,
+		'population': population,
         "optimizer": optimizer,
         "betavals": [0.10, 0.15, 0.9, 0.95, 1.1, 1.2],
         "gammavals": [0.01, 0.03, 0.25, 0.27, 0.29],
@@ -90,19 +95,19 @@ knn_params_dict = \
 
 #%% Parameters MDP
 days_avg=3
-horizon=5
-n_iter=40
-n_folds_cv=5
-clustering_distance_threshold=0.05
+horizon=10
+n_iter=200
+n_folds_cv=6
+clustering_distance_threshold=0.1
 splitting_threshold=0.
 classification_algorithm='DecisionTreeClassifier'
 clustering_algorithm='Agglomerative'
 n_clusters=None
 action_thresh=[]
 features_list=[]
-verbose=False
+verbose=True
 features = []
-n_jobs = 3
+n_jobs =os
 
 mdp_params_dict = \
     {

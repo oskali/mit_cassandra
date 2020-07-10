@@ -39,10 +39,11 @@ if train_knn:
     save_model(knn, knn_file)
 
 if train_mdp:
-    mdp = MDPModel(**mdp_params_dict)
-    mdp.fit(df_train)
-    models.append('mdp')
-    save_model(mdp, mdp_file)
+    if __name__ == "__main__":
+        mdp = MDPModel(**mdp_params_dict)
+        mdp.fit(df_train)
+        models.append('mdp')
+        save_model(mdp, mdp_file)
 
 if train_agg:
     validation_predictions = {}
