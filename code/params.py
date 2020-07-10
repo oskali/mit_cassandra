@@ -45,11 +45,11 @@ unformatted_dates = ['2020-07-01', '2020-08-15'] # dates to predict
 
 #%% Load and Save Parameters
 
-train_knn = False
+train_knn = True
 train_mdp = True
-train_sir = False
-train_agg = False
-train_ci = False
+train_sir = True
+train_agg = True
+train_ci = True
 load_knn = True
 load_mdp = True
 load_sir = True
@@ -105,7 +105,7 @@ clustering_algorithm='Agglomerative'
 n_clusters=None
 action_thresh=[]
 features_list=[]
-verbose=True
+verbose=False
 features = []
 n_jobs =os
 
