@@ -316,7 +316,6 @@ def split(df,  # pandas dataFrame
         m = RandomForestClassifier(random_state=random_state)
     elif classification == 'XGBClassifier':
         m = XGBClassifier(random_state=random_state)
-
     else:
         m = LogisticRegression(solver='liblinear')
 
@@ -585,7 +584,7 @@ def fit_cv(df,
             # E_v ?
 
     else:  # n_jobs > 1
-        if n_jobs == -1 :
+        if n_jobs == -1:
             pool = mp.Pool(processes=mp.cpu_count())
         else:
             pool = mp.Pool(processes=n_jobs)

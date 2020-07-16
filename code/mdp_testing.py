@@ -8,17 +8,6 @@ Created on Sun Apr 26 23:13:09 2020
 
 @author: Amine
 """
-#############################################################################
-# Load Libraries
-
-import pandas as pd
-import matplotlib.pyplot as plt
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Apr 26 23:13:09 2020
-
-@author: Amine, omars
-"""
 
 #%% Libraries
 
@@ -132,35 +121,35 @@ def predict_region_date(mdp, # MDP_model object
             raise PredictionError  # test
 
 
-# plot prediction target vs. true target
-def plot_pred(model, state, df_true, n_days):
-    h = int(np.round(n_days/model.days_avg))
-    df_true.loc[:, [model.date_colname]]= pd.to_datetime(df_true[model.date_colname])
-    date = model.df[model.df[model.region_colname]== state].iloc[-1, 1]
-    cases = model.df[model.df[model.region_colname]== state].iloc[-1][model.target_colname]
-    dates = [date]
-    cases_pred = [cases]
+# # plot prediction target vs. true target
+# def plot_pred(model, state, df_true, n_days):
+#     h = int(np.round(n_days/model.days_avg))
+#     df_true.loc[:, [model.date_colname]]= pd.to_datetime(df_true[model.date_colname])
+#     date = model.df[model.df[model.region_colname]== state].iloc[-1, 1]
+#     cases = model.df[model.df[model.region_colname]== state].iloc[-1][model.target_colname]
+#     dates = [date]
+#     cases_pred = [cases]
 
-    s = model.df_trained[model.df_trained[model.region_colname]==state].iloc[-1, -2]
-    r = 1
-    for i in range(h):
-        dates.append(date + timedelta((i+1)*model.days_avg))
-        r = r*np.exp(model.R_df.loc[s])
-        cases_pred.append(cases*r)
-        s = model.P_df.loc[s,0].values[0]
+#     s = model.df_trained[model.df_trained[model.region_colname]==state].iloc[-1, -2]
+#     r = 1
+#     for i in range(h):
+#         dates.append(date + timedelta((i+1)*model.days_avg))
+#         r = r*np.exp(model.R_df.loc[s])
+#         cases_pred.append(cases*r)
+#         s = model.P_df.loc[s,0].values[0]
 
 
-    fig, ax = plt.subplots()
-    ax.plot(df_true.loc[df_true['state']==state][model.date_colname], \
-            df_true.loc[df_true['state']==state][model.target_colname], \
-            label = 'True '+model.target_colname)
-    ax.plot(dates, cases_pred, label='Predicted '+model.target_colname)
-    ax.set_title('%s True vs Predicted '%state + model.target_colname)
-    ax.set_xlabel('Date')
-    ax.set_ylabel(model.target_colname)
-    plt.xticks(rotation=45, ha='right')
-    plt.legend()
-    plt.show()
+#     fig, ax = plt.subplots()
+#     ax.plot(df_true.loc[df_true['state']==state][model.date_colname], \
+#             df_true.loc[df_true['state']==state][model.target_colname], \
+#             label = 'True '+model.target_colname)
+#     ax.plot(dates, cases_pred, label='Predicted '+model.target_colname)
+#     ax.set_title('%s True vs Predicted '%state + model.target_colname)
+#     ax.set_xlabel('Date')
+#     ax.set_ylabel(model.target_colname)
+#     plt.xticks(rotation=45, ha='right')
+#     plt.legend()
+#     plt.show()
 
 #############################################################################
 # Functions for Accuracy and Purity
@@ -251,7 +240,7 @@ def training_value_error(df_new, #Outpul of algorithm
             if df_new['ID'].loc[index+H] != df_new['ID'].loc[index+H+1]:
                 break
 
-        t = max(H-h,0)
+        t = max(H-h, 0)
         s = df_new['CLUSTER'].loc[index + t]
         a = df_new['ACTION'].loc[index + t]
         v_true = df_new['RISK'].loc[index + t]
@@ -325,7 +314,8 @@ def testing_value_error(df_test, df_new, model, pfeatures,relative=False,h=5):
             if df_test['ID'].loc[index+H] != df_test['ID'].loc[index+H+1]:
                 break
 
-        t = max(H-h,0)
+
+        t = max(H-h, 0)
         s = df_test['CLUSTER'].loc[index + t]
         a = df_test['ACTION'].loc[index + t]
         v_true = df_test['RISK'].loc[index + t]
@@ -408,7 +398,8 @@ def error_per_ID(df_test, df_new, model, pfeatures,relative=False,h=5):
             if df_test['ID'].loc[index+H] != df_test['ID'].loc[index+H+1]:
                 break
 
-        t = max(H-h,0)
+
+        t = max(H-h, 0)
         s = df_test['CLUSTER'].loc[index + t]
         a = df_test['ACTION'].loc[index + t]
         v_true = df_test['RISK'].loc[index+t]
@@ -591,7 +582,8 @@ def plot_path(df_new, df, state, h, pfeatures, plot=True):
     H = state_df.shape[0]
     P_df,R_df = get_MDP(df_new)
 
-    t = max(H-h,0)
+
+    t = max(H-h, 0)
 
     v_true = state_df['r_t'][t:]
     v_estim = []
@@ -607,7 +599,7 @@ def plot_path(df_new, df, state, h, pfeatures, plot=True):
             s = P_df.loc[s,0].values[0]
             s_seq.append(s)
         except TypeError:
-                print('WARNING: Trying to predict next state from state',s,'taking action',a,', but this transition is never seen in the data. Data point:',i,t)
+                print('WARNING: Trying to predict next state from state',s) #,'taking action',a,', but this transition is never seen in the data. Data point:',i,t)
         #a = df_test['ACTION'].loc[index + t]
         v_estim.append(math.exp(R_df.loc[s]))
         t += 1
@@ -645,7 +637,7 @@ def plot_path_all(df_new, df, state, pfeatures, opt=True, plot=True):
         if opt and E_v > prev and h < 16: # arbitrary threshold for a decent prediction
             break
 
-        v_true_prev = v_true
+        #v_true_prev = v_true
         v_estim_prev = v_estim
         s_seq_prev = s_seq
         errors.append(E_v)
@@ -659,8 +651,8 @@ def plot_path_all(df_new, df, state, pfeatures, opt=True, plot=True):
         ax2.set_xlabel('Horizon of Prediction')
         ax2.set_ylabel('Error')
         plt.show()
-        df_errors = pd.DataFrame(list(zip(its, errors)),
-               columns =['h', 'Error'])
+        # df_errors = pd.DataFrame(list(zip(its, errors)),
+        #        columns =['h', 'Error'])
         # print(df_errors)
     return v_estim_prev, s_seq_prev, prev
 

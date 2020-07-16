@@ -30,7 +30,7 @@ elif USER == 'lpgt':
 
 #%% Target and column names
 
-target_col = 'cases'
+target_col = 'deaths'
 date_col='date'
 region_col='state'
 population='population'
