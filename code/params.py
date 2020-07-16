@@ -18,7 +18,7 @@ from sklearn.svm import SVR, LinearSVR
 USER = 'david'
 
 if USER == 'omar':
-    df_path = 'C:\\Users\\omars\\Desktop\\covid19_georgia\\covid19_team2-restrucuturing\\covid19_team2\\data\\input\\07_08_2020_states_combined.csv'
+    df_path = 'C:\\Users\\omars\\Desktop\\covid19_georgia\\covid19_team2-restrucuturing\\bis\\covid19_team2\\data\\input\\07_08_2020_states_combined.csv'
 
 if USER == 'david':
     import os
@@ -38,8 +38,9 @@ population='population'
 #%% Run Parameters
 
 random_state=42
+retrain=True
 training_cutoff = '2020-06-15'
-validation_cutoff = '2020-06-21'
+validation_cutoff = '2020-06-28'
 regions = ['New York', 'Massachusetts'] # regions to predict
 unformatted_dates = ['2020-07-01', '2020-08-15'] # dates to predict
 
@@ -75,11 +76,12 @@ sir_params_dict = \
 		'target': target_col,
 		'population': population,
         "optimizer": optimizer,
-        "betavals": [0.10, 0.15, 0.9, 0.95, 1.1, 1.2],
-        "gammavals": [0.01, 0.03, 0.25, 0.27, 0.29],
-        "avals": [0.333, 0.142, 0.0909, 0.0714, 0.0526],
-        "muvals": [0.001, 0.003, 0.005, 0.007],
-        "train_valid_split": 0.8,
+        # "betavals": [0.10, 0.15, 0.9, 0.95, 1.1, 1.2],
+        # "gammavals": [0.01, 0.03, 0.25, 0.27, 0.29],
+        # "avals": [0.333, 0.142, 0.0909, 0.0714, 0.0526],
+        # "muvals": [0.001, 0.003, 0.005, 0.007],
+        # "train_valid_split": 0.8,
+        'initial_param' :[0.4, 0.06],
         "nmin_train_set": 10
     }
 
