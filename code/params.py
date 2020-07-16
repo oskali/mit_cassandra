@@ -15,7 +15,7 @@ from sklearn.svm import SVR, LinearSVR
 
 #%% User and path
 
-USER = 'david'
+USER = 'omar'
 
 if USER == 'omar':
     df_path = 'C:\\Users\\omars\\Desktop\\covid19_georgia\\covid19_team2-restrucuturing\\bis\\covid19_team2\\data\\input\\07_08_2020_states_combined.csv'
@@ -39,8 +39,8 @@ population='population'
 
 random_state=42
 retrain=True
-training_cutoff = '2020-06-15'
-validation_cutoff = '2020-06-28'
+training_cutoff = '2020-05-01'
+validation_cutoff = '2020-05-15'
 regions = ['New York', 'Massachusetts'] # regions to predict
 unformatted_dates = ['2020-07-01', '2020-08-15'] # dates to predict
 
@@ -97,9 +97,9 @@ knn_params_dict = \
 
 #%% Parameters MDP
 days_avg=3
-horizon=10
-n_iter=200
-n_folds_cv=6
+horizon=5
+n_iter=30
+n_folds_cv=5
 clustering_distance_threshold=0.1
 splitting_threshold=0.
 classification_algorithm='DecisionTreeClassifier'
@@ -107,9 +107,9 @@ clustering_algorithm='Agglomerative'
 n_clusters=None
 action_thresh=[]
 features_list=[]
-verbose=False
+verbose=True
 features = []
-n_jobs =os
+n_jobs = 1
 
 mdp_params_dict = \
     {

@@ -251,13 +251,13 @@ def training_value_error(df_new, #Outpul of algorithm
             if df_new['ID'].loc[index+H] != df_new['ID'].loc[index+H+1]:
                 break
 
-        t = H-h
+        t = max(H-h,0)
         s = df_new['CLUSTER'].loc[index + t]
         a = df_new['ACTION'].loc[index + t]
         v_true = df_new['RISK'].loc[index + t]
         v_estim = R_df.loc[s]
         t += 1
-        #t = H-h +1
+        #t = max(H-h,0) +1
         # predicting path of each ID
         while cont:
             v_true = v_true + df_new['RISK'].loc[index + t]
@@ -325,7 +325,7 @@ def testing_value_error(df_test, df_new, model, pfeatures,relative=False,h=5):
             if df_test['ID'].loc[index+H] != df_test['ID'].loc[index+H+1]:
                 break
 
-        t = H-h
+        t = max(H-h,0)
         s = df_test['CLUSTER'].loc[index + t]
         a = df_test['ACTION'].loc[index + t]
         v_true = df_test['RISK'].loc[index + t]
@@ -408,7 +408,7 @@ def error_per_ID(df_test, df_new, model, pfeatures,relative=False,h=5):
             if df_test['ID'].loc[index+H] != df_test['ID'].loc[index+H+1]:
                 break
 
-        t = H-h
+        t = max(H-h,0)
         s = df_test['CLUSTER'].loc[index + t]
         a = df_test['ACTION'].loc[index + t]
         v_true = df_test['RISK'].loc[index+t]
@@ -591,7 +591,7 @@ def plot_path(df_new, df, state, h, pfeatures, plot=True):
     H = state_df.shape[0]
     P_df,R_df = get_MDP(df_new)
 
-    t = H-h
+    t = max(H-h,0)
 
     v_true = state_df['r_t'][t:]
     v_estim = []
