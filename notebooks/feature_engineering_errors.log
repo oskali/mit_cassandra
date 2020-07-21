@@ -1,0 +1,1547 @@
+WARNING:root:mean state - home_time
+WARNING:root:mean state - part_time
+WARNING:root:mean state - residential
+WARNING:root:mean state - retail_and_recreation
+WARNING:root:mean state - distance
+WARNING:root:mean state - grocery_and_pharmacy
+WARNING:root:mean state - non_home_time
+WARNING:root:mean state - workplaces
+WARNING:root:mean state - percentage
+WARNING:root:mean state - cases_nom
+WARNING:root:mean state - parks
+WARNING:root:mean state - deaths_nom
+WARNING:root:mean state - transit_stations
+WARNING:root:mean state - full_time
+WARNING:root:mean state - home_time
+WARNING:root:mean state - part_time
+WARNING:root:mean state - residential
+WARNING:root:mean state - retail_and_recreation
+WARNING:root:mean state - distance
+WARNING:root:mean state - grocery_and_pharmacy
+WARNING:root:mean state - non_home_time
+WARNING:root:mean state - workplaces
+WARNING:root:mean state - percentage
+WARNING:root:mean state - cases_nom
+WARNING:root:mean state - parks
+WARNING:root:mean state - deaths_nom
+WARNING:root:mean state - transit_stations
+WARNING:root:mean state - full_time
+WARNING:root:mean state - home_time
+WARNING:root:mean state - part_time
+WARNING:root:mean state - residential
+WARNING:root:mean state - retail_and_recreation
+WARNING:root:mean state - distance
+WARNING:root:mean state - grocery_and_pharmacy
+WARNING:root:mean state - non_home_time
+WARNING:root:mean state - workplaces
+WARNING:root:mean state - percentage
+WARNING:root:mean state - cases_nom
+WARNING:root:mean state - parks
+WARNING:root:mean state - deaths_nom
+WARNING:root:mean state - transit_stations
+WARNING:root:mean state - full_time
+WARNING:root:mean state - home_time
+WARNING:root:mean state - part_time
+WARNING:root:mean state - residential
+WARNING:root:mean state - retail_and_recreation
+WARNING:root:mean state - distance
+WARNING:root:mean state - grocery_and_pharmacy
+WARNING:root:mean state - non_home_time
+WARNING:root:mean state - workplaces
+WARNING:root:mean state - percentage
+WARNING:root:mean state - cases_nom
+WARNING:root:mean state - parks
+WARNING:root:mean state - deaths_nom
+WARNING:root:mean state - transit_stations
+WARNING:root:mean state - full_time
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:lag state - non_home_time_pct2 -5
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - distance_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - percentage_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - full_time_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - part_time_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - home_time_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - non_home_time_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:mean state - cases_nom_pct1
+WARNING:root:mean state - grocery_and_pharmacy_pct1
+WARNING:root:mean state - retail_and_recreation_pct1
+WARNING:root:mean state - transit_stations_pct1
+WARNING:root:mean state - residential_pct1
+WARNING:root:mean state - deaths_nom_pct1
+WARNING:root:mean state - workplaces_pct1
+WARNING:root:mean state - parks_pct1
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score_pct
+WARNING:root:seasonal test ADF - date - mobility_score
+WARNING:root:seasonal test ADF - date - mobility_score
+WARNING:root:seasonal test ADF - date - mobility_score
+WARNING:root:seasonal state - date - mobility_score
+WARNING:root:seasonal state - date - m
+WARNING:root:seasonal state - date - o
+WARNING:root:seasonal state - date - b
+WARNING:root:seasonal state - date - i
+WARNING:root:seasonal state - date - l
+WARNING:root:seasonal state - date - i
+WARNING:root:seasonal state - date - t
+WARNING:root:seasonal state - date - y
+WARNING:root:seasonal state - date - _
+WARNING:root:seasonal state - date - s
+WARNING:root:seasonal state - date - c
+WARNING:root:seasonal state - date - o
+WARNING:root:seasonal state - date - r
+WARNING:root:seasonal state - date - e
+WARNING:root:seasonal state - date - m
+WARNING:root:seasonal state - date - o
+WARNING:root:seasonal state - date - b
+WARNING:root:seasonal state - date - i
+WARNING:root:seasonal state - date - l
+WARNING:root:seasonal state - date - i
+WARNING:root:seasonal state - date - t
+WARNING:root:seasonal state - date - y
+WARNING:root:seasonal state - date - _
+WARNING:root:seasonal state - date - s
+WARNING:root:seasonal state - date - c
+WARNING:root:seasonal state - date - o
+WARNING:root:seasonal state - date - r
+WARNING:root:seasonal state - date - e
+WARNING:root:seasonal state - date - m
+WARNING:root:seasonal state - date - o
+WARNING:root:seasonal state - date - b
+WARNING:root:seasonal state - date - i
+WARNING:root:seasonal state - date - l
+WARNING:root:seasonal state - date - i
+WARNING:root:seasonal state - date - t
+WARNING:root:seasonal state - date - y
+WARNING:root:seasonal state - date - _
+WARNING:root:seasonal state - date - s
+WARNING:root:seasonal state - date - c
+WARNING:root:seasonal state - date - o
+WARNING:root:seasonal state - date - r
+WARNING:root:seasonal state - date - e
+WARNING:root:seasonal state - date - mobility_score
+WARNING:root:seasonal state - date - mobility_score
+WARNING:matplotlib.legend:No handles with labels found to put in legend.
+WARNING:matplotlib.legend:No handles with labels found to put in legend.
+WARNING:root:seasonal state - date - cases_pct5
+WARNING:root:seasonal state - date - cases_pct5
+WARNING:root:seasonal state - date - cases_pct5
+WARNING:root:seasonal state - date - cases_pct5
+WARNING:root:seasonal state - date - cases_pct5
+WARNING:root:seasonal state - date - home_time
+WARNING:root:seasonal state - date - home_time
+WARNING:root:seasonal state - date - home_time
+WARNING:root:seasonal state - date - home_time
+WARNING:root:seasonal state - date - home_time
+WARNING:matplotlib.legend:No handles with labels found to put in legend.
+WARNING:matplotlib.legend:No handles with labels found to put in legend.
+WARNING:matplotlib.legend:No handles with labels found to put in legend.
+WARNING:matplotlib.legend:No handles with labels found to put in legend.
+WARNING:matplotlib.legend:No handles with labels found to put in legend.
+WARNING:matplotlib.legend:No handles with labels found to put in legend.
+WARNING:matplotlib.legend:No handles with labels found to put in legend.
+WARNING:matplotlib.legend:No handles with labels found to put in legend.
+WARNING:matplotlib.legend:No handles with labels found to put in legend.
+WARNING:matplotlib.legend:No handles with labels found to put in legend.
