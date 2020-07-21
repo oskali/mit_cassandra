@@ -34,8 +34,8 @@ def load_data(file=df_path,
               training_cutoff=training_cutoff,
               validation_cutoff=None,
               nmim=nmin):
-    #df = pd.read_csv(file)
-    df = get_public_data(file)
+    df = pd.read_csv(file)
+    #df = get_public_data(file)
     df.columns = map(str.lower, df.columns)
     df= df[df[target] >= nmin]
     df[date] = df[date].apply(lambda x: datetime.strptime(x,'%Y-%m-%d'))

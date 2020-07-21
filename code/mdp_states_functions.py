@@ -19,7 +19,7 @@ from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GroupKFold
-from xgboost import XGBClassifier
+# from xgboost import XGBClassifier
 from collections import Counter
 from itertools import groupby
 from operator import itemgetter
@@ -42,128 +42,123 @@ from mdp_testing import R2_value_training, training_value_error,  \
 # days_avg the number of days used to compress datapoints, and returns a data frame with
 # desired features and history, ratio values and history, and 'RISK' and 'ACTION'
 # returns new dataframe with only the desired columns, number of features considered
-def createSamples(df_ini,#, # dataframe: original full dataframe
-                  #new_cols, # str list: names of columns to be considered
-                  target_colname, # str: col name of target_colname (i.e. 'deaths')
-                  region_colname, # str, col name of region (i.e. 'state')
-                  date_colname, # str, col name of time (i.e. 'date')
-                  features_list, # list of str: i.e. (['mobility', 'testing'])
-                  action_thresh, # int list: defining size of jumps in stringency
-                  #d_delay, # int: day lag before calculating death impact
-                  days_avg): # int: # of days to average when reporting death
+def createSamples(df,#, # dataframe: original full dataframe
+                  # new_cols, # str list: names of columns to be considered
+                  target_colname,  # str: col name of target_colname (i.e. 'deaths')
+                  region_colname,  # str, col name of region (i.e. 'state')
+                  date_colname,  # str, col name of time (i.e. 'date')
+                  features_list,  # list of str: i.e. (['mobility', 'testing'])
+                  action_thresh_base,  # int list: defining size of jumps in stringency
+                  # d_delay, # int: day lag before calculating death impact
+                  days_avg,  # int: # of days to average when reporting death
+                  region_exceptions=None):
 
-    df = deepcopy(df_ini)
-    df.rename(columns={date_colname: 'TIME'}, inplace = True)
-    df = df[df[region_colname]!='Guam']
-    df = df[df[region_colname]!='Northern Mariana Islands']
-    df = df[df[region_colname]!='Puerto Rico']
-    df = df[df[region_colname]!='Diamond Princess']
-    df = df[df[region_colname]!='Grand Princess']
-    df = df[df[region_colname]!='American Samoa']
-    df = df[df[region_colname]!='Virgin Islands']
+    df.sort_values(by=[region_colname, date_colname], inplace=True)
+    df.rename(columns={date_colname: 'TIME'}, inplace=True)
 
+    # remove exceptions
+    if not (region_exceptions is None):
+        df = df[~(df[region_colname].isin(region_exceptions))]
 
-    #new_cols = ['state', 'date', 'cases', 'mobility_score']
+    action_thresh, no_action_id = action_thresh_base
+
+    # new_cols = ['state', 'date', 'cases', 'mobility_score']
     if target_colname not in features_list:
         new_cols = [region_colname] + ['TIME'] + [target_colname] + features_list
     else:
         new_cols = [region_colname] + ['TIME'] + features_list
     df_new = df[new_cols]
 
-    #df_new.rename(columns = {df_new.columns[1]: 'TIME'}, inplace = True)
+    # df_new.rename(columns = {df_new.columns[1]: 'TIME'}, inplace = True)
     ids = df_new.groupby([region_colname]).ngroup()
     df_new.insert(0, 'ID', ids, True)
 
-    #print(df.columns)
+    # print(df.columns)
     df_new.loc[:, ['TIME']]= pd.to_datetime(df_new['TIME'])
-    df_new = df_new.sort_values(by=['ID', 'TIME'])
-    df_new = df_new.set_index(['TIME'])
+    dfs = []
+    for region_name, group_region in df_new.groupby(region_colname):
+        first_date = group_region.TIME.min()
+        last_date = group_region.TIME.max()
+        date_index = pd.date_range(first_date, last_date, freq="1D")
+        date_index.name = 'TIME'
+        group_ = pd.DataFrame(index=date_index)
+        group_ = group_.join(group_region.set_index("TIME"))
+        if group_.shape[0] != group_region.shape[0]:
+            print("Missing dates: {} {} - {} missing rows".format(region_colname,
+                                                                  region_name,
+                                                                  group_.shape[0] - group_region.shape[0]))
+        else:
+            dfs.append(group_)
+
+    df_new = pd.concat(dfs)
     # print(df_new)
 
     # calculating stringency based on sum of actions
-    #df['StringencyIndex'] = df.iloc[:, 3:].sum(axis=1)
+    # df['StringencyIndex'] = df.iloc[:, 3:].sum(axis=1)
 
     # add a column for action, categorizing by change in stringency index
-    #df['StringencyChange'] = df['StringencyIndex'].shift(-1) - df['StringencyIndex']
-    #df.loc[df['ID'] != df['ID'].shift(-1), 'StringencyChange'] = 0
-    #df.loc[df['StringencyIndex'] == '', 'StringencyChange'] = 0
+    # df['StringencyChange'] = df['StringencyIndex'].shift(-1) - df['StringencyIndex']
+    # df.loc[df['ID'] != df['ID'].shift(-1), 'StringencyChange'] = 0
+    # df.loc[df['StringencyIndex'] == '', 'StringencyChange'] = 0
 
-    #print(df.loc[df['ID']=='California'])
+    # print(df.loc[df['ID']=='California'])
 
     # resample data according to # of days
     g = df_new.groupby(['ID'])
     cols = df_new.columns
-    #print('cols', cols)
+    # print('cols', cols)
     dictio = {i:'last' for i in cols}
     for key in set([target_colname]+features_list):
         dictio[key] = 'mean'
-    #dictio['StringencyChange'] = 'sum'
-    #del dictio['TIME']
+    # dictio['StringencyChange'] = 'sum'
+    # del dictio['TIME']
     df_new = g.resample('%sD' %days_avg).agg(dictio)
-    #df_new = g.resample('3D').mean()
+    # df_new = g.resample('3D').mean()
     # print('new', df_new)
     df_new = df_new.drop(columns=['ID'])
     df_new = df_new.reset_index()
 
-    # shifting cases by a d_delay value
-    #df['Cases_Delay'] = df['cases'].shift(-d_delay)
-
-    # averaging mobility score
-    #df_new['mobility_score'] = df_new['mobility_score'].rolling(4).sum()/4
-
-
-    # creating target_colname-1, target_colname-2, etc.
-    #df_new[target_colname+'-1'] = df_new[target_colname].shift(1)
-    #df_new[target_colname+'-2'] = df_new[target_colname].shift(2)
-
-    # creating mobility-1, mobility-2 etc.
+    # creating feature lag 1, feature lag 2 etc.
+    df_new.sort_values(by=["ID", "TIME"], inplace=True)
     for f in features_list:
-        df_new[f+'-1'] = df_new[f].shift(1)
-        df_new[f+'-2'] = df_new[f].shift(2)
+        df_new[f+'-1'] = df_new.groupby("ID")[f].shift(1)
+        df_new[f+'-2'] = df_new.groupby("ID")[f].shift(2)
+
+    # deleting target == 0
+    df_new = df_new.loc[df_new[target_colname] != 0, :]
 
     # creating r_t, r_t-1, etc ratio values from cases
-    df_new = df_new[df_new[target_colname] != 0]
-    df_new['r_t'] = df_new[target_colname]/df_new[target_colname].shift(1)
-    df_new['r_t-1'] = df_new['r_t'].shift(1)
-    df_new['r_t-2'] = df_new['r_t'].shift(2)
+    df_new['r_t'] = df_new.groupby("ID")[target_colname].pct_change(1) + 1
+    df_new['r_t-1'] = df_new.groupby("ID")[target_colname].shift(1)
+    df_new['r_t-2'] = df_new.groupby("ID")[target_colname].shift(2)
 
-    df_new.loc[df_new['ID'] != df_new['ID'].shift(1), \
-               ['r_t', 'r_t-1']] = 0
-    df_new.loc[df_new['ID'] != df_new['ID'].shift(2), \
-               ['r_t-1', 'r_t-2']] = 0
-    df_new.loc[df_new['ID'] != df_new['ID'].shift(3), \
-               ['r_t-2']] = 0
-
-    for f in features_list:
-        df_new.loc[df_new['ID'] != df_new['ID'].shift(1), \
-               [f+'-1', f+'-2']] = df_new[f]
-
-        df_new.loc[df_new['ID'] != df_new['ID'].shift(2), \
-           [f+'-2']] = df_new[f+'-1']
-
-
+    new_features = [f+'-1' for f in features_list] + [f+'-2' for f in features_list] + ['r_t', 'r_t-1', 'r_t-2']
+    df_new.dropna(subset=new_features,
+                  inplace=True)
 
     # Here we assign initial clustering by r_t
     df_new['RISK'] = np.log(df_new['r_t'])
-
 
     # create action
     if len(action_thresh) == 0:
         df_new['ACTION'] = 0
         pfeatures = len(df_new.columns)-5
     else:
-        actions = list(range(0, len(action_thresh)-1)) #[0, 1] #[0, 5000, 100000]
+        action_thresh = [-1e20] + action_thresh + [1e20]
+        actions = list(range(-no_action_id, len(action_thresh)-1-no_action_id)) #[0, 1] #[0, 5000, 100000]
         df_new[features_list[0]+'_change'] = df_new[features_list[0]+'-1']-\
             df_new[features_list[0]+'-2']
-        df_new['ACTION'] = pd.cut(df_new[features_list[0]+'_change'], bins = action_thresh, right = False, labels = actions)
+        df_new['ACTION'] = pd.cut(df_new[features_list[0]+'_change'], bins=action_thresh, right=False, labels=actions)
+
+        # set the no action to 0
         pfeatures = len(df_new.columns)-6
 
-    df_new = df_new[df_new['r_t'] != 0]
+    # df_new = df_new[df_new['r_t'] != 0]
     df_new = df_new.reset_index()
     df_new = df_new.drop(columns=['index'])
     # moving region col to the end, since not a feature
     if target_colname not in features_list:
-        df_new = df_new[[c for c in df_new if c not in [region_colname, target_colname]]
+        df_new = df_new.loc[:, [c for c in df_new if c not in [region_colname, target_colname]]
            + [region_colname] + [target_colname]]
         pfeatures -= 1
     else:
@@ -171,10 +166,9 @@ def createSamples(df_ini,#, # dataframe: original full dataframe
            + [region_colname]]
 
     # Drop all rows with empty cells
-    #df_new.dropna(inplace=True)
+    # df_new.dropna(inplace=True)
 
     return df_new, pfeatures
-
 
 
 # split_train_test_by_id() takes in a dataframe of all the data,
@@ -509,7 +503,7 @@ def fit_cv_fold(train_test_idx,
     #################################################################
     # Run Iterative Learning Algorithm
 
-    df_train,training_error,testing_error = splitter(df_train,
+    df_train, training_error, testing_error = splitter(df_train,
                                                      pfeatures,
                                                      splitting_threshold,
                                                      df_test,

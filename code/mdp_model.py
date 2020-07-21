@@ -14,7 +14,7 @@ from datetime import timedelta
 from mdp_states_functions import createSamples, fit_cv, initializeClusters, \
         splitter
 from mdp_testing import predict_cluster, get_MDP, predict_region_date, \
-        PredictionError
+        MDPPredictionError
 
 #%% Model
 
@@ -29,14 +29,15 @@ class MDPModel:
                  classification_algorithm='DecisionTreeClassifier',
                  clustering_algorithm='Agglomerative',
                  n_clusters=None,
-                 action_thresh=[],
+                 action_thresh=([], 0),
                  date_colname='date',
                  region_colname='state',
                  features_list=[],
                  target_colname='cases',
                  random_state=42,
                  n_jobs=1,
-                 verbose=False):
+                 verbose=False,
+                 region_exceptions=None):
 
         self.days_avg = days_avg  # number of days to average and compress datapoints
         self.horizon = horizon  # done
@@ -53,6 +54,7 @@ class MDPModel:
         self.features_list = features_list  # list of the features that are considered to be trained
         self.target_colname = target_colname  # done
         self.random_state = random_state  # done
+        self.region_exceptions = region_exceptions
         self.verbose = verbose  # print out the intermediate steps
 
         # training attributes
@@ -81,7 +83,8 @@ class MDPModel:
                                       self.date_colname,
                                       self.features_list,
                                       self.action_thresh,
-                                      self.days_avg)
+                                      self.days_avg,
+                                      region_exceptions=self.region_exceptions)
 
         # self.df = df
         self.pfeatures = pfeatures
@@ -237,7 +240,7 @@ class MDPModel:
                 try:
                     pred = predict_region_date(self, (region, last_date), date, verbose=self.verbose)
                     pred_df = pred_df.append({self.region_colname: region, "TIME": date, self.target_colname: pred}, ignore_index=True)
-                except PredictionError:
+                except MDPPredictionError:
                     pass
         pred_df.rename(columns={'TIME': self.date_colname}, inplace=True)
         pred_dic = {state: pred_df[pred_df[self.region_colname] == state].set_index([self.date_colname])[self.target_colname] for state in pred_df[self.region_colname].unique()}
