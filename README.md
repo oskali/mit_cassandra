@@ -3,7 +3,7 @@
 
 Actionable Prediction of cases and deaths related to Covid-19 in the United States using a Markov Decision Process based learning algorithm.
 
-## Current Improvements (Development)
+## Achieved Improvements (Development)
 - Multiprocessing
 - GridSearch 
 - Action learning
