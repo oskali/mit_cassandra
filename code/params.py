@@ -18,7 +18,7 @@ from sklearn.svm import SVR, LinearSVR
 USER = 'omar'
 
 if USER == 'omar':
-    df_path = 'C:\\Users\\omars\\Desktop\\covid19_georgia\\covid19_team2-restrucuturing\\bis\\covid19_team2\\data\\input\\07_08_2020_states_combined.csv'
+    df_path = 'C:\\Users\\omars\\Desktop\\covid19_georgia\\covid19_team2\data\\input\\07_08_2020_states_combined.csv'
 
 if USER == 'david':
     import os
@@ -43,6 +43,7 @@ training_cutoff = '2020-05-01'
 validation_cutoff = '2020-05-15'
 regions = ['New York', 'Massachusetts'] # regions to predict
 unformatted_dates = ['2020-07-01', '2020-08-15'] # dates to predict
+n_samples=3
 
 #%% Load and Save Parameters
 

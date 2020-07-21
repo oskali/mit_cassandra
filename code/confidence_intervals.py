@@ -45,6 +45,8 @@ class CI():
 
     def sample(self,
                output,
+               n_samples=1,
+               random_seed=42,
                how='random'):
 
         new_output = deepcopy(output)
@@ -52,7 +54,13 @@ class CI():
             for region in new_output[model].keys():
                 try:
                     if how == 'random':
-                        new_output[model][region] = (norm.rvs(loc=self.mean[model][region], scale=self.std[model][region])+1)*output[model][region]
+                        if n_samples == 1:
+                            new_output[model][region] = (norm.rvs(loc=self.mean[model][region], scale=self.std[model][region], random_state=random_seed)+1)*output[model][region]
+                        else:
+                            new_output[model][region] = []
+                            for i in range(n_samples):
+                                new_output[model][region].append((norm.rvs(loc=self.mean[model][region], scale=self.std[model][region])+1)*output[model][region])
+
 
                     elif how == 'low':
                         new_output[model][region] = (self.ci[model][region][0]+1)*output[model][region]
