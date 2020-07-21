@@ -9,9 +9,12 @@ Created on Sun Jun 28 22:02:43 2020
 
 from data_utils import (load_model)
 from params import (load_sir, load_knn, load_mdp, load_agg, load_ci, sir_file,
-                    knn_file, mdp_file, agg_file, ci_file, regions, dates)
+                    knn_file, mdp_file, agg_file, ci_file, regions, dates,
+                    random_state, df_path)
 import warnings
 warnings.filterwarnings("ignore")
+import json
+import os
 
 #%% Load Models and Make Predictions
 
@@ -35,3 +38,21 @@ if load_agg:
 if load_ci:
     ci = load_model(ci_file)
     sampled_output = ci.sample(output)
+    #Generate JSONs with random samples per model
+    pathstr = os.path.split(df_path)
+    for model_type in sampled_output.keys():
+        prediction_distribution = dict.fromkeys(regions)
+        for state in regions:
+            predictions = sampled_output[model_type][state].tolist()
+            prediction_distribution[state] = predictions
+        all_samples = []
+        date_list = sampled_output[model_type][regions[0]].index.strftime('%Y-%m-%d').tolist()
+        samples = dict(dates=date_list, samples=None)
+        for t_i in range(len(date_list)):
+            sample_dict = dict.fromkeys(regions)
+            for state in regions:
+                sample_dict[state] = prediction_distribution[state][t_i]
+            all_samples.append(sample_dict)
+        samples['samples'] = all_samples
+    with open(os.path.join(pathstr[0], model_type + '_prevalence_output_samples.json'), 'w') as fp:
+        json.dump(samples, fp)
