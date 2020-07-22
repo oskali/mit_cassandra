@@ -54,5 +54,5 @@ if load_ci:
                 sample_dict[state] = list(prediction_distribution[state][t_i])
             all_samples.append(sample_dict)
         samples['samples'] = all_samples
-    with open(os.path.join(pathstr[0], model_type + '_prevalence_output_samples.json'), 'w') as fp:
-        json.dump(samples, fp)
+        with open(os.path.join(pathstr[0], model_type + '_prevalence_output_samples.json'), 'w') as fp:
+            json.dump(samples, fp)

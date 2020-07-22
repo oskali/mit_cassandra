@@ -39,10 +39,10 @@ population='population'
 
 random_state=42
 retrain=True
-training_cutoff = '2020-05-01'
-validation_cutoff = '2020-05-15'
+training_cutoff = '2020-06-30'
+validation_cutoff = '2020-07-15'
 regions = ['New York', 'Massachusetts'] # regions to predict
-unformatted_dates = ['2020-07-01', '2020-08-15'] # dates to predict
+unformatted_dates = ['2020-07-30', '2020-08-15'] # dates to predict
 n_samples=3
 
 #%% Load and Save Parameters
