@@ -38,16 +38,15 @@ def createSamples(df,#, # dataframe: original full dataframe
                   features_list,  # list of str: i.e. (['mobility', 'testing'])
                   action_thresh_base,  # int list: defining size of jumps in stringency
                   # d_delay, # int: day lag before calculating death impact
-                  days_avg):  # int: # of days to average when reporting death
+                  days_avg,  # int: # of days to average when reporting death
+                  region_exceptions=None):
 
+    df.sort_values(by=[region_colname, date_colname], inplace=True)
     df.rename(columns={date_colname: 'TIME'}, inplace=True)
-    df = df[df[region_colname] != 'Guam']
-    df = df[df[region_colname] != 'Northern Mariana Islands']
-    df = df[df[region_colname] != 'Puerto Rico']
-    df = df[df[region_colname] != 'Diamond Princess']
-    df = df[df[region_colname] != 'Grand Princess']
-    df = df[df[region_colname] != 'American Samoa']
-    df = df[df[region_colname] != 'Virgin Islands']
+
+    # remove exceptions
+    if not (region_exceptions is None):
+        df = df[~(df[region_colname].isin(region_exceptions))]
 
     action_thresh, no_action_id = action_thresh_base
 
@@ -64,8 +63,22 @@ def createSamples(df,#, # dataframe: original full dataframe
 
     # print(df.columns)
     df_new.loc[:, ['TIME']]= pd.to_datetime(df_new['TIME'])
-    df_new = df_new.sort_values(by=['ID', 'TIME'])
-    df_new = df_new.set_index(['TIME'])
+    dfs = []
+    for region_name, group_region in df_new.groupby(region_colname):
+        first_date = group_region.TIME.min()
+        last_date = group_region.TIME.max()
+        date_index = pd.date_range(first_date, last_date, freq="1D")
+        date_index.name = 'TIME'
+        group_ = pd.DataFrame(index=date_index)
+        group_ = group_.join(group_region.set_index("TIME"))
+        if group_.shape[0] != group_region.shape[0]:
+            print("Missing dates: {} {} - {} missing rows".format(region_colname,
+                                                                  region_name,
+                                                                  group_.shape[0] - group_region.shape[0]))
+        else:
+            dfs.append(group_)
+
+    df_new = pd.concat(dfs)
     # print(df_new)
 
     # calculating stringency based on sum of actions
@@ -173,6 +186,8 @@ def fit_cv(df,
            n_iter,
            n_clusters,
            horizon=5,
+           error_computing="horizon",
+           alpha=1e-5,
            OutputFlag=0,
            cv=3,
            n=-1,
@@ -219,6 +234,8 @@ def fit_cv(df,
                                                                    classification=classification,
                                                                    n_iter=n_iter,
                                                                    horizon=horizon,
+                                                                   error_computing=error_computing,
+                                                                   alpha=alpha,
                                                                    n=n,
                                                                    OutputFlag=OutputFlag,
                                                                    random_state=random_state,
@@ -251,6 +268,8 @@ def fit_cv(df,
                                    classification=classification,
                                    n_iter=n_iter,
                                    horizon=horizon,
+                                   error_computing=error_computing,
+                                   alpha=alpha,
                                    n=n,
                                    OutputFlag=OutputFlag,
                                    random_state=random_state,

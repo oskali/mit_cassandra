@@ -21,7 +21,7 @@ warnings.filterwarnings("ignore")
 from codes.mdp_testing import R2_value_training, training_value_error,  \
     predict_cluster, R2_value_testing, testing_value_error, error_per_ID, MDPTrainingError, prediction_score
 
-from codes.data_utils import save_model, save_model_json
+from codes.data_utils import save_model
 #############################################################################
 # Splitter algorithm with cross-validation
 
@@ -61,8 +61,7 @@ def initializeClusters(df,  # pandas dataFrame: MUST contain a "RISK" column
         output = LabelEncoder().fit_transform(np.array(df.RISK).reshape(-1, 1))
     df['CLUSTER'] = output
     df['NEXT_CLUSTER'] = df.groupby('ID')['CLUSTER'].shift(-1)
-    # df.loc[df['ID'] != df['ID'].shift(-1), 'NEXT_CLUSTER'] = 'None'
-    return(df)
+    return df
 #############################################################################
 
 
@@ -97,7 +96,7 @@ def contradiction(df,  # pandas dataFrame
     nc = list(df.query('CLUSTER == @i').query(
             'ACTION == @a').query('NEXT_CLUSTER != "None"')['NEXT_CLUSTER'])
     if len(nc) == 1:
-        return (None, None)
+        return None, None
     else:
         return a, multimode(nc)[0]
 
@@ -193,6 +192,8 @@ def splitter(df,  # pandas dataFrame
              classification='LogisticRegression',  # string: classification alg
              it=6,  # integer: max number of clusters
              h=5,
+             error_computing="horizon",
+             alpha=1e-5,
              OutputFlag=1,
              n=-1,
              random_state=0,
@@ -242,13 +243,20 @@ def splitter(df,  # pandas dataFrame
             if testing:
                 model = predict_cluster(df_new, pfeatures)
                 R2_test = R2_value_testing(df_test, df_new, model, pfeatures, OutputFlag=OutputFlag)
-                test_error = testing_value_error(df_test, df_new, model, pfeatures, relative=True, h=h,
+                test_error = testing_value_error(df_test, df_new, model, pfeatures,
+                                                 error_computing="exponential",
+                                                 alpha=alpha,
+                                                 h=h,
                                                  OutputFlag=OutputFlag)
                 testing_R2.append(R2_test)
                 testing_error.append(test_error)
             # train_acc = training_accuracy(df_new)[0]
             # test_acc = testing_accuracy(df_test, df_new, model, pfeatures)[0]
-            train_error = training_value_error(df_new, relative=True, h=h, OutputFlag=OutputFlag)
+            train_error = training_value_error(df_new,
+                                               error_computing=error_computing,
+                                               alpha=alpha,
+                                               h=h,
+                                               OutputFlag=OutputFlag)
             training_R2.append(R2_train)
             training_error.append(train_error)
             # training_acc.append(train_acc)
@@ -334,6 +342,8 @@ def fit_cv_fold(split_idx,
                 classification,
                 n_iter,
                 horizon,
+                error_computing,
+                alpha,
                 n,
                 OutputFlag=0,
                 random_state=1234,
@@ -389,6 +399,8 @@ def fit_cv_fold(split_idx,
                                                        classification=classification,
                                                        it=n_iter,
                                                        h=horizon,
+                                                       error_computing=error_computing,
+                                                       alpha=alpha,
                                                        OutputFlag=OutputFlag,
                                                        n=n,
                                                        random_state=random_state,

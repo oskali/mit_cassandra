@@ -32,6 +32,8 @@ class MDPModel:
                  splitting_threshold=0.,
                  classification_algorithm='DecisionTreeClassifier',
                  clustering_algorithm='Agglomerative',
+                 error_computing="horizon",
+                 alpha=1e-5,
                  n_clusters=None,
                  action_thresh=([], 0),
                  date_colname='date',
@@ -41,10 +43,11 @@ class MDPModel:
                  random_state=42,
                  n_jobs=2,
                  verbose=0,
-                 plot=True,
+                 plot=False,
                  save=False,
                  savepath="",
-                 keep_first=False):
+                 keep_first=False,
+                 region_exceptions=None):
 
         # Model dependent input attributes
         self.days_avg = days_avg  # number of days to average and compress datapoints
@@ -55,6 +58,11 @@ class MDPModel:
         self.splitting_threshold = splitting_threshold  # threshold to which one cluster is selected for a split
         self.classification_algorithm = classification_algorithm  # classification algorithm used for learning the state
         self.clustering_algorithm = clustering_algorithm  # clustering method from Agglomerative, KMeans, and Birch
+        self.error_computing = error_computing  # mode of computing the error, in {"horizon", "exponential", "uniform"}
+        #                                       # horizon : compute error on the h last dates,
+        #                                       # exponential : compute an exponential waited average other the whole training set
+        #                                       # uniform : compute the error uniformly over the training period
+        self.alpha = alpha  # if computing error is exponential, it define the rate of decay
         self.n_clusters = n_clusters  # number of clusters for KMeans
         self.action_thresh = action_thresh  # ([list of action threshold], default action)  # ex : ([-0.5, 0.5], 1) --> ACTION=[-1, 0, 1]
         self.date_colname = date_colname  # column name of the date, i.e. 'date'
@@ -62,6 +70,7 @@ class MDPModel:
         self.features_list = features_list  # list of the features that are considered to be trained
         #                                     PS: feature[0] --> Action feature
         self.target_colname = target_colname  # column name of the target, i.e. 'cases'
+        self.region_exceptions = region_exceptions  # exception region to be removed
 
         # Experiment attributes
         self.random_state = random_state  # random seed using the random generators
@@ -91,6 +100,8 @@ class MDPModel:
         other = MDPModel(
             days_avg=self.days_avg,
             horizon=self.horizon,
+            error_computing=self.error_computing,
+            alpha=self.alpha,
             n_iter=self.n_iter,
             n_folds_cv=self.n_folds_cv,
             clustering_distance_threshold=self.clustering_distance_threshold,
@@ -103,6 +114,7 @@ class MDPModel:
             region_colname=self.region_colname,
             features_list=self.features_list,
             target_colname=self.target_colname,
+            region_exceptions=self.region_exceptions,
             random_state=self.random_state,
             n_jobs=self.n_jobs,
             verbose=self.verbose,
@@ -139,6 +151,7 @@ class MDPModel:
                "days_avg={}," \
                "distance_threshold={}pct, " \
                "n_iter={}, " \
+               "error_c={}, " \
                "classification_algorithm={}, " \
                "features_list={}," \
                "action_thresh={})".format(self.target_colname,
@@ -146,18 +159,20 @@ class MDPModel:
                                           self.days_avg,
                                           int(self.clustering_distance_threshold * 100),
                                           self.n_iter,
+                                          self.error_computing,
                                           self.classification_algorithm,
                                           self.features_list,
                                           self.action_thresh)
 
     # provide a condensed representation of the MDP as a string
     def __str__(self):
-        return "mdp__target_{}__h{}__davg{}__cdt_{}pct__n_iter{}__ClAlg_{}".format(self.target_colname,
-                                                                                   self.horizon,
-                                                                                   self.days_avg,
-                                                                                   int(self.clustering_distance_threshold * 100),
-                                                                                   self.n_iter,
-                                                                                   self.classification_algorithm)
+        return "mdp__target_{}__h{}__davg{}__cdt_{}pct__n_iter{}__ClAlg_{}__err{}".format(self.target_colname,
+                                                                                          self.horizon,
+                                                                                          self.days_avg,
+                                                                                          int(self.clustering_distance_threshold * 100),
+                                                                                          self.n_iter,
+                                                                                          self.classification_algorithm,
+                                                                                          self.error_computing)
 
     # Fitting method to learn from the data
     # data should be a pandas.DataFrame object containing the provided columns
@@ -203,7 +218,8 @@ class MDPModel:
                                       date_colname=self.date_colname,
                                       features_list=self.features_list,
                                       action_thresh_base=self.action_thresh,
-                                      days_avg=self.days_avg)
+                                      days_avg=self.days_avg,
+                                      region_exceptions=self.region_exceptions)
 
         self.pfeatures = pfeatures
 
@@ -217,6 +233,8 @@ class MDPModel:
                                                      n_iter=self.n_iter,
                                                      n_clusters=self.n_clusters,
                                                      horizon=self.horizon,
+                                                     error_computing=self.error_computing,
+                                                     alpha=self.alpha,
                                                      OutputFlag=self.verbose,
                                                      cv=self.n_folds_cv,
                                                      random_state=self.random_state,
@@ -256,6 +274,8 @@ class MDPModel:
                                                              classification=self.classification_algorithm,
                                                              it=k,
                                                              h=self.horizon,
+                                                             error_computing=self.error_computing,
+                                                             alpha=self.alpha,
                                                              OutputFlag=self.verbose,
                                                              plot=self.plot,
                                                              save=self.save,
@@ -267,7 +287,7 @@ class MDPModel:
         self.classifier = predict_cluster(self.df_trained, self.pfeatures)
 
         # store P_df and R_df values
-        P_df,R_df = get_MDP(self.df_trained)
+        P_df, R_df = get_MDP(self.df_trained)
         self.P_df = P_df
         self.R_df = R_df
 
@@ -501,10 +521,10 @@ if __name__ == "__main__":
     target_colname = 'deaths'
     mdp_region_colname = 'state'  # str, col name of region (e.g. 'state')
     mdp_date_colname = 'date'  # str, col name of time (e.g. 'date')
-    mdp_features_list = ["mobility_score_trend", "cases_pct3", "cases_pct5"]  # list of strs: feature columns
+    mdp_features_list = []  # list of strs: feature columns
 
     sgm = .1
-    n_iter_mdp = 50
+    n_iter_mdp = 150
     n_iter_ci = 10
     ci_range = 0.75
 
@@ -533,7 +553,7 @@ if __name__ == "__main__":
     print('Data Wrangling Complete.')
 
     # ####### test fitting methods ##########
-    mdp_test_fitting = False
+    mdp_test_fitting = True
 
     if mdp_test_fitting:
         print('MDP Model Training in Progress...')
@@ -543,18 +563,20 @@ if __name__ == "__main__":
             date_colname=mdp_date_colname,  # str, col name of time (i.e. 'date')
             features_list=mdp_features_list,  # list of strs: feature columns
             horizon=5,
+            error_computing="id",
+            alpha=1e-5,
             n_iter=n_iter_mdp,
-            days_avg=1,
-            n_folds_cv=5,
+            days_avg=3,
+            n_folds_cv=6,
             clustering_distance_threshold=0.1,
             classification_algorithm="RandomForestClassifier",
             verbose=1,
-            action_thresh=([-350, -250, 200], 2),  # (-1e10, -1000) --> no action
+            action_thresh=([], 0),  # (-1e10, -1000) --> no action
             random_state=1234,
-            n_jobs=1,
+            n_jobs=3,
             plot=True,
             save=True,
-            savepath=r"C:\Users\david\Desktop\MIT\Courses\Research internship\results\00 - test algo")
+            savepath=r"C:\Users\david\Desktop\MIT\Courses\Research internship\results\11 - test algo ID")
 
         mdp_abort = False
         # try:
@@ -589,7 +611,7 @@ if __name__ == "__main__":
         print('MDP Model (test) Complete.')
 
     # ####### MDP Grid Search test fitting methods ##########
-    mdpgs_test_fitting = True
+    mdpgs_test_fitting = False
 
     if mdpgs_test_fitting:
         print('MDP Grid Search Model Training in Progress...')
@@ -606,7 +628,7 @@ if __name__ == "__main__":
             region_colname=mdp_region_colname,  # str, col name of region (i.e. 'state')
             date_colname=mdp_date_colname,  # str, col name of time (i.e. 'date')
             features_list=mdp_features_list,  # list of strs: feature columns
-            action_thresh=([-350, -250, 200], 2),
+            action_thresh=([], 0),
             hyperparams=hparams,
             n_folds_cv=4,
             verbose=0,

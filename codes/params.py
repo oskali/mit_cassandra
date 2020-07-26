@@ -11,13 +11,15 @@ import os
 
 #%% User and path
 
-USER = 'omar'
+USER = 'david'
 
-if USER == 'omar':
+if USER == 'david':
     # df_path = r'C:\Users\david\Desktop\MIT\Courses\Research internship\covid19_team2\data\input\06_15_2020_states_combined.csv'
     # df_path = r'C:\Users\david\Desktop\MIT\Courses\Research internship\covid19_team2\data\input\06_15_2020_states_combined_nom_n_pct.csv'
     # df_path = r'C:\Users\david\Desktop\MIT\Courses\Research internship\covid19_team2\data\input\07_08_2020_states_combined_w_pct.csv'
     df_path = r'C:\Users\david\Desktop\MIT\Courses\Research internship\covid19_team2\data\input\05_27_states_combined_v2_w_trend.csv'
+    # df_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\07_11_2020_counties_combined_NYNJMA.csv"
+    # df_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\07_16_2020_states_combined_w_pct.csv"
 
 #%% Target and column names
 
@@ -30,10 +32,14 @@ nmin = 100
 #%% Run Parameters
 
 random_state = 42
-training_cutoff = '2020-06-15'
-validation_cutoff = '2020-06-28'
-regions = ['New York', 'Massachusetts']  # regions to predict
-unformatted_dates = ['2020-07-01', '2020-08-15']  # dates to predict
+training_cutoff = '2020-07-01'
+validation_cutoff = '2020-07-15'
+regions_dict = {
+    "fips": [9013, 36061],
+    "state": ['New York', 'Massachusetts'],
+}
+regions = regions_dict[region_col]  # regions to predict  #
+unformatted_dates = ['2020-07-18', '2020-08-15']  # dates to predict  #
 
 #%% Load and Save Parameters
 
@@ -46,10 +52,18 @@ load_mdp = True
 load_sir = False
 sir_file = 'sir.pickle'
 knn_file = 'knn.pickle'
-mdp_file = os.path.join(os.path.dirname(os.getcwd()), 'models', "20200720", 'mdp_timecv150_DT_h8_10pct_cases_wo_act.pickle')
+
+EXPERIMENT_NAME = '12 - 20200724 TEST ERROR COMPUTATION EXPONENTIAL TESTING'
+
+
+mdp_file = os.path.join(r"C:\Users\david\Desktop\MIT\Courses\Research internship\results",
+                        EXPERIMENT_NAME,
+                        "MDPs_with_actions",
+                        "mdp_cases_w_act.pickle")
 
 mdp_gs_savepath = os.path.join(r"C:\Users\david\Desktop\MIT\Courses\Research internship\results",
-                                           '10 - 20200714 Action learning')  # experiment name
+                               EXPERIMENT_NAME)  # experiment name
+
 mdp_gs_file = os.path.join(mdp_gs_savepath, 'mdp_gs.pickle')
 
 
@@ -72,34 +86,56 @@ knn_params_dict = \
 
 #%% Parameters MDP
 
+mdp_exception = {
+    "state":
+        ['Guam', 'Northern Mariana Islands',
+         'Puerto Rico', 'Diamond Princess',
+         'Grand Princess', 'American Samoa', 'Virgin Islands'],
+    "fips":
+        None}
+
+
 mdp_features_dict = \
     {
-        "deaths": ["mobility_score_trend", "cases_pct3", "cases_pct5"],
-        "cases": ["mobility_score_trend", "cases_pct3", "cases_pct5"]
+        "state":
+            {
+                "deaths": ["cases_pct3", "cases_pct5"],  # ["mobility_score_trend", "cases_pct3", "cases_pct5"],
+                "cases": ["mobility_score_trend", "cases_pct3", "cases_pct5"],
+            },
+        "fips":
+            {
+                "deaths": [],
+                "cases": []
+            }
+
     }
 
 mdp_params_dict = \
     {
         "days_avg": 3,
         "horizon": 8,
-        "n_iter": 150,
+        "error_computing": "exponential",
+        "alpha": 2e-3,
+        "n_iter": 110,
         "n_folds_cv": 5,
         "clustering_distance_threshold": 0.1,
         "splitting_threshold": 0.,
-        "classification_algorithm": 'DecisionTreeClassifier',
+        "classification_algorithm": "RandomForestClassifier",
         "clustering_algorithm": 'Agglomerative',
         "n_clusters": None,
         "action_thresh": ([-250, 200], 1),
-        "features_list": mdp_features_dict[target_col],
-        "verbose": 2,
-        "n_jobs": 4,
+        "features_list": mdp_features_dict[region_col][target_col],
+        "verbose": 1,
+        "n_jobs": 3,
         "date_colname": date_col,
         "target_colname": target_col,
         "region_colname": region_col,
         "random_state": random_state,
-        "keep_first": True,
+        "keep_first": True,  # True,
         "save": True,
+        "plot": True,
         "savepath": os.path.dirname(mdp_file),
+        "region_exceptions": mdp_exception[region_col]
     }
 
 
@@ -107,11 +143,11 @@ mdp_params_dict = \
 
 mdp_hparams_dict = \
     {
-        "days_avg": [3],
-        "horizon": [8, 15],
-        "n_iter": [100],
+        "days_avg": [3, 4, 5],
+        "horizon": [5, 8, 15],
+        "n_iter": [120],
         "clustering_distance_threshold": [0.08, 0.1],
-        "classification_algorithm": ['DecisionTreeClassifier', 'RandomForestClassifier'],
+        "classification_algorithm": ['RandomForestClassifier'],
         "clustering_algorithm": ['Agglomerative'],
     }
 
@@ -121,10 +157,10 @@ mdp_gs_params_dict = \
         "target_colname": target_col,
         "region_colname": region_col,
         "date_colname": date_col,
-        "features_list": mdp_features_dict[target_col],
-        "action_thresh": ([-350, -250, 200], 2),
+        "features_list": mdp_features_dict[region_col][target_col],
+        "action_thresh": ([], 0), # ([-250, 200], 1),
         "hyperparams": mdp_hparams_dict,
-        "n_folds_cv": 3,
+        "n_folds_cv": 6,
         "verbose": 0,
         "n_jobs": 3,
         "mdp_n_jobs": 1,

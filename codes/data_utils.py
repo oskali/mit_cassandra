@@ -29,7 +29,10 @@ def save_model_json(model, filename):
 def save_model(model, filename):
     dir_path = os.path.dirname(filename)
     if not os.path.exists(dir_path):
-        os.makedirs(dir_path)
+        try:
+            os.makedirs(dir_path)
+        except FileNotFoundError:
+            pass
     file_pi = open(filename, 'wb')
     pickle.dump(model, file_pi)
 

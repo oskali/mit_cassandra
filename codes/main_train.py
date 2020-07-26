@@ -35,5 +35,5 @@ if train_knn:
 if train_mdp:
     if __name__ == "__main__":  # required for running multiple kernels
         mdp = MDPModel(**mdp_params_dict)
-        mdp.fit(df_train, mode="TIME_CV")
+        mdp.fit(df_train, mode="ID")
         save_model(mdp, mdp_file)
