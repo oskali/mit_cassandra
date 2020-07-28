@@ -115,7 +115,7 @@ def complete_p_df(row, df):
 
 # get_MDP() takes in a clustered dataframe df_new, and returns dataframes
 # P_df and R_df that represent the parameters of the estimated MDP
-def get_MDP(df_new):
+def get_MDP(df_new, complete=True):
     # removing None values when counting where clusters go
     # df0 = df_new[df_new['NEXT_CLUSTER'] != 'None']
     transition_df = df_new.dropna(subset=['NEXT_CLUSTER']).groupby(['CLUSTER', 'ACTION', 'NEXT_CLUSTER'])[
@@ -126,9 +126,13 @@ def get_MDP(df_new):
     transition_df = transition_df.dropna()
     P_df = pd.DataFrame()
     # DEBUG 07132020 : NaN in P_df
-    P_df['NEXT_CLUSTER'] = transition_df.apply(lambda x: np.nan if pd.isna(x) else x[2])
+    P_df['TRANSITION_CLUSTER'] = transition_df.apply(lambda x: np.nan if pd.isna(x) else x[2])
     # P_df['NEXT_CLUSTER'] = P_df.apply(lambda x: complete_p_df(x, P_df), axis=1,)
     R_df = df_new.groupby('CLUSTER')['RISK'].mean()
+    R_df.name = "EST_RISK"
+
+    if complete:
+        pass
     return P_df, R_df
 
 
@@ -239,365 +243,38 @@ def purity(df):
 # training_value_error() takes in a clustered dataframe, and computes the
 # E((\hat{v}-v)^2) expected error in estimating values (risk) given actions
 # Returns a float of average value error per ID
-def training_value_error(df_new,  # Outpul of algorithm
-                         relative=False,  # Output Raw error or RMSE ie ((\hat{v}-v)/v)^2
-                         h=5,  # Length of forcast. The error is computed on v_h = \sum_{t=h}^H v_t
-                         error_computing="horizon",
-                         alpha=1e-5,
-                         OutputFlag=0,
-                         ):
-
-    E_v = 0
-    P_df, R_df = get_MDP(df_new)
-    df2 = df_new.reset_index()
-    df2 = df2.groupby(['ID']).first()
-    N_train = df2.shape[0]
-
-    for i in range(N_train):
-        index = df2['index'].iloc[i]
-        # initializing first state for each ID
-        cont = True
-        H = -1
-        # Computing Horizon H of ID i
-        while cont:
-            H += 1
-            try:
-                df_new['ID'].loc[index + H + 1]
-            except:
-                break
-            if df_new['ID'].loc[index + H] != df_new['ID'].loc[index + H + 1]:
-                break
-
-        t = max(H - h, 0)
-        s = df_new['CLUSTER'].loc[index + t]
-        a = df_new['ACTION'].loc[index + t]
-        v_true = df_new['RISK'].loc[index + t]
-        v_estim = R_df.loc[s]
-        t += 1
-        # t = H-h +1
-        # predicting path of each ID
-        while cont:
-            try:
-                risk = df_new['RISK'].loc[index + t]
-                v_true = v_true + risk
-            except KeyError:
-                if OutputFlag >= 3:
-                    print('WARNING: In training value evaluation, for a given region there is only one observation')
-                break
-            try:
-                s = P_df.loc[s, a].values[0]
-            # error raises in case we never saw a given transition in the data
-            except(TypeError, KeyError):
-                if OutputFlag >= 3:
-                    print('WARNING: In training value evaluation, trying to predict next state from state', s,
-                          'taking action', a, ', but this transition is never seen in the data. Data point:', i, t)
-
-            a = df_new['ACTION'].loc[index + t]
-            v_estim = v_estim + R_df.loc[s]
-
-            try:
-                df_new['ID'].loc[index + t + 1]
-            except:
-                break
-            if df_new['ID'].loc[index + t] != df_new['ID'].loc[index + t + 1]:
-                break
-            t += 1
-        if relative:
-            # E_v = E_v + ((math.exp(v_true)-math.exp(v_estim))/math.exp(v_true))**2
-            E_v = E_v + np.abs((math.exp(v_true) - math.exp(v_estim)) / math.exp(v_true))
-        else:
-            E_v = E_v + np.abs(math.exp(v_true) - math.exp(v_estim))
-    E_v = (E_v / N_train)
-    return E_v
-
-
 # NEW VERSION
-def training_value_error(df_new,  # Outpul of algorithm
-                         relative=False,  # Output Raw error or RMSE ie ((\hat{v}-v)/v)^2
+def training_value_error(splitter_dataframe,  # Outpul of algorithm
                          error_computing="horizon",
                          alpha=1e-5,
-                         h=5,  # Length of forcast. The error is computed on v_h = \sum_{t=h}^H v_t
-                         OutputFlag=0,
                          ):
 
-    E_v = 0
-    P_df, R_df = get_MDP(df_new)
-    df2 = df_new.reset_index()
-    df2 = df2.groupby(['ID']).first()
-    N_train = df2.shape[0]
+    # TRANSITION ERROR FUNCTION
 
-    for i in range(N_train):
-        index = df2['index'].iloc[i]
-        # initializing first state for each ID
-        cont = True
-        H = -1
-        # Computing Horizon H of ID i
-        while cont:
-            H += 1
-            try:
-                df_new['ID'].loc[index + H + 1]
-            except:
-                break
-            if df_new['ID'].loc[index + H] != df_new['ID'].loc[index + H + 1]:
-                break
+    # COMPUTE ERROR
 
-        if error_computing == "exponential":
-            t = 0
-        elif error_computing == "id":
-            t = 0
-        else:  # horizon
-            t = max(H - h, 0)
+    if error_computing == "horizon":
+        error_train = splitter_dataframe.df.dropna(subset=["EST_H_ERROR"]).groupby("ID").tail(splitter_dataframe.horizon).reset_index()
+        error_train = error_train.groupby("ID")["EST_H_ERROR"].mean().mean() / splitter_dataframe.horizon
 
-        s = df_new['CLUSTER'].loc[index + t]
-        a = df_new['ACTION'].loc[index + t]
-        risk_true = df_new['RISK'].loc[index + t]
-        risk_estim = R_df.loc[s]
-        #
-        v_error = abs(np.exp(risk_estim) - np.exp(risk_true))/abs(np.exp(risk_estim) + np.exp(risk_true))
-        t += 1
-        # t = H-h +1
-        # predicting path of each ID
-        while cont:
-            try:
-                risk_true += df_new['RISK'].loc[index + t]
-            except KeyError:
-                if OutputFlag >= 3:
-                    print('WARNING: In training value evaluation, for a given region there is only one observation')
-                break
-            try:
-                s = P_df.loc[s, a].values[0]
-            # error raises in case we never saw a given transition in the data
-            except(TypeError, KeyError):
-                if OutputFlag >= 3:
-                    print('WARNING: In training value evaluation, trying to predict next state from state', s,
-                          'taking action', a, ', but this transition is never seen in the data. Data point:', i, t)
+    elif error_computing == "id":
+        error_train = splitter_dataframe.df.dropna(subset=["EST_H_ERROR"]).groupby("ID")["EST_H_ERROR"].mean().mean() / splitter_dataframe.horizon
 
-            a = df_new['ACTION'].loc[index + t]
-            risk_estim += R_df.loc[s]
+    else:  # exponential
+        error_train = splitter_dataframe.df.dropna(subset=["EST_H_ERROR"]).groupby("ID").apply(lambda group: group["EST_H_ERROR"].ewm(alpha=alpha).mean()).reset_index()
+        error_train = error_train.groupby("ID")["EST_H_ERROR"].last().mean() / splitter_dataframe.horizon
 
-            if error_computing == "exponential":
-                v_error = (1-alpha) * v_error + alpha * abs(np.exp(risk_estim) - np.exp(risk_true))/(np.exp(risk_estim) + np.exp(risk_true))
-            else:
-                v_error += abs(np.exp(risk_estim) - np.exp(risk_true))/(np.exp(risk_estim) + np.exp(risk_true))
-            try:
-                df_new['ID'].loc[index + t + 1]
-            except:
-                break
-            if df_new['ID'].loc[index + t] != df_new['ID'].loc[index + t + 1]:
-                break
-            t += 1
-
-        if error_computing == "exponential":
-            E_v += v_error
-        elif error_computing == "id":
-            E_v += v_error / H
-        else:
-            E_v += v_error / min(h, H)
-
-        # else:
-        #     if relative:
-        #         # E_v = E_v + ((math.exp(v_true)-math.exp(v_estim))/math.exp(v_true))**2
-        #         E_v = E_v + np.abs((math.exp(v_true) - math.exp(v_estim)) / math.exp(v_true))
-        #     else:
-        #         E_v = E_v + np.abs(math.exp(v_true) - math.exp(v_estim))
-    E_v = (E_v / N_train)
-    return E_v
+    return error_train
 
 
 # testing_value_error() takes in a dataframe of testing data, and dataframe of
 # new clustered data, a model from predict_cluster function, and computes the
 # expected value error given actions and a predicted initial cluster
 # Returns a float of sqrt average value error per ID
-def testing_value_error(df_test,
-                        df_new,
-                        model,
-                        pfeatures,
-                        error_computing="horizon",
-                        alpha=1e-5,
-                        OutputFlag=0, relative=False, h=5):
-    try:
-        df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
-    except ValueError:
-        print('ERROR: Feature columns have missing values! Please drop' \
-              ' rows or fill in missing data.', flush=True)
-        df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
-    #except ValueError:
-        #print('Warning: Feature Columns missing values!')
-        #df_test.dropna(inplace=True)
-        #model.predict(df_test.iloc[:, 2:2+pfeatures])
-        #df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
+def testing_value_error(test_splitter_dataframe, periods=5):
 
-    E_v = 0
-    P_df,R_df = get_MDP(df_new)
-    df2 = df_test.reset_index()
-    df2 = df2.groupby(['ID']).first()
-    N_test = df2.shape[0]
-
-    for i in range(N_test):
-        # initializing index of first state for each ID
-        index = df2['index'].iloc[i]
-        cont = True
-        H = -1
-        # Computing Horizon H of ID i
-        while cont:
-            H+= 1
-            try:
-                df_test['ID'].loc[index+H+1]
-            except:
-                break
-            if df_test['ID'].loc[index+H] != df_test['ID'].loc[index+H+1]:
-                break
-
-        t = max(H-h, 0)
-        s = df_test['CLUSTER'].loc[index + t]
-        a = df_test['ACTION'].loc[index + t]
-        v_true = df_test['RISK'].loc[index + t]
-        v_estim = R_df.loc[s]
-        t += 1
-        while cont:
-            try:
-                risk = df_test['RISK'].loc[index + t]
-                v_true = v_true + risk
-            except KeyError:
-                if OutputFlag >= 3:
-                    print('WARNING: In training value evaluation, for a given region there is only one observation')
-                break
-            try:
-                s = P_df.loc[s, a].values[0]
-            # error raises in case we never saw a given transition in the data
-            except(TypeError, KeyError):
-                if OutputFlag >= 3:
-                    print('WARNING: In training value evaluation, trying to predict next state from state',s,'taking action',a,', but this transition is never seen in the data. Data point:',i,t)
-
-            a = df_test['ACTION'].loc[index + t]
-            v_estim = v_estim + R_df.loc[s]
-
-            try:
-                df_test['ID'].loc[index+t+1]
-            except:
-                break
-            if df_test['ID'].loc[index+t] != df_test['ID'].loc[index+t+1]:
-                break
-
-            t += 1
-        if relative:
-            #E_v = E_v + ((math.exp(v_true)-math.exp(v_estim))/math.exp(v_true))**2
-            E_v = E_v + np.abs((math.exp(v_true)-math.exp(v_estim))/math.exp(v_true))
-#            print('new E_v', E_v)
-        else:
-            E_v = E_v + np.abs(math.exp(v_true)-math.exp(v_estim))
-
-    E_v = (E_v/N_test)
-#    print('final E_v', E_v)
-    #print('sqrt', np.sqrt(E_v))
-    #return np.sqrt(E_v)
-    return E_v
-
-
-# NEW VERSION
-# testing_value_error() takes in a dataframe of testing data, and dataframe of
-# new clustered data, a model from predict_cluster function, and computes the
-# expected value error given actions and a predicted initial cluster
-# Returns a float of sqrt average value error per ID
-def testing_value_error(df_test,
-                        df_new, model,
-                        pfeatures,
-                        error_computing="horizon",
-                        alpha=1e-5,
-                        OutputFlag=0,
-                        h=5):
-    try:
-        df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2 + pfeatures])
-    except ValueError:
-        print('ERROR: Feature columns have missing values! Please drop' \
-              ' rows or fill in missing data.', flush=True)
-        df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2 + pfeatures])
-    # except ValueError:
-    # print('Warning: Feature Columns missing values!')
-    # df_test.dropna(inplace=True)
-    # model.predict(df_test.iloc[:, 2:2+pfeatures])
-    # df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
-
-    E_v = 0
-    P_df, R_df = get_MDP(df_new)
-    df2 = df_test.reset_index()
-    df2 = df2.groupby(['ID']).first()
-    N_test = df2.shape[0]
-
-    for i in range(N_test):
-        # initializing index of first state for each ID
-        index = df2['index'].iloc[i]
-        cont = True
-        H = -1
-        # Computing Horizon H of ID i
-        while cont:
-            H += 1
-            try:
-                df_test['ID'].loc[index + H + 1]
-            except:
-                break
-            if df_test['ID'].loc[index + H] != df_test['ID'].loc[index + H + 1]:
-                break
-
-        if error_computing == "exponential":
-            t = 0
-        elif error_computing == "id":
-            t = 0
-        else:  # horizon
-            t = max(H - h, 0)
-
-        s = df_test['CLUSTER'].loc[index + t]
-        a = df_test['ACTION'].loc[index + t]
-
-        risk_true = df_test['RISK'].loc[index + t]
-        risk_estim = R_df.loc[s]
-
-        v_error = abs(np.exp(risk_estim) - np.exp(risk_true))/abs(np.exp(risk_estim) + np.exp(risk_true))  # L1 error
-        t += 1
-        while cont:
-            try:
-                risk_true += df_test['RISK'].loc[index + t]
-            except KeyError:
-                if OutputFlag >= 3:
-                    print('WARNING: In training value evaluation, for a given region there is only one observation')
-                break
-            try:
-                s = P_df.loc[s, a].values[0]
-            # error raises in case we never saw a given transition in the data
-            except(TypeError, KeyError):
-                if OutputFlag >= 3:
-                    print('WARNING: In training value evaluation, trying to predict next state from state', s,
-                          'taking action', a, ', but this transition is never seen in the data. Data point:', i, t)
-
-            a = df_test['ACTION'].loc[index + t]
-            risk_estim += R_df.loc[s]
-
-            if error_computing == "exponential":
-                v_error = (1-alpha) * v_error + alpha * abs(np.exp(risk_estim) - np.exp(risk_true))/(np.exp(risk_estim) + np.exp(risk_true))
-            else:
-                v_error += abs(np.exp(risk_estim) - np.exp(risk_true))/(np.exp(risk_estim) + np.exp(risk_true))
-
-            try:
-                df_test['ID'].loc[index + t + 1]
-            except:
-                break
-            if df_test['ID'].loc[index + t] != df_test['ID'].loc[index + t + 1]:
-                break
-
-            t += 1
-
-        if error_computing == "exponential":
-            E_v += v_error
-        elif error_computing == "id":
-            E_v += v_error / H
-        else:
-            E_v += v_error / min(h, H)
-
-    E_v /= N_test
-    #    print('final E_v', E_v)
-    # print('sqrt', np.sqrt(E_v))
-    # return np.sqrt(E_v)
-    return E_v
+    error_test = test_splitter_dataframe.df.dropna(subset=["EST_H_ERROR"]).groupby("ID").tail(periods).reset_index()
+    return error_test.groupby("ID")["EST_H_ERROR"].mean().mean() / test_splitter_dataframe.horizon
 
 
 def error_per_ID(df_test, df_new, model, pfeatures, OutputFlag=0, relative=False, h=5):
@@ -765,12 +442,23 @@ def R2_value_training(df_new, OutputFlag=0):
     return 1 - E_v / SS_tot
 
 
+# splitter version
+def R2_value(splitting_dataframe):
+
+    risk_est_true = splitting_dataframe.df[["ID", "EST_H_NEXT_RISK", "TRUE_H_NEXT_RISK"]].dropna().groupby("ID").mean()
+    risk_est = risk_est_true["EST_H_NEXT_RISK"].values
+    risk_true = risk_est_true["TRUE_H_NEXT_RISK"].values
+    N = risk_est.shape[0]
+
+    # return max(1- E_v/SS_tot,0)
+    return 1 - ((risk_est-risk_true) ** 2).sum() / N / np.var(risk_true)
+
+
 # R2_value_testing() takes a dataframe of testing data, a clustered dataframe,
 # a model outputted by predict_cluster, and returns a float of the R-squared
 # value between the expected value and true value of samples in the test set
-def R2_value_testing(df_test, df_new, model, pfeatures, OutputFlag=0):
+def R2_value_testing(splitting_df, df_test, pfeatures, OutputFlag=0):
     E_v = 0
-    P_df, R_df = get_MDP(df_new)
     df2 = df_test.reset_index()
     df2 = df2.groupby(['ID']).first()
     N = df2.shape[0]

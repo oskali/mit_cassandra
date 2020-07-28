@@ -15,7 +15,7 @@ from itertools import product
 import operator
 
 from codes.mdp_states_functions import createSamples, fit_cv, fit_eval
-from codes.mdp_utils import initializeClusters, splitter
+from codes.mdp_utils import MDP_Splitter, splitter
 from codes.mdp_testing import predict_cluster, get_MDP, predict_region_date, \
         MDPPredictionError, MDPTrainingError
 
@@ -260,14 +260,27 @@ class MDPModel:
         # error corresponding to chosen model
 
         # actual training on all the data
-        df_trained = initializeClusters(df.copy(),
-                                        clustering=self.clustering_algorithm,
-                                        n_clusters=self.n_clusters,
-                                        distance_threshold=self.clustering_distance_threshold,
-                                        random_state=self.random_state)
 
-        df_trained, training_error, testing_error = splitter(df_trained.copy(),
-                                                             pfeatures=self.pfeatures,
+        splitter_df = MDP_Splitter(df.copy(),
+                                   pfeatures=self.pfeatures,
+                                   clustering=self.clustering_algorithm,
+                                   init_n_clusters=self.n_clusters,
+                                   distance_threshold=self.clustering_distance_threshold,
+                                   error_computing=self.error_computing,
+                                   horizon=self.horizon,
+                                   alpha=self.alpha,
+                                   random_state=self.random_state)
+
+        splitter_df.initializeClusters()
+
+        # k = df_train['CLUSTER'].nunique()
+        #################################################################
+
+        #################################################################
+        # Run Iterative Learning Algorithm
+
+        df_trained, training_error, testing_error = splitter(splitter_df,
+                                                             pfeatures=pfeatures,
                                                              th=self.splitting_threshold,
                                                              df_test=None,
                                                              testing=False,
@@ -277,6 +290,7 @@ class MDPModel:
                                                              error_computing=self.error_computing,
                                                              alpha=self.alpha,
                                                              OutputFlag=self.verbose,
+                                                             random_state=self.random_state,
                                                              plot=self.plot,
                                                              save=self.save,
                                                              savepath=os.path.join(self.savepath, mode, str(self),  "plot_final.PNG")
@@ -284,12 +298,11 @@ class MDPModel:
 
         # storing trained dataset and predict_cluster function
         self.df_trained = df_trained
-        self.classifier = predict_cluster(self.df_trained, self.pfeatures)
+        self.classifier = splitter_df.model
 
         # store P_df and R_df values
-        P_df, R_df = get_MDP(self.df_trained)
-        self.P_df = P_df
-        self.R_df = R_df
+        self.P_df = splitter_df.P_df
+        self.R_df = splitter_df.R_df
 
         # store the initial clusters
         if self.keep_first:
@@ -521,7 +534,7 @@ if __name__ == "__main__":
     target_colname = 'deaths'
     mdp_region_colname = 'state'  # str, col name of region (e.g. 'state')
     mdp_date_colname = 'date'  # str, col name of time (e.g. 'date')
-    mdp_features_list = []  # list of strs: feature columns
+    mdp_features_list = ["cases_pct3", "cases_pct5"]  # list of strs: feature columns
 
     sgm = .1
     n_iter_mdp = 150
@@ -562,8 +575,8 @@ if __name__ == "__main__":
             region_colname=mdp_region_colname,  # str, col name of region (i.e. 'state')
             date_colname=mdp_date_colname,  # str, col name of time (i.e. 'date')
             features_list=mdp_features_list,  # list of strs: feature columns
-            horizon=5,
-            error_computing="id",
+            horizon=6,
+            error_computing="exponential",
             alpha=1e-5,
             n_iter=n_iter_mdp,
             days_avg=3,
@@ -573,7 +586,8 @@ if __name__ == "__main__":
             verbose=1,
             action_thresh=([], 0),  # (-1e10, -1000) --> no action
             random_state=1234,
-            n_jobs=3,
+            n_jobs=1,
+            keep_first=True,
             plot=True,
             save=True,
             savepath=r"C:\Users\david\Desktop\MIT\Courses\Research internship\results\11 - test algo ID")
