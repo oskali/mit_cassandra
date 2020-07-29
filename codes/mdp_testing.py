@@ -27,8 +27,10 @@ from datetime import datetime
 from datetime import timedelta
 import math
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import GridSearchCV
-
+from itertools import product
+from collections import Counter
 
 # %% New Exception for MDP learning
 class MDPPredictionError(Exception):
@@ -103,19 +105,66 @@ def predict_value_of_cluster(P_df, R_df,  # df: MDP parameters
     return v
 
 
-def complete_p_df(row, df):
-    if pd.isna(row[0]):
-        # if the next cluster is unknown, act as if the action corresponding action was no action
-        return df.at[(row.name[0], 0), "NEXT_CLUSTER"]
+# def complete_p_df(row, df):
+#     if pd.isna(row[0]):
+#         # if the next cluster is unknown, act as if the action corresponding action was no action
+#         return df.at[(row.name[0], 0), "NEXT_CLUSTER"]
+#
+#     else:
+#         # otherwise return the current next_cluster
+#         return df.at[row.name, "NEXT_CLUSTER"]
 
-    else:
-        # otherwise return the current next_cluster
-        return df.at[row.name, "NEXT_CLUSTER"]
+
+def complete_P_df(df, P_df, actions, pfeatures, OutputFlag=0):
+
+    risk_model_dict = dict()
+    n_nan_actions = P_df["NEXT_CLUSTER"].isnull().groupby("ACTION").sum()
+
+    for action in actions:
+        if n_nan_actions[action] == 0:
+            continue
+        X = df[(df.ACTION == action) & (df.NEXT_CLUSTER.notnull())].iloc[:, 2: pfeatures + 2].values
+        y = df[(df.ACTION == action) & (df.NEXT_CLUSTER.notnull())]["NEXT_CLUSTER"].values
+
+        params = {
+            'algorithm': ['auto', 'ball_tree', 'kd_tree', 'brute']
+        }
+
+        m = KNeighborsClassifier(n_neighbors=1)
+        m = GridSearchCV(m, params, cv=3, iid=True)  # will return warning if 'idd' param not set to true
+
+        try:
+            m.fit(X, y)
+            risk_model_dict[action] = (m, Counter(y).most_common(1)[0][0])
+        except ValueError:
+            try:
+                m = GridSearchCV(m, params, cv=2, iid=True)  # will return warning if 'idd' param not set to true
+                m.fit(X, y)
+                risk_model_dict[action] = (m, Counter(y).most_common(1)[0][0])
+            except ValueError:
+                risk_model_dict[action] = (None, Counter(y).most_common(1)[0][0])
+                if OutputFlag >=2:
+                    print('ERROR: Fitting KNN for action {}'.format(action), flush=True)
+
+    P_df.reset_index(inplace=True)
+    for action in actions:
+        if n_nan_actions[action] == 0:
+            continue
+        missing_clusters = P_df[(P_df.ACTION == action) & (P_df.NEXT_CLUSTER.isna())].CLUSTER
+        for idx, cluster in missing_clusters.items():
+            try:
+                nc = df[(df.ACTION == action) & (df.CLUSTER == cluster)].iloc[:, 2: pfeatures + 2].values
+                nc = np.argmax(risk_model_dict[action][0].predict(nc))
+            except:
+                nc = risk_model_dict[action][1]
+            P_df.iloc[idx, 2] = nc
+
+    return P_df.set_index(["CLUSTER", "ACTION"])
 
 
 # get_MDP() takes in a clustered dataframe df_new, and returns dataframes
 # P_df and R_df that represent the parameters of the estimated MDP
-def get_MDP(df_new):
+def get_MDP(df_new, n_cluster, actions, pfeatures, complete=True):
     # removing None values when counting where clusters go
     # df0 = df_new[df_new['NEXT_CLUSTER'] != 'None']
     transition_df = df_new.dropna(subset=['NEXT_CLUSTER']).groupby(['CLUSTER', 'ACTION', 'NEXT_CLUSTER'])[
@@ -124,11 +173,18 @@ def get_MDP(df_new):
     # next cluster given how most datapoints transition for the given action
     transition_df = transition_df.groupby(['CLUSTER', 'ACTION']).idxmax()
     transition_df = transition_df.dropna()
-    P_df = pd.DataFrame()
+    # P_df = pd.DataFrame()
+    P_df = pd.DataFrame(index=pd.MultiIndex.from_tuples(product(range(n_cluster+1), actions),
+                                                        names=['CLUSTER', 'ACTION']))
     # DEBUG 07132020 : NaN in P_df
-    P_df['NEXT_CLUSTER'] = transition_df.apply(lambda x: np.nan if pd.isna(x) else x[2])
+    P_df['NEXT_CLUSTER'] = P_df.join(transition_df.apply(lambda x: np.nan if pd.isna(x) else x[2]),
+                                     how="left").values
     # P_df['NEXT_CLUSTER'] = P_df.apply(lambda x: complete_p_df(x, P_df), axis=1,)
-    R_df = df_new.groupby('CLUSTER')['RISK'].mean()
+    R_df = pd.DataFrame(index=pd.Index(range(n_cluster+1), name="CLUSTER"))
+    R_df = R_df.join(df_new.groupby('CLUSTER')['RISK'].mean())
+
+    # complete the P_df
+    P_df = complete_P_df(df_new, P_df, actions, pfeatures).copy()
     return P_df, R_df
 
 
@@ -239,81 +295,83 @@ def purity(df):
 # training_value_error() takes in a clustered dataframe, and computes the
 # E((\hat{v}-v)^2) expected error in estimating values (risk) given actions
 # Returns a float of average value error per ID
-def training_value_error(df_new,  # Outpul of algorithm
-                         relative=False,  # Output Raw error or RMSE ie ((\hat{v}-v)/v)^2
-                         h=5,  # Length of forcast. The error is computed on v_h = \sum_{t=h}^H v_t
-                         error_computing="horizon",
-                         alpha=1e-5,
-                         OutputFlag=0,
-                         ):
-
-    E_v = 0
-    P_df, R_df = get_MDP(df_new)
-    df2 = df_new.reset_index()
-    df2 = df2.groupby(['ID']).first()
-    N_train = df2.shape[0]
-
-    for i in range(N_train):
-        index = df2['index'].iloc[i]
-        # initializing first state for each ID
-        cont = True
-        H = -1
-        # Computing Horizon H of ID i
-        while cont:
-            H += 1
-            try:
-                df_new['ID'].loc[index + H + 1]
-            except:
-                break
-            if df_new['ID'].loc[index + H] != df_new['ID'].loc[index + H + 1]:
-                break
-
-        t = max(H - h, 0)
-        s = df_new['CLUSTER'].loc[index + t]
-        a = df_new['ACTION'].loc[index + t]
-        v_true = df_new['RISK'].loc[index + t]
-        v_estim = R_df.loc[s]
-        t += 1
-        # t = H-h +1
-        # predicting path of each ID
-        while cont:
-            try:
-                risk = df_new['RISK'].loc[index + t]
-                v_true = v_true + risk
-            except KeyError:
-                if OutputFlag >= 3:
-                    print('WARNING: In training value evaluation, for a given region there is only one observation')
-                break
-            try:
-                s = P_df.loc[s, a].values[0]
-            # error raises in case we never saw a given transition in the data
-            except(TypeError, KeyError):
-                if OutputFlag >= 3:
-                    print('WARNING: In training value evaluation, trying to predict next state from state', s,
-                          'taking action', a, ', but this transition is never seen in the data. Data point:', i, t)
-
-            a = df_new['ACTION'].loc[index + t]
-            v_estim = v_estim + R_df.loc[s]
-
-            try:
-                df_new['ID'].loc[index + t + 1]
-            except:
-                break
-            if df_new['ID'].loc[index + t] != df_new['ID'].loc[index + t + 1]:
-                break
-            t += 1
-        if relative:
-            # E_v = E_v + ((math.exp(v_true)-math.exp(v_estim))/math.exp(v_true))**2
-            E_v = E_v + np.abs((math.exp(v_true) - math.exp(v_estim)) / math.exp(v_true))
-        else:
-            E_v = E_v + np.abs(math.exp(v_true) - math.exp(v_estim))
-    E_v = (E_v / N_train)
-    return E_v
+# def training_value_error(df_new,  # Outpul of algorithm
+#                          relative=False,  # Output Raw error or RMSE ie ((\hat{v}-v)/v)^2
+#                          h=5,  # Length of forcast. The error is computed on v_h = \sum_{t=h}^H v_t
+#                          error_computing="horizon",
+#                          alpha=1e-5,
+#                          OutputFlag=0,
+#                          ):
+#
+#     E_v = 0
+#     P_df, R_df = get_MDP(df_new)
+#     df2 = df_new.reset_index()
+#     df2 = df2.groupby(['ID']).first()
+#     N_train = df2.shape[0]
+#
+#     for i in range(N_train):
+#         index = df2['index'].iloc[i]
+#         # initializing first state for each ID
+#         cont = True
+#         H = -1
+#         # Computing Horizon H of ID i
+#         while cont:
+#             H += 1
+#             try:
+#                 df_new['ID'].loc[index + H + 1]
+#             except:
+#                 break
+#             if df_new['ID'].loc[index + H] != df_new['ID'].loc[index + H + 1]:
+#                 break
+#
+#         t = max(H - h, 0)
+#         s = df_new['CLUSTER'].loc[index + t]
+#         a = df_new['ACTION'].loc[index + t]
+#         v_true = df_new['RISK'].loc[index + t]
+#         v_estim = R_df.loc[s]
+#         t += 1
+#         # t = H-h +1
+#         # predicting path of each ID
+#         while cont:
+#             try:
+#                 risk = df_new['RISK'].loc[index + t]
+#                 v_true = v_true + risk
+#             except KeyError:
+#                 if OutputFlag >= 3:
+#                     print('WARNING: In training value evaluation, for a given region there is only one observation')
+#                 break
+#             try:
+#                 s = P_df.loc[s, a].values[0]
+#             # error raises in case we never saw a given transition in the data
+#             except(TypeError, KeyError):
+#                 if OutputFlag >= 3:
+#                     print('WARNING: In training value evaluation, trying to predict next state from state', s,
+#                           'taking action', a, ', but this transition is never seen in the data. Data point:', i, t)
+#
+#             a = df_new['ACTION'].loc[index + t]
+#             v_estim = v_estim + R_df.loc[s]
+#
+#             try:
+#                 df_new['ID'].loc[index + t + 1]
+#             except:
+#                 break
+#             if df_new['ID'].loc[index + t] != df_new['ID'].loc[index + t + 1]:
+#                 break
+#             t += 1
+#         if relative:
+#             # E_v = E_v + ((math.exp(v_true)-math.exp(v_estim))/math.exp(v_true))**2
+#             E_v = E_v + np.abs((math.exp(v_true) - math.exp(v_estim)) / math.exp(v_true))
+#         else:
+#             E_v = E_v + np.abs(math.exp(v_true) - math.exp(v_estim))
+#     E_v = (E_v / N_train)
+#     return E_v
 
 
 # NEW VERSION
 def training_value_error(df_new,  # Outpul of algorithm
-                         relative=False,  # Output Raw error or RMSE ie ((\hat{v}-v)/v)^2
+                         n_cluster,
+                         actions,
+                         pfeatures,
                          error_computing="horizon",
                          alpha=1e-5,
                          h=5,  # Length of forcast. The error is computed on v_h = \sum_{t=h}^H v_t
@@ -321,7 +379,7 @@ def training_value_error(df_new,  # Outpul of algorithm
                          ):
 
     E_v = 0
-    P_df, R_df = get_MDP(df_new)
+    P_df, R_df = get_MDP(df_new, n_cluster, actions, pfeatures)
     df2 = df_new.reset_index()
     df2 = df2.groupby(['ID']).first()
     N_train = df2.shape[0]
@@ -408,90 +466,90 @@ def training_value_error(df_new,  # Outpul of algorithm
 # new clustered data, a model from predict_cluster function, and computes the
 # expected value error given actions and a predicted initial cluster
 # Returns a float of sqrt average value error per ID
-def testing_value_error(df_test,
-                        df_new,
-                        model,
-                        pfeatures,
-                        error_computing="horizon",
-                        alpha=1e-5,
-                        OutputFlag=0, relative=False, h=5):
-    try:
-        df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
-    except ValueError:
-        print('ERROR: Feature columns have missing values! Please drop' \
-              ' rows or fill in missing data.', flush=True)
-        df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
-    #except ValueError:
-        #print('Warning: Feature Columns missing values!')
-        #df_test.dropna(inplace=True)
-        #model.predict(df_test.iloc[:, 2:2+pfeatures])
-        #df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
-
-    E_v = 0
-    P_df,R_df = get_MDP(df_new)
-    df2 = df_test.reset_index()
-    df2 = df2.groupby(['ID']).first()
-    N_test = df2.shape[0]
-
-    for i in range(N_test):
-        # initializing index of first state for each ID
-        index = df2['index'].iloc[i]
-        cont = True
-        H = -1
-        # Computing Horizon H of ID i
-        while cont:
-            H+= 1
-            try:
-                df_test['ID'].loc[index+H+1]
-            except:
-                break
-            if df_test['ID'].loc[index+H] != df_test['ID'].loc[index+H+1]:
-                break
-
-        t = max(H-h, 0)
-        s = df_test['CLUSTER'].loc[index + t]
-        a = df_test['ACTION'].loc[index + t]
-        v_true = df_test['RISK'].loc[index + t]
-        v_estim = R_df.loc[s]
-        t += 1
-        while cont:
-            try:
-                risk = df_test['RISK'].loc[index + t]
-                v_true = v_true + risk
-            except KeyError:
-                if OutputFlag >= 3:
-                    print('WARNING: In training value evaluation, for a given region there is only one observation')
-                break
-            try:
-                s = P_df.loc[s, a].values[0]
-            # error raises in case we never saw a given transition in the data
-            except(TypeError, KeyError):
-                if OutputFlag >= 3:
-                    print('WARNING: In training value evaluation, trying to predict next state from state',s,'taking action',a,', but this transition is never seen in the data. Data point:',i,t)
-
-            a = df_test['ACTION'].loc[index + t]
-            v_estim = v_estim + R_df.loc[s]
-
-            try:
-                df_test['ID'].loc[index+t+1]
-            except:
-                break
-            if df_test['ID'].loc[index+t] != df_test['ID'].loc[index+t+1]:
-                break
-
-            t += 1
-        if relative:
-            #E_v = E_v + ((math.exp(v_true)-math.exp(v_estim))/math.exp(v_true))**2
-            E_v = E_v + np.abs((math.exp(v_true)-math.exp(v_estim))/math.exp(v_true))
-#            print('new E_v', E_v)
-        else:
-            E_v = E_v + np.abs(math.exp(v_true)-math.exp(v_estim))
-
-    E_v = (E_v/N_test)
-#    print('final E_v', E_v)
-    #print('sqrt', np.sqrt(E_v))
-    #return np.sqrt(E_v)
-    return E_v
+# def testing_value_error(df_test,
+#                         df_new,
+#                         model,
+#                         pfeatures,
+#                         error_computing="horizon",
+#                         alpha=1e-5,
+#                         OutputFlag=0, relative=False, h=5):
+#     try:
+#         df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
+#     except ValueError:
+#         print('ERROR: Feature columns have missing values! Please drop' \
+#               ' rows or fill in missing data.', flush=True)
+#         df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
+#     #except ValueError:
+#         #print('Warning: Feature Columns missing values!')
+#         #df_test.dropna(inplace=True)
+#         #model.predict(df_test.iloc[:, 2:2+pfeatures])
+#         #df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
+#
+#     E_v = 0
+#     P_df,R_df = get_MDP(df_new)
+#     df2 = df_test.reset_index()
+#     df2 = df2.groupby(['ID']).first()
+#     N_test = df2.shape[0]
+#
+#     for i in range(N_test):
+#         # initializing index of first state for each ID
+#         index = df2['index'].iloc[i]
+#         cont = True
+#         H = -1
+#         # Computing Horizon H of ID i
+#         while cont:
+#             H+= 1
+#             try:
+#                 df_test['ID'].loc[index+H+1]
+#             except:
+#                 break
+#             if df_test['ID'].loc[index+H] != df_test['ID'].loc[index+H+1]:
+#                 break
+#
+#         t = max(H-h, 0)
+#         s = df_test['CLUSTER'].loc[index + t]
+#         a = df_test['ACTION'].loc[index + t]
+#         v_true = df_test['RISK'].loc[index + t]
+#         v_estim = R_df.loc[s]
+#         t += 1
+#         while cont:
+#             try:
+#                 risk = df_test['RISK'].loc[index + t]
+#                 v_true = v_true + risk
+#             except KeyError:
+#                 if OutputFlag >= 3:
+#                     print('WARNING: In training value evaluation, for a given region there is only one observation')
+#                 break
+#             try:
+#                 s = P_df.loc[s, a].values[0]
+#             # error raises in case we never saw a given transition in the data
+#             except(TypeError, KeyError):
+#                 if OutputFlag >= 3:
+#                     print('WARNING: In training value evaluation, trying to predict next state from state',s,'taking action',a,', but this transition is never seen in the data. Data point:',i,t)
+#
+#             a = df_test['ACTION'].loc[index + t]
+#             v_estim = v_estim + R_df.loc[s]
+#
+#             try:
+#                 df_test['ID'].loc[index+t+1]
+#             except:
+#                 break
+#             if df_test['ID'].loc[index+t] != df_test['ID'].loc[index+t+1]:
+#                 break
+#
+#             t += 1
+#         if relative:
+#             #E_v = E_v + ((math.exp(v_true)-math.exp(v_estim))/math.exp(v_true))**2
+#             E_v = E_v + np.abs((math.exp(v_true)-math.exp(v_estim))/math.exp(v_true))
+# #            print('new E_v', E_v)
+#         else:
+#             E_v = E_v + np.abs(math.exp(v_true)-math.exp(v_estim))
+#
+#     E_v = (E_v/N_test)
+# #    print('final E_v', E_v)
+#     #print('sqrt', np.sqrt(E_v))
+#     #return np.sqrt(E_v)
+#     return E_v
 
 
 # NEW VERSION
@@ -500,7 +558,10 @@ def testing_value_error(df_test,
 # expected value error given actions and a predicted initial cluster
 # Returns a float of sqrt average value error per ID
 def testing_value_error(df_test,
-                        df_new, model,
+                        df_new,
+                        n_cluster,
+                        actions,
+                        model,
                         pfeatures,
                         error_computing="horizon",
                         alpha=1e-5,
@@ -519,7 +580,7 @@ def testing_value_error(df_test,
     # df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
 
     E_v = 0
-    P_df, R_df = get_MDP(df_new)
+    P_df, R_df = get_MDP(df_new, n_cluster, actions, pfeatures)
     df2 = df_test.reset_index()
     df2 = df2.groupby(['ID']).first()
     N_test = df2.shape[0]
@@ -600,7 +661,7 @@ def testing_value_error(df_test,
     return E_v
 
 
-def error_per_ID(df_test, df_new, model, pfeatures, OutputFlag=0, relative=False, h=5):
+def error_per_ID(df_test, df_new, n_cluster, actions, model, pfeatures, OutputFlag=0, relative=False, h=5):
     try:
         df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2 + pfeatures])
     except ValueError:
@@ -613,7 +674,7 @@ def error_per_ID(df_test, df_new, model, pfeatures, OutputFlag=0, relative=False
     # model.predict(df_test.iloc[:, 2:2+pfeatures])
     # df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
     E_v = 0
-    P_df, R_df = get_MDP(df_new)
+    P_df, R_df = get_MDP(df_new, n_cluster, actions, pfeatures)
     df2 = df_test.reset_index()
     df2 = df2.groupby(['ID']).first()
     N_test = df2.shape[0]
@@ -710,9 +771,9 @@ def error_per_ID(df_test, df_new, model, pfeatures, OutputFlag=0, relative=False
 
 # R2_value_training() takes in a clustered dataframe, and returns a float
 # of the R-squared value between the expected value and true value of samples
-def R2_value_training(df_new, OutputFlag=0):
+def R2_value_training(df_new, it, actions, pfeatures, OutputFlag=0):
     E_v = 0
-    P_df, R_df = get_MDP(df_new)
+    P_df, R_df = get_MDP(df_new, it, actions, pfeatures)
     df2 = df_new.reset_index()
     df2 = df2.groupby(['ID']).first()
     N = df2.shape[0]
@@ -768,9 +829,9 @@ def R2_value_training(df_new, OutputFlag=0):
 # R2_value_testing() takes a dataframe of testing data, a clustered dataframe,
 # a model outputted by predict_cluster, and returns a float of the R-squared
 # value between the expected value and true value of samples in the test set
-def R2_value_testing(df_test, df_new, model, pfeatures, OutputFlag=0):
+def R2_value_testing(df_test, df_new, it, actions, model, pfeatures, OutputFlag=0):
     E_v = 0
-    P_df, R_df = get_MDP(df_new)
+    P_df, R_df = get_MDP(df_new, it, actions, pfeatures)
     df2 = df_test.reset_index()
     df2 = df2.groupby(['ID']).first()
     N = df2.shape[0]
@@ -846,10 +907,10 @@ def plot_features(df):
 
 # plot_path() takes in a trained df_new, state, an h value, and plots the path
 # (by ratio: e^v) of the MDP versus the actual state, given a horizon of prediction h
-def plot_path(df_new, df, state, h, pfeatures, plot=True, OutputFlag=0):
+def plot_path(df_new, df, n_cluster, actions, state, h, pfeatures, plot=True, OutputFlag=0):
     state_df = show_state(df_new, df, state, pfeatures)
     H = state_df.shape[0]
-    P_df, R_df = get_MDP(df_new)
+    P_df, R_df = get_MDP(df_new, n_cluster, actions, pfeatures)
 
     t = max(H - h, 0)
 
@@ -896,14 +957,14 @@ def plot_path(df_new, df, state, h, pfeatures, plot=True, OutputFlag=0):
 # plot_path_all() returns the ratios and sequence of states for an optimal longest path
 # if opt = True: Find optimal path and stop there
 # if opt = False: plot the error horizon over different time horizons of predictions
-def plot_path_all(df_new, df, state, pfeatures, opt=True, plot=True):
+def plot_path_all(df_new, df, n_cluster, actions, state, pfeatures, opt=True, plot=True):
     state_df = show_state(df_new, df, state, pfeatures)
     H = state_df.shape[0]  # of datapoints
     errors = []
     prev = float('inf')
 
     for h in range(H, 0, -1):
-        E_v, v_true, v_estim, s_seq = plot_path(df_new, df, state, h, pfeatures, plot)
+        E_v, v_true, v_estim, s_seq = plot_path(df_new, df, n_cluster, actions, state, h, pfeatures, plot)
 
         if opt and E_v > prev and h < 16:  # arbitrary threshold for a decent prediction
             break
@@ -930,7 +991,7 @@ def plot_path_all(df_new, df, state, pfeatures, opt=True, plot=True):
 
 # go through each state, aggregate their optimal paths, and return as a dataframe
 # which also includes each state's sequence, ratios, and error
-def all_paths(df, df_new, pfeatures, opt=True, plot=True):
+def all_paths(df, df_new, n_cluster, actions, pfeatures, opt=True, plot=True):
     # sort paths by num of unique elements
     # plot them if their starting node hasn't been seen before
     states = df['state'].unique()
@@ -938,7 +999,7 @@ def all_paths(df, df_new, pfeatures, opt=True, plot=True):
     ratios = []
     errors = []
     for i in states:
-        v_estim, s_seq, error = plot_path_all(df_new, df, i, pfeatures, opt, plot)
+        v_estim, s_seq, error = plot_path_all(df_new, df, n_cluster, actions, i, pfeatures, opt, plot)
         errors.append(error)
         ratios.append(v_estim)
         sequences.append(s_seq)

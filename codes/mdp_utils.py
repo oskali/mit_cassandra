@@ -191,6 +191,7 @@ def splitter(df,  # pandas dataFrame
              testing=False,
              classification='LogisticRegression',  # string: classification alg
              it=6,  # integer: max number of clusters
+             actions=None,
              h=5,
              error_computing="horizon",
              alpha=1e-5,
@@ -238,12 +239,15 @@ def splitter(df,  # pandas dataFrame
 
             # error and accuracy calculations
 
-            R2_train = R2_value_training(df_new, OutputFlag=OutputFlag)
+            R2_train = R2_value_training(df_new, nc, actions, pfeatures, OutputFlag=OutputFlag)
 
             if testing:
                 model = predict_cluster(df_new, pfeatures)
-                R2_test = R2_value_testing(df_test, df_new, model, pfeatures, OutputFlag=OutputFlag)
-                test_error = testing_value_error(df_test, df_new, model, pfeatures,
+                R2_test = R2_value_testing(df_test, df_new, nc, actions, model, pfeatures, OutputFlag=OutputFlag)
+                test_error = testing_value_error(df_test, df_new,
+                                                 nc,
+                                                 actions,
+                                                 model, pfeatures,
                                                  error_computing="exponential",
                                                  alpha=alpha,
                                                  h=h,
@@ -253,6 +257,9 @@ def splitter(df,  # pandas dataFrame
             # train_acc = training_accuracy(df_new)[0]
             # test_acc = testing_accuracy(df_test, df_new, model, pfeatures)[0]
             train_error = training_value_error(df_new,
+                                               n_cluster=nc,
+                                               actions=actions,
+                                               pfeatures=pfeatures,
                                                error_computing=error_computing,
                                                alpha=alpha,
                                                h=h,
@@ -341,6 +348,7 @@ def fit_cv_fold(split_idx,
                 splitting_threshold,
                 classification,
                 n_iter,
+                actions,
                 horizon,
                 error_computing,
                 alpha,
@@ -398,6 +406,7 @@ def fit_cv_fold(split_idx,
                                                        testing=True,
                                                        classification=classification,
                                                        it=n_iter,
+                                                       actions=actions,
                                                        h=horizon,
                                                        error_computing=error_computing,
                                                        alpha=alpha,
@@ -409,7 +418,7 @@ def fit_cv_fold(split_idx,
                                                        savepath=os.path.join(savepath, "plot_{}.PNG".format(idx)))
 
     m = predict_cluster(df_train, pfeatures)
-    df_err, E_v = error_per_ID(df_test, df_train, m, pfeatures, relative=True, h=horizon, OutputFlag=OutputFlag)
+    df_err, E_v = error_per_ID(df_test, df_train, n_iter, actions, m, pfeatures, relative=True, h=horizon, OutputFlag=OutputFlag)
 
     return testing_error, training_error, df_err, E_v
 

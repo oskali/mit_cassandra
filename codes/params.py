@@ -31,7 +31,7 @@ nmin = 100
 
 #%% Run Parameters
 
-random_state = 42
+random_state = 1234
 training_cutoff = '2020-07-01'
 validation_cutoff = '2020-07-15'
 regions_dict = {
@@ -53,13 +53,13 @@ load_sir = False
 sir_file = 'sir.pickle'
 knn_file = 'knn.pickle'
 
-EXPERIMENT_NAME = '12 - 20200724 TEST ERROR COMPUTATION EXPONENTIAL TESTING'
+EXPERIMENT_NAME = '13 - 20200728 TEST COMPLETION TRANSITION MATRIX'
 
 
 mdp_file = os.path.join(r"C:\Users\david\Desktop\MIT\Courses\Research internship\results",
                         EXPERIMENT_NAME,
                         "MDPs_with_actions",
-                        "mdp_cases_w_act.pickle")
+                        "mdp_{}_w_act.pickle".format(target_col))
 
 mdp_gs_savepath = os.path.join(r"C:\Users\david\Desktop\MIT\Courses\Research internship\results",
                                EXPERIMENT_NAME)  # experiment name
@@ -101,6 +101,7 @@ mdp_features_dict = \
             {
                 "deaths": ["cases_pct3", "cases_pct5"],  # ["mobility_score_trend", "cases_pct3", "cases_pct5"],
                 "cases": ["mobility_score_trend", "cases_pct3", "cases_pct5"],
+
             },
         "fips":
             {
@@ -113,11 +114,11 @@ mdp_features_dict = \
 mdp_params_dict = \
     {
         "days_avg": 3,
-        "horizon": 8,
-        "error_computing": "exponential",
+        "horizon": 5,
+        "error_computing": "id",
         "alpha": 2e-3,
-        "n_iter": 110,
-        "n_folds_cv": 5,
+        "n_iter": 80,
+        "n_folds_cv": 6,
         "clustering_distance_threshold": 0.1,
         "splitting_threshold": 0.,
         "classification_algorithm": "RandomForestClassifier",

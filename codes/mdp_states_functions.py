@@ -41,6 +41,9 @@ def createSamples(df,#, # dataframe: original full dataframe
                   days_avg,  # int: # of days to average when reporting death
                   region_exceptions=None):
 
+    actions = [0]
+
+    df = df.copy()
     df.sort_values(by=[region_colname, date_colname], inplace=True)
     df.rename(columns={date_colname: 'TIME'}, inplace=True)
 
@@ -117,8 +120,8 @@ def createSamples(df,#, # dataframe: original full dataframe
 
     # creating r_t, r_t-1, etc ratio values from cases
     df_new['r_t'] = df_new.groupby("ID")[target_colname].pct_change(1) + 1
-    df_new['r_t-1'] = df_new.groupby("ID")[target_colname].shift(1)
-    df_new['r_t-2'] = df_new.groupby("ID")[target_colname].shift(2)
+    df_new['r_t-1'] = df_new.groupby("ID")['r_t'].shift(1)
+    df_new['r_t-2'] = df_new.groupby("ID")['r_t'].shift(2)
 
     new_features = [f+'-1' for f in features_list] + [f+'-2' for f in features_list] + ['r_t', 'r_t-1', 'r_t-2']
     df_new.dropna(subset=new_features,
@@ -126,6 +129,7 @@ def createSamples(df,#, # dataframe: original full dataframe
 
     # Here we assign initial clustering by r_t
     df_new['RISK'] = np.log(df_new['r_t'])
+    df_new['RISK_NEXT'] = df_new.groupby("ID")["RISK"].shift(-1).values
 
     # create action
     if len(action_thresh) == 0:
@@ -156,7 +160,7 @@ def createSamples(df,#, # dataframe: original full dataframe
     # Drop all rows with empty cells
     # df_new.dropna(inplace=True)
 
-    return df_new, pfeatures
+    return df_new, pfeatures, actions
 
 
 # split_train_test_by_id() takes in a dataframe of all the data,
@@ -184,6 +188,7 @@ def fit_cv(df,
            clustering_distance_threshold,
            classification,
            n_iter,
+           actions,
            n_clusters,
            horizon=5,
            error_computing="horizon",
@@ -233,6 +238,7 @@ def fit_cv(df,
                                                                    splitting_threshold=splitting_threshold,
                                                                    classification=classification,
                                                                    n_iter=n_iter,
+                                                                   actions=actions,
                                                                    horizon=horizon,
                                                                    error_computing=error_computing,
                                                                    alpha=alpha,
@@ -267,6 +273,7 @@ def fit_cv(df,
                                    splitting_threshold=splitting_threshold,
                                    classification=classification,
                                    n_iter=n_iter,
+                                   actions=actions,
                                    horizon=horizon,
                                    error_computing=error_computing,
                                    alpha=alpha,

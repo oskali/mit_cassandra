@@ -93,6 +93,7 @@ class MDPModel:
         self.df_trained = None  # dataframe after optimal training
         self.df_trained_first = None  # dataframe containing the initial clusters (updated if keep_first = True)
         self.pfeatures = None  # number of features
+        self.actions = None
 
     # create an independent copy of the MDP object
     def __copy__(self):
@@ -141,6 +142,7 @@ class MDPModel:
             other.df_trained_first = None
 
         other.pfeatures = self.pfeatures
+        other.actions = self.actions
 
         return other
 
@@ -212,16 +214,17 @@ class MDPModel:
             data = pd.read_csv(data)
 
         # creates samples from DataFrame
-        df, pfeatures = createSamples(data.copy(),
-                                      target_colname=self.target_colname,
-                                      region_colname=self.region_colname,
-                                      date_colname=self.date_colname,
-                                      features_list=self.features_list,
-                                      action_thresh_base=self.action_thresh,
-                                      days_avg=self.days_avg,
-                                      region_exceptions=self.region_exceptions)
+        df, pfeatures, actions = createSamples(data.copy(),
+                                               target_colname=self.target_colname,
+                                               region_colname=self.region_colname,
+                                               date_colname=self.date_colname,
+                                               features_list=self.features_list,
+                                               action_thresh_base=self.action_thresh,
+                                               days_avg=self.days_avg,
+                                               region_exceptions=self.region_exceptions)
 
         self.pfeatures = pfeatures
+        self.actions = actions
 
         # run cross validation on the data to find best clusters
         cv_training_error, cv_testing_error = fit_cv(df.copy(),
@@ -231,6 +234,7 @@ class MDPModel:
                                                      clustering_distance_threshold=self.clustering_distance_threshold,
                                                      classification=self.classification_algorithm,
                                                      n_iter=self.n_iter,
+                                                     actions=self.actions,
                                                      n_clusters=self.n_clusters,
                                                      horizon=self.horizon,
                                                      error_computing=self.error_computing,
@@ -273,6 +277,7 @@ class MDPModel:
                                                              testing=False,
                                                              classification=self.classification_algorithm,
                                                              it=k,
+                                                             actions=self.actions,
                                                              h=self.horizon,
                                                              error_computing=self.error_computing,
                                                              alpha=self.alpha,
@@ -287,7 +292,10 @@ class MDPModel:
         self.classifier = predict_cluster(self.df_trained, self.pfeatures)
 
         # store P_df and R_df values
-        P_df, R_df = get_MDP(self.df_trained)
+        P_df, R_df = get_MDP(self.df_trained,
+                             n_cluster=k,
+                             actions=self.actions,
+                             pfeatures=self.pfeatures)
         self.P_df = P_df
         self.R_df = R_df
 
@@ -521,10 +529,10 @@ if __name__ == "__main__":
     target_colname = 'deaths'
     mdp_region_colname = 'state'  # str, col name of region (e.g. 'state')
     mdp_date_colname = 'date'  # str, col name of time (e.g. 'date')
-    mdp_features_list = []  # list of strs: feature columns
+    mdp_features_list = ["mobility_score_trend"]  # list of strs: feature columns
 
     sgm = .1
-    n_iter_mdp = 150
+    n_iter_mdp = 80
     n_iter_ci = 10
     ci_range = 0.75
 
@@ -564,14 +572,14 @@ if __name__ == "__main__":
             features_list=mdp_features_list,  # list of strs: feature columns
             horizon=5,
             error_computing="id",
-            alpha=1e-5,
+            alpha=2e-3,
             n_iter=n_iter_mdp,
             days_avg=3,
             n_folds_cv=6,
             clustering_distance_threshold=0.1,
             classification_algorithm="RandomForestClassifier",
             verbose=1,
-            action_thresh=([], 0),  # (-1e10, -1000) --> no action
+            action_thresh=([-200, 250], 1),  # (-1e10, -1000) --> no action
             random_state=1234,
             n_jobs=3,
             plot=True,
@@ -581,6 +589,12 @@ if __name__ == "__main__":
         mdp_abort = False
         # try:
         mdp.fit(df_train, mode="TIME_CV")
+
+        # save the model
+        from codes.data_utils import save_model
+        save_model(mdp, r"C:\Users\david\Desktop\MIT\Courses\Research internship\results\11 - test algo ID\mdp_test.pickle")
+        #
+
         # except ValueError:
         #     print('ERROR: Feature columns have missing values! Please drop'
         #           'rows or fill in missing data.')
