@@ -9,8 +9,8 @@ Created on Sun Jun 28 22:02:43 2020
 
 from data_utils import (load_model)
 from params import (load_sir, load_knn, load_mdp, load_agg, load_ci, sir_file,
-                         knn_file, mdp_file, agg_file, ci_file, regions, dates,
-                         random_state, df_path, n_samples)
+                    knn_file, mdp_file, agg_file, ci_file, regions, dates,
+                    random_state, df_path, n_samples)
 import warnings
 warnings.filterwarnings("ignore")
 import json
@@ -54,5 +54,5 @@ if load_ci:
                 sample_dict[state] = list(prediction_distribution[state][t_i])
             all_samples.append(sample_dict)
         samples['samples'] = all_samples
-    with open(os.path.join(pathstr[0], model_type + '_prevalence_output_samples.json'), 'w') as fp:
-        json.dump(samples, fp)
+        with open(os.path.join(pathstr[0], model_type + '_prevalence_output_samples.json'), 'w') as fp:
+            json.dump(samples, fp)
