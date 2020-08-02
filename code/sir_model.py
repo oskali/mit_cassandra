@@ -86,7 +86,10 @@ class SIRModel():
             for i in range(len(regions)):
                 region = regions[i]
                 print(region)
-                train_set = dataset[[a and b for a, b in zip(dataset[self.region] == region, dataset[self.target] > self.nmin)]]
+                try:
+                    train_set = dataset[[a and b for a, b in zip(dataset[self.region] == region, dataset[self.target] > self.nmin)]]
+                except:
+                    pass
                 if train_set.shape[0] > self.nmin_train_set:
                     timer = [j for j in range(len(train_set))]
                     data = train_set.loc[:, self.target].values

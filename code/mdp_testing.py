@@ -385,7 +385,7 @@ def testing_value_error(df_test, df_new, model, pfeatures, OutputFlag=0, relativ
     return E_v
 
 
-def error_per_ID(df_test, df_new, model, pfeatures,OutputFlag=0, relative=False,h=5):
+def error_per_ID(df_test, df_new, model, pfeatures, OutputFlag=0, relative=False, h=5):
     try:
         df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
     except ValueError:
@@ -468,13 +468,13 @@ def error_per_ID(df_test, df_new, model, pfeatures,OutputFlag=0, relative=False,
         else:
             E_v = E_v + np.abs(math.exp(v_true)-math.exp(v_estim))
 
-        State.append(df_test[df_test['ID'] == df_test['ID'].loc[index]]['state'].iloc[0])
+        State.append(df_test[df_test['ID'] == df_test['ID'].loc[index]]['ID'].iloc[0])
         V_true.append(v_true)
         V_estim.append(v_estim)
         V_err.append(np.abs(v_true-v_estim))
         C_err.append(np.abs((math.exp(v_true)-math.exp(v_estim))/math.exp(v_true)))
     df_err = pd.DataFrame()
-    df_err['state'] = State
+    df_err['ID'] = State
     df_err['v_true'] = V_true
     df_err['v_estim'] = V_estim
     df_err['v_err'] = V_err
@@ -545,7 +545,7 @@ def R2_value_training(df_new, OutputFlag=0):
     V_true = np.array(V_true)
     v_mean = V_true.mean()
     SS_tot = sum((V_true-v_mean)**2)/N
-    return max(1- E_v/SS_tot, 0)
+    return max(1- E_v/SS_tot,0)
 
 
 # R2_value_testing() takes a dataframe of testing data, a clustered dataframe,
@@ -749,8 +749,8 @@ def plot_pred(model, state, df_true, n_days, from_first=False):
         s = model.P_df.loc[s, 0].values[0]
 
     fig, ax = plt.subplots()
-    ax.plot(df_true.loc[df_true['state']==state][model.date_colname], \
-            df_true.loc[df_true['state']==state][model.target_colname], \
+    ax.plot(df_true.loc[df_true[model.region_colname]==state][model.date_colname], \
+            df_true.loc[df_true[model.region_colname]==state][model.target_colname], \
             label = 'True '+model.target_colname)
     ax.plot(dates, targets_pred, label='Predicted '+model.target_colname)
     ax.set_title('%s True vs Predicted '%state + model.target_colname)
@@ -802,8 +802,8 @@ def plot_pred_action(model, state, df_true, n_days, action_day=0, from_first=Fal
 
         ax.plot(dates, targets_pred, label='Predicted '+model.target_colname+ ' with ACTION {} after {} days'.format(a, action_day))
 
-    ax.plot(df_true.loc[df_true['state']==state][model.date_colname], \
-            df_true.loc[df_true['state']==state][model.target_colname], \
+    ax.plot(df_true.loc[df_true[model.region_colname]==state][model.date_colname], \
+            df_true.loc[df_true[model.region_colname]==state][model.target_colname], \
             label = 'True '+model.target_colname)
     ax.set_title('%s True vs Predicted '%state + model.target_colname)
     ax.set_xlabel('Date')
@@ -827,7 +827,7 @@ def plot_pred_fact(model, state, df_w_act, starting_date, n_days=30):
     first_date = df_state["TIME"].min()
 
     starting_n_days = int((starting_date - first_date).days)
-    try :
+    try:
         assert starting_n_days >= 0
     except AssertionError:
         print(" the given starting_date {} occurs before the first date {} of the given data set".format(str(starting_date),
@@ -874,6 +874,8 @@ def plot_pred_fact(model, state, df_w_act, starting_date, n_days=30):
         try:
             a = df_state.iloc[(starting_n_days+i)]["ACTION"]
         except:
+            print(state)
+            print(df_state.iloc[(starting_n_days+i)])
             break
 
         if a != 0:
@@ -899,7 +901,7 @@ def plot_pred_fact(model, state, df_w_act, starting_date, n_days=30):
     plt.xticks(rotation=45, ha='right')
     plt.legend()
     plt.show(block=False)
-#############################################################################
+#############################################################################`
 
 
 #############################################################################

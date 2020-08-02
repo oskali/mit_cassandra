@@ -9,9 +9,10 @@ Created on Sun Jun 28 21:24:25 2020
 
 from data_utils import (save_model, load_data, dict_to_df)
 from params import (train_sir, train_knn, train_mdp, train_agg, train_ci,
-                    date_col, region_col, target_col, sir_file, knn_file, mdp_file, agg_file, ci_file, validation_cutoff,
-                    per_region, ml_methods, ml_mapping, ml_hyperparams, ci_range, knn_params_dict,
-                    sir_params_dict, mdp_params_dict, retrain)
+                    date_col, region_col, target_col, sir_file, knn_file, mdp_file, agg_file, ci_file,
+                    validation_cutoff, training_cutoff, training_agg_cutoff,
+                    per_region, ml_methods, ml_mapping, ml_hyperparams, ci_range,
+                    knn_params_dict, sir_params_dict, mdp_params_dict, retrain)
 
 from sir_model import SIRModel
 from knn_model import KNNModel
@@ -24,21 +25,29 @@ warnings.filterwarnings("ignore")
 #%% Load Data
 
 df, df_train, df_validation = load_data(validation_cutoff=validation_cutoff)
+_, df_train_agg, df_validation_agg = load_data(training_cutoff=training_agg_cutoff,
+                                               validation_cutoff=training_cutoff)
 
 #%% Train and Save Models
 
 models = []
+regions_val = list(set(df_validation[region_col]))
+dates_val = list(set(df_validation[date_col]))
+validation_predictions = {}
+
 if train_sir:
     sir = SIRModel(**sir_params_dict)
     sir.fit(df_train)
     models.append('sir')
     save_model(sir, sir_file)
+    validation_predictions['sir'] = sir.predict(regions_val, dates_val)
 
 if train_knn:
     knn = KNNModel(**knn_params_dict)
     knn.fit(df_train)
     models.append('knn')
     save_model(knn, knn_file)
+    validation_predictions['knn'] = knn.predict(regions_val, dates_val)
 
 if train_mdp:
     if __name__ == "__main__":
@@ -46,19 +55,35 @@ if train_mdp:
         mdp.fit(df_train)
         models.append('mdp')
         save_model(mdp, mdp_file)
+        validation_predictions['mdp'] = mdp.predict(regions_val, dates_val)
 
 if train_agg:
-    validation_predictions = {}
-    regions_ = list(set(df_validation[region_col]))
-    dates_ = list(set(df_validation[date_col]))
-    if train_sir:
-        validation_predictions['sir'] = sir.predict(regions_, dates_)
-    if train_knn:
-        validation_predictions['knn'] = knn.predict(regions_, dates_)
-    if train_mdp:
-        validation_predictions['mdp'] = mdp.predict(regions_, dates_)
-    df_agg = dict_to_df(validation_predictions,
-                        df_validation)
+
+    # train SEIRD
+    sir_agg = SIRModel(**sir_params_dict)
+    sir_agg.fit(df_train_agg)
+    save_model(sir_agg, sir_file.replace(".pickle", "_agg.pickle"))
+
+    # train kNN
+    knn_agg = KNNModel(**knn_params_dict)
+    knn_agg.fit(df_train_agg)
+    save_model(knn_agg, knn_file.replace(".pickle", "_agg.pickle"))
+
+    # train MDP
+    mdp_agg = MDPModel(**mdp_params_dict)
+    mdp_agg.fit(df_train_agg)
+    save_model(mdp_agg, mdp_file.replace(".pickle", "_agg.pickle"))
+
+    validation_predictions_agg = {}
+    regions_agg = list(set(df_validation_agg[region_col]))
+    dates_agg = list(set(df_validation_agg[date_col]))
+
+    validation_predictions_agg['sir'] = sir_agg.predict(regions_agg, dates_agg)
+    validation_predictions_agg['knn'] = knn_agg.predict(regions_agg, dates_agg)
+    validation_predictions_agg['mdp'] = mdp_agg.predict(regions_agg, dates_agg)
+    df_agg = dict_to_df(validation_predictions_agg,
+                        df_validation_agg)
+
     agg = AGGModel(date=date_col,
                    region=region_col,
                    target=target_col,
@@ -70,12 +95,12 @@ if train_agg:
     agg.fit(df_agg)
     save_model(agg, agg_file)
 
-    validation_predictions['agg'] = agg.predict(regions_, dates_, validation_predictions)
+    validation_predictions['agg'] = agg.predict(regions_val, dates_val, validation_predictions)
     df_agg = dict_to_df(validation_predictions,
                         df_validation)
     models.append('agg')
 
-if train_ci:
+if train_ci & train_agg:
     ci = CI(region_col=region_col,
             target_col=target_col,
             ci_range=ci_range,
@@ -83,20 +108,20 @@ if train_ci:
     ci.fit(df_agg)
     save_model(ci, ci_file)
 
-if retrain:
-    if train_sir:
-        sir = SIRModel(**sir_params_dict)
-        sir.fit(df)
-        save_model(sir, sir_file)
-
-    if train_knn:
-        knn = KNNModel(**knn_params_dict)
-        knn.fit(df)
-        save_model(knn, knn_file)
-
-    if train_mdp:
-        mdp = MDPModel(**mdp_params_dict)
-        mdp.fit(df)
-        save_model(mdp, mdp_file)
+# if retrain:
+#     if train_sir:
+#         sir = SIRModel(**sir_params_dict)
+#         sir.fit(df)
+#         save_model(sir, sir_file)
+#
+#     if train_knn:
+#         knn = KNNModel(**knn_params_dict)
+#         knn.fit(df)
+#         save_model(knn, knn_file)
+#
+#     if train_mdp:
+#         mdp = MDPModel(**mdp_params_dict)
+#         mdp.fit(df)
+#         save_model(mdp, mdp_file)
 
 

@@ -11,7 +11,8 @@ import pickle
 from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
-from params import (target_col, date_col, region_col, training_cutoff, df_path, nmin)
+from params import (target_col, date_col, region_col, training_cutoff,
+                         df_path, nmin, restriction_dict, region_exceptions)
 import os
 import warnings
 warnings.filterwarnings("ignore")
@@ -33,14 +34,36 @@ def load_data(file=df_path,
               region=region_col,
               training_cutoff=training_cutoff,
               validation_cutoff=None,
-              nmim=nmin):
+              nmin=nmin,
+              restriction_dict=restriction_dict[region_col],
+              region_exceptions=region_exceptions[region_col]):
     df = pd.read_csv(file)
     #df = get_public_data(file)
     df.columns = map(str.lower, df.columns)
-    df= df[df[target] >= nmin]
-    df[date] = df[date].apply(lambda x: datetime.strptime(x,'%Y-%m-%d'))
-    df = df.sort_values(by = [region, date])
+
+    # restrict to a subset of obervations
+    if not (restriction_dict is None):
+        masks = []
+        for col, values in restriction_dict.items():
+            try:
+                masks.append(df[col].isin(values))
+            except:
+                pass
+        if masks:
+            mask_ = masks.pop(0)
+            for other_mask in masks:
+                mask_ = (mask_ | other_mask)
+            df = df[mask_].copy()
+
+    # delete excepctions
+    if not (region_exceptions is None):
+        df = df[~df[region].isin(region_exceptions)].copy()
+
+    df = df[df[target] >= nmin[region]]
+    df[date] = df[date].apply(lambda x: datetime.strptime(x, '%Y-%m-%d'))
+    df = df.sort_values(by=[region, date])
     df_train = df[df[date] <= training_cutoff]
+    print("Training set contains {} {}.".format(df[region].nunique(), region))
     if validation_cutoff is None:
         df_test = df[df[date] > training_cutoff]
     else:

@@ -14,7 +14,7 @@ from params import (ml_methods, ml_hyperparams, ml_mapping, per_region)
 from sklearn.linear_model import ElasticNetCV, LinearRegression
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
-from xgboost import XGBRegressor
+# from xgboost import XGBRegressor
 from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVR, LinearSVR
 
