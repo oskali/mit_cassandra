@@ -64,9 +64,12 @@ n_samples = 3
 
 # %% Load and Save Parameters
 
-train_knn = True
+train_knn = False
 train_mdp = True
-train_sir = True
+train_sir = False
+train_knn_agg = False
+train_mdp_agg = True
+train_sir_agg = False
 train_agg = True
 train_ci = True
 load_knn = True
@@ -90,17 +93,17 @@ sir_params_dict = \
     {
         "nmin": nmin[region_col],
         'date': date_col,
-        'region': region_col,
-        'target': target_col,
-        'population': population,
+		'region': region_col,
+		'target': target_col,
+		'population': population,
         "optimizer": optimizer,
         # "betavals": [0.10, 0.15, 0.9, 0.95, 1.1, 1.2],
         # "gammavals": [0.01, 0.03, 0.25, 0.27, 0.29],
         # "avals": [0.333, 0.142, 0.0909, 0.0714, 0.0526],
         # "muvals": [0.001, 0.003, 0.005, 0.007],
         # "train_valid_split": 0.8,
-        'initial_param': [0.4, 0.06],
-        "nmin_train_set": 10
+        #'initial_param' :[0.4, 0.06],
+        #"nmin_train_set": 10
     }
 
 # %% Parameters KNN

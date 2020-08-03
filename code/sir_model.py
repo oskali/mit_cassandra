@@ -171,7 +171,7 @@ class SIRModel():
                         mse_list = []
                         if self.verbose:
                             iteration = len(self.betavals)*len(self.gammavals)*len(self.avals)*len(self.muvals)
-                            progress_bar = tqdm(range(iteration), desc = region)
+                            progress_bar = tqdm(range(iteration), desc = str(region))
                         else:
                             print(region)
                         #print(weight_dead)

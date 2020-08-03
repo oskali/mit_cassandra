@@ -518,54 +518,71 @@ class KSMABenchMarkModel:
         output_agg = {}
         regions = self.X_test[self.region_colname].unique()
         dates = pd.to_datetime(self.X_test[self.date_colname].unique())
+        used_models = []
 
         if self.load_model_dict["sir"]:
-            sir = load_model(self.models_path_dict["sir"])
-            output_agg['sir'] = sir.predict(regions, dates)
-            output['sir'] = pd.DataFrame.from_dict(output_agg['sir'])
-            output['sir'] = pd.melt(output['sir'].reset_index(),
-                                    id_vars="index",
-                                    value_name="sir",
-                                    var_name=self.region_colname).rename(
-                columns={"index": self.date_colname}).set_index(
-                [self.region_colname, self.date_colname])
-
-        if self.load_model_dict["knn"]:
-            knn = load_model(self.models_path_dict["knn"])
-            output_agg['knn'] = knn.predict(regions, dates)
-            output['knn'] = pd.DataFrame.from_dict(output_agg['knn'])
-            output['knn'] = pd.DataFrame.from_dict(knn.predict(regions, dates))
-            output['knn'] = pd.melt(output['knn'].reset_index(),
-                                    id_vars="index",
-                                    value_name="knn",
-                                    var_name=self.region_colname).rename(
-                columns={"index": self.date_colname}).set_index(
-                [self.region_colname, self.date_colname])
+            try:
+                sir = load_model(self.models_path_dict["sir"])
+                output_agg['sir'] = sir.predict(regions, dates)
+                output['sir'] = pd.DataFrame.from_dict(output_agg['sir'])
+                output['sir'] = pd.melt(output['sir'].reset_index(),
+                                        id_vars="index",
+                                        value_name="sir",
+                                        var_name=self.region_colname).rename(
+                    columns={"index": self.date_colname}).set_index(
+                    [self.region_colname, self.date_colname])
+                used_models.append("sir")
+            except:
+                pass
 
         if self.load_model_dict["mdp"]:
-            mdp = load_model(self.models_path_dict["mdp"])
-            output_agg['mdp'] = mdp.predict(regions, dates)
-            output['mdp'] = pd.DataFrame.from_dict(output_agg['mdp'])
-            output['mdp'] = pd.melt(output['mdp'].reset_index(),
-                                    id_vars=self.date_colname,
-                                    value_name="mdp",
-                                    var_name=self.region_colname).set_index(
-                [self.region_colname, self.date_colname])
+            try:
+                mdp = load_model(self.models_path_dict["mdp"])
+                output_agg['mdp'] = mdp.predict(regions, dates)
+                output['mdp'] = pd.DataFrame.from_dict(output_agg['mdp'])
+                output['mdp'] = pd.melt(output['mdp'].reset_index(),
+                                        id_vars=self.date_colname,
+                                        value_name="mdp",
+                                        var_name=self.region_colname).set_index(
+                    [self.region_colname, self.date_colname])
+                used_models.append("mdp")
+            except:
+                pass
+
+        if self.load_model_dict["knn"]:
+            try:
+                knn = load_model(self.models_path_dict["knn"])
+                output_agg['knn'] = knn.predict(regions, dates)
+                output['knn'] = pd.DataFrame.from_dict(output_agg['knn'])
+                output['knn'] = pd.DataFrame.from_dict(knn.predict(regions, dates))
+                output['knn'] = pd.melt(output['knn'].reset_index(),
+                                        id_vars="index",
+                                        value_name="knn",
+                                        var_name=self.region_colname).rename(
+                    columns={"index": self.date_colname}).set_index(
+                    [self.region_colname, self.date_colname])
+                used_models.append("knn")
+            except:
+                pass
 
         if self.load_model_dict["agg"]:
-            agg = load_model(self.models_path_dict["agg"])
-            output['agg'] = pd.DataFrame.from_dict(agg.predict(regions, dates, output_agg))
-            output['agg'] = pd.melt(output['agg'].reset_index(),
-                                    id_vars="index",
-                                    value_name="agg",
-                                    var_name=self.region_colname).rename(
-                columns={"index": self.date_colname}).set_index(
-                [self.region_colname, self.date_colname])
+            try:
+                agg = load_model(self.models_path_dict["agg"])
+                output['agg'] = pd.DataFrame.from_dict(agg.predict(regions, dates, output_agg))
+                output['agg'] = pd.melt(output['agg'].reset_index(),
+                                        id_vars="index",
+                                        value_name="agg",
+                                        var_name=self.region_colname).rename(
+                    columns={"index": self.date_colname}).set_index(
+                    [self.region_colname, self.date_colname])
+                used_models.append("agg")
+            except:
+                pass
 
         predictions = pd.DataFrame()
 
         try:
-            key = "sir"
+            key = random.choice(used_models)
             used_models = [key]
             predictions = output[key].copy()
             for key_, pred in output.items():
@@ -673,8 +690,9 @@ if __name__ == "__main__":
     # %% Load Data
     # df_train = pd.read_csv(df_path, parse_dates=["date"])
     _, df_train, _ = load_data(
-        training_cutoff='2020-07-15',
-        validation_cutoff='2020-07-15')
+        training_cutoff='2020-06-15',
+        validation_cutoff='2020-07-15',
+        )
 
     benchmark = BenchMarkSettings(
         region_colname="fips",
@@ -701,11 +719,11 @@ if __name__ == "__main__":
 
     # LSTM model
     model_path_dict = {
-        "mdp": r"C:\Users\david\Desktop\MIT\Courses\Research internship\master_branch\covid19_team2\code\models\mdp_cases_fips.pickle",
-        "sir": r"C:\Users\david\Desktop\MIT\Courses\Research internship\master_branch\covid19_team2\code\models\sir_cases_fips.pickle",
-        "knn": r"C:\Users\david\Desktop\MIT\Courses\Research internship\master_branch\covid19_team2\code\models\knn_cases_fips.pickle",
-        "agg": r"C:\Users\david\Desktop\MIT\Courses\Research internship\master_branch\covid19_team2\code\models\agg_cases_fips.pickle",
-        "ci": r"C:\Users\david\Desktop\MIT\Courses\Research internship\master_branch\covid19_team2\code\models\ci_cases_fips.pickle",
+        "mdp": r"C:\Users\david\Desktop\MIT\Courses\Research internship\master_branch\covid19_team2\codes\models\mdp_20200615_cases_fips.pickle",
+        "sir": r"C:\Users\david\Desktop\MIT\Courses\Research internship\master_branch\covid19_team2\codes\models\sir_20200615_cases_fips.pickle",
+        "knn": r"C:\Users\david\Desktop\MIT\Courses\Research internship\master_branch\covid19_team2\codes\models\knn_20200615_cases_fips.pickle",
+        "agg": r"C:\Users\david\Desktop\MIT\Courses\Research internship\master_branch\covid19_team2\codes\models\agg_20200615_cases_fips.pickle",
+        "ci": r"C:\Users\david\Desktop\MIT\Courses\Research internship\master_branch\covid19_team2\codes\models\ci_20200615_cases_fips.pickle",
         }
 
     load_model_dict = {

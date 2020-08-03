@@ -7,12 +7,13 @@ Created on Sun Jun 28 21:24:25 2020
 
 #%% Libraries and Parameters
 
-from data_utils import (save_model, load_data, dict_to_df)
+from data_utils import (save_model, load_model, load_data, dict_to_df)
 from params import (train_sir, train_knn, train_mdp, train_agg, train_ci,
                     date_col, region_col, target_col, sir_file, knn_file, mdp_file, agg_file, ci_file,
                     validation_cutoff, training_cutoff, training_agg_cutoff,
                     per_region, ml_methods, ml_mapping, ml_hyperparams, ci_range,
-                    knn_params_dict, sir_params_dict, mdp_params_dict, retrain)
+                    knn_params_dict, sir_params_dict, mdp_params_dict, retrain,
+                    train_mdp_agg, train_sir_agg, train_knn_agg)
 
 from sir_model import SIRModel
 from knn_model import KNNModel
@@ -60,19 +61,25 @@ if train_mdp:
 if train_agg:
 
     # train SEIRD
-    sir_agg = SIRModel(**sir_params_dict)
-    sir_agg.fit(df_train_agg)
-    save_model(sir_agg, sir_file.replace(".pickle", "_agg.pickle"))
+    if train_sir_agg:
+        sir_agg = SIRModel(**sir_params_dict)
+        sir_agg.fit(df_train_agg)
+        save_model(sir_agg, sir_file.replace(".pickle", "_agg.pickle"))
+    sir_agg = load_model(sir_file.replace(".pickle", "_agg.pickle"))
 
     # train kNN
-    knn_agg = KNNModel(**knn_params_dict)
-    knn_agg.fit(df_train_agg)
-    save_model(knn_agg, knn_file.replace(".pickle", "_agg.pickle"))
+    if train_knn_agg:
+        knn_agg = KNNModel(**knn_params_dict)
+        knn_agg.fit(df_train_agg)
+        save_model(knn_agg, knn_file.replace(".pickle", "_agg.pickle"))
+    knn_agg = load_model(knn_file.replace(".pickle", "_agg.pickle"))
 
     # train MDP
-    mdp_agg = MDPModel(**mdp_params_dict)
-    mdp_agg.fit(df_train_agg)
-    save_model(mdp_agg, mdp_file.replace(".pickle", "_agg.pickle"))
+    if train_mdp_agg:
+        mdp_agg = MDPModel(**mdp_params_dict)
+        mdp_agg.fit(df_train_agg)
+        save_model(mdp_agg, mdp_file.replace(".pickle", "_agg.pickle"))
+    mdp_agg = load_model(mdp_file.replace(".pickle", "_agg.pickle"))
 
     validation_predictions_agg = {}
     regions_agg = list(set(df_validation_agg[region_col]))

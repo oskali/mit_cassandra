@@ -117,8 +117,8 @@ def createSamples(df,#, # dataframe: original full dataframe
 
     # creating r_t, r_t-1, etc ratio values from cases
     df_new['r_t'] = df_new.groupby("ID")[target_colname].pct_change(1) + 1
-    df_new['r_t-1'] = df_new.groupby("ID")[target_colname].shift(1)
-    df_new['r_t-2'] = df_new.groupby("ID")[target_colname].shift(2)
+    df_new['r_t-1'] = df_new.groupby("ID")['r_t'].shift(1)
+    df_new['r_t-2'] = df_new.groupby("ID")['r_t'].shift(2)
 
     new_features = [f+'-1' for f in features_list] + [f+'-2' for f in features_list] + ['r_t', 'r_t-1', 'r_t-2']
     df_new.dropna(subset=new_features,
