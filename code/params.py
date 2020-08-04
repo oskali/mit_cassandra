@@ -12,11 +12,10 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 from sklearn.svm import SVR, LinearSVR
-import os
 
 # %% User and path
 
-USER = 'david'
+USER = 'omar'
 
 if USER == 'omar':
     df_path = 'C:\\Users\\omars\\Desktop\\covid19_georgia\\covid19_team2\data\\input\\07_08_2020_states_combined.csv'
@@ -31,8 +30,9 @@ elif USER == 'lpgt':
 
 target_col = 'cases'
 date_col = 'date'
-region_col = 'fips'
+region_col = 'state'
 population = 'population'
+tests_col = 'people_tested'
 
 # %% Run Parameters
 
@@ -48,14 +48,14 @@ regions_dict = {
     "state": ['New York', 'Massachusetts'],
 }
 regions = regions_dict[region_col]  # regions to predict  #
-unformatted_dates = ['2020-07-01', '2020-08-15']  # dates to predict  #
+unformatted_dates = ['2020-07-30', '2020-08-15']  # dates to predict  #
 
 restriction_dict = {
     "fips":
         {
-            "state": ["Massachusetts", "New Jersey", "Connecticut", "New Hampshire",
-                      # "Alabama",
-                      "Florida", "California"],
+            "state": ["Massachusetts", "New Jersey", "Connecticut", "New Hampshire"],
+                      # "Alabama",'
+                      #"Florida", "California"],
             "county": ["Queens", "New York", "Bronx"]
         },
     "state": None
@@ -72,16 +72,19 @@ train_mdp_agg = True
 train_sir_agg = False
 train_agg = True
 train_ci = True
+train_preval = True
 load_knn = True
 load_mdp = True
 load_sir = True
 load_agg = True
 load_ci = True
+load_preval = True
 sir_file = 'models\\sir_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col)
 knn_file = 'models\\knn_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col)
 mdp_file = 'models\\mdp_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col)
 agg_file = 'models\\agg_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col)
 ci_file = 'models\\ci_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col)
+preval_file = 'models\\preval_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col)
 export_file = 'export_{}_{}.csv'.format(training_cutoff.replace("-", ""), target_col, region_col)
 
 # %% Parameters SIR
@@ -192,7 +195,11 @@ ml_mapping = {'lin': [LinearRegression(), False],
 
 # %% Parameters CI
 
-ci_range = 0.95
+ci_range = 0.75
+
+# %% Parameters Prevalence
+
+alpha = 0.11
 
 # %% Date Formatting
 dates = [datetime.strptime(d, '%Y-%m-%d') for d in unformatted_dates]

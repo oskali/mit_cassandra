@@ -13,13 +13,15 @@ from params import (train_sir, train_knn, train_mdp, train_agg, train_ci,
                     validation_cutoff, training_cutoff, training_agg_cutoff,
                     per_region, ml_methods, ml_mapping, ml_hyperparams, ci_range,
                     knn_params_dict, sir_params_dict, mdp_params_dict, retrain,
-                    train_mdp_agg, train_sir_agg, train_knn_agg)
+                    train_mdp_agg, train_sir_agg, train_knn_agg, train_preval,
+                    preval_file)
 
 from sir_model import SIRModel
 from knn_model import KNNModel
 from mdp_model import MDPModel
 from agg_model import AGGModel
 from confidence_intervals import CI
+from prevalence import PrevalenceModel
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -115,20 +117,37 @@ if train_ci & train_agg:
     ci.fit(df_agg)
     save_model(ci, ci_file)
 
-# if retrain:
-#     if train_sir:
-#         sir = SIRModel(**sir_params_dict)
-#         sir.fit(df)
-#         save_model(sir, sir_file)
-#
-#     if train_knn:
-#         knn = KNNModel(**knn_params_dict)
-#         knn.fit(df)
-#         save_model(knn, knn_file)
-#
-#     if train_mdp:
-#         mdp = MDPModel(**mdp_params_dict)
-#         mdp.fit(df)
-#         save_model(mdp, mdp_file)
+if train_preval:
+    preval = PrevalenceModel(region_col=region_col,
+                             date_col=date_col,
+                             tests_col=tests_col,
+                             population_col=population_col,
+                             alpha=alpha)
+    preval.fit(df_train)
+    save_model(preval, preval_file)
 
+if retrain:
+    if train_sir:
+        sir = SIRModel(**sir_params_dict)
+        sir.fit(df)
+        save_model(sir, sir_file)
+
+    if train_knn:
+        knn = KNNModel(**knn_params_dict)
+        knn.fit(df)
+        save_model(knn, knn_file)
+
+    if train_mdp:
+        mdp = MDPModel(**mdp_params_dict)
+        mdp.fit(df)
+        save_model(mdp, mdp_file)
+
+    if train_preval:
+        preval = PrevalenceModel(region_col=region_col,
+                                 date_col=date_col,
+                                 tests_col=tests_col,
+                                 population_col=population_col,
+                                 alpha=alpha)
+        preval.fit(df_train)
+        save_model(preval, preval_file)
 
