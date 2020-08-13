@@ -14,8 +14,8 @@ from params import (train_sir, train_knn, train_mdp, train_agg, train_ci,
                     per_region, ml_methods, ml_mapping, ml_hyperparams, ci_range,
                     knn_params_dict, sir_params_dict, mdp_params_dict, retrain,
                     train_mdp_agg, train_sir_agg, train_knn_agg,
-                    load_sir, load_knn, load_mdp, train_preval,
-                    preval_file))
+                    load_sir, load_knn, load_mdp, train_preval, tests_col, population,
+                    preval_file, alpha)
 
 from sir_model import SIRModel
 from knn_model import KNNModel
@@ -140,7 +140,7 @@ if train_preval:
     preval = PrevalenceModel(region_col=region_col,
                              date_col=date_col,
                              tests_col=tests_col,
-                             population_col=population_col,
+                             population_col=population,
                              alpha=alpha)
     preval.fit(df_train)
     save_model(preval, preval_file)
@@ -165,7 +165,7 @@ if retrain:
         preval = PrevalenceModel(region_col=region_col,
                                  date_col=date_col,
                                  tests_col=tests_col,
-                                 population_col=population_col,
+                                 population_col=population,
                                  alpha=alpha)
         preval.fit(df_train)
         save_model(preval, preval_file)
@@ -173,7 +173,7 @@ if train_preval:
     preval = PrevalenceModel(region_col=region_col,
                              date_col=date_col,
                              tests_col=tests_col,
-                             population_col=population_col,
+                             population_col=population,
                              alpha=alpha)
     preval.fit(df_train)
     save_model(preval, preval_file)
@@ -197,7 +197,7 @@ if retrain:
         preval = PrevalenceModel(region_col=region_col,
                                  date_col=date_col,
                                  tests_col=tests_col,
-                                 population_col=population_col,
+                                 population_col=population,
                                  alpha=alpha)
         preval.fit(df_train)
         save_model(preval, preval_file)
