@@ -12,6 +12,7 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 from sklearn.svm import SVR, LinearSVR
+from pandas import date_range
 import os
 
 # %% User and path
@@ -43,13 +44,13 @@ tests_col = 'people_tested'
 random_state = 42
 retrain = False
 
-training_agg_cutoff = '2020-05-15'
-training_cutoff = '2020-06-01'
-validation_cutoff = '2020-07-15'
+training_agg_cutoff = '2020-07-15'
+training_cutoff = '2020-08-01'
+validation_cutoff = None
 
 regions_dict = {
     "fips": [25017, 34023],
-    "state": ['New York', 'Massachusetts'],
+    "state": ['Massachusetts'],
 }
 regions = regions_dict[region_col]  # regions to predict  #
 unformatted_dates = [datetime.strftime(_, "%Y-%m-%d") for _ in date_range('2020-08-02', '2020-12-15', freq="1D")]  # dates to predict  #
@@ -68,27 +69,27 @@ n_samples = 3
 
 # %% Load and Save Parameters
 
-train_knn = False
+train_knn = True
 train_mdp = True
-train_sir = False
-train_knn_agg = False
-train_mdp_agg = False
-train_sir_agg = False
+train_sir = True
+train_knn_agg = True
+train_mdp_agg = True
+train_sir_agg = True
 train_agg = True
 train_ci = True
 train_preval = True
 load_knn = True
-load_mdp = False
-load_sir = False
-load_agg = False
+load_mdp = True
+load_sir = True
+load_agg = True
 load_ci = True
 load_preval = True
-sir_file = 'models\\sir_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col)
-knn_file = 'models\\knn_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col)
-mdp_file = 'models\\mdp_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col)
-agg_file = 'models\\agg_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col)
-ci_file = 'models\\ci_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col)
-preval_file = 'models\\preval_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col)
+sir_file = os.path.join('models', 'sir_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
+knn_file = os.path.join('models', 'knn_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
+mdp_file = os.path.join('models', 'mdp_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
+agg_file = os.path.join('models', 'agg_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
+ci_file = os.path.join('models', 'ci_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
+preval_file = os.path.join('models', 'preval_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
 export_file = 'export_{}_{}.csv'.format(training_cutoff.replace("-", ""), target_col, region_col)
 
 # %% Parameters SIR
