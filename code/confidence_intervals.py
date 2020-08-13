@@ -55,13 +55,23 @@ class CI():
                 try:
                     if how == 'random':
                         if n_samples == 1:
-                            new_output[model][region] = (norm.rvs(loc=self.mean[model][region], scale=self.std[model][region], random_state=random_seed)+1)*output[model][region]
+                            seed = random_seed
+                            while True:
+                                spl = (norm.rvs(loc=self.mean[model][region], scale=self.std[model][region], random_state=seed)+1)
+                                if spl > max(self.ci[model][region][0] + 1, 0) and spl < self.ci[model][region][1] + 1:
+                                    new_output[model][region] = spl*output[model][region]
+                                    break
+                                else:
+                                    seed += 1
+
                         else:
                             new_output[model][region] = []
-                            for i in range(n_samples):
-                                new_output[model][region].append((norm.rvs(loc=self.mean[model][region], scale=self.std[model][region])+1)*output[model][region])
-
-
+                            seed = random_seed
+                            while len(new_output[model][region]) < n_samples:
+                                spl = (norm.rvs(loc=self.mean[model][region], scale=self.std[model][region], random_state=seed)+1)
+                                if spl > max(self.ci[model][region][0] + 1, 0) and spl < self.ci[model][region][1] + 1:
+                                    new_output[model][region].append(spl*output[model][region])
+                                seed += 1
                     elif how == 'low':
                         new_output[model][region] = (self.ci[model][region][0]+1)*output[model][region]
                     else:

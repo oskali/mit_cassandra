@@ -12,7 +12,6 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 from sklearn.svm import SVR, LinearSVR
-from pandas import date_range
 import os
 
 # %% User and path
@@ -37,6 +36,7 @@ target_col = 'cases'
 date_col = 'date'
 region_col = 'state'
 population = 'population'
+tests_col = 'people_tested'
 
 # %% Run Parameters
 
@@ -45,7 +45,7 @@ retrain = False
 
 training_agg_cutoff = '2020-05-15'
 training_cutoff = '2020-06-01'
-validation_cutoff = None  # '2020-07-15'
+validation_cutoff = '2020-07-15'
 
 regions_dict = {
     "fips": [25017, 34023],
@@ -76,16 +76,19 @@ train_mdp_agg = False
 train_sir_agg = False
 train_agg = True
 train_ci = True
+train_preval = True
 load_knn = True
 load_mdp = False
 load_sir = False
 load_agg = False
 load_ci = True
+load_preval = True
 sir_file = 'models\\sir_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col)
 knn_file = 'models\\knn_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col)
 mdp_file = 'models\\mdp_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col)
 agg_file = 'models\\agg_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col)
 ci_file = 'models\\ci_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col)
+preval_file = 'models\\preval_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col)
 export_file = 'export_{}_{}.csv'.format(training_cutoff.replace("-", ""), target_col, region_col)
 
 # %% Parameters SIR
@@ -146,7 +149,7 @@ mdp_params_dict = \
         "horizon": 8,
         "n_iter": 200,
         "n_folds_cv": 5,
-        "clustering_distance_threshold": 0.08,
+        "clustering_distance_threshold": 0.1,
         "splitting_threshold": 0.,
         "classification_algorithm": 'DecisionTreeClassifier',
         "clustering_algorithm": 'Agglomerative',
@@ -161,7 +164,7 @@ mdp_params_dict = \
         "random_state": random_state,
         "keep_first": True,
         "save": False,
-        "plot": True,
+        "plot": False,
         "savepath": "",  # os.path.dirname(mdp_file),
         "region_exceptions": region_exceptions[region_col]
     }
@@ -172,7 +175,7 @@ ml_methods = [  # 'lin',
     'elastic',
     # 'cart',
     # 'rf',
-    'xgb',
+    # 'xgb',
     # 'linear_svm',
     # 'kernel_svm'
 ]
@@ -183,7 +186,7 @@ ml_hyperparams = {'xgb': {'gamma': [1, 5], 'max_depth': [3, 5]},
 
 ml_mapping = {'lin': [LinearRegression(), False],
               'elastic': [ElasticNetCV(fit_intercept=False), False],
-              # 'xgb': [XGBRegressor(learning_rate=0.05, n_estimators=100, silent=True), True],
+              'xgb': [XGBRegressor(learning_rate=0.05, n_estimators=100, silent=True), True],
               'cart': [DecisionTreeRegressor(), True],
               'rf': [RandomForestRegressor(), True],
               'linear_svm': [LinearSVR(), False],
@@ -191,7 +194,11 @@ ml_mapping = {'lin': [LinearRegression(), False],
 
 # %% Parameters CI
 
-ci_range = 0.95
+ci_range = 0.75
+
+# %% Parameters Prevalence
+
+alpha = 0.11
 
 # %% Date Formatting
 dates = [datetime.strptime(d, '%Y-%m-%d') for d in unformatted_dates]
