@@ -1,7 +1,7 @@
 # Created by .ignore support plugin (hsz.mobi)
 .idea/shelf/
-code/__pycache__/benchmark_model.cpython-37.pyc
-code/__pycache__/mdp_utils.cpython-37.pyc
+# code/__pycache__/benchmark_model.cpython-37.pyc
+# code/__pycache__/mdp_utils.cpython-37.pyc
 code/error_last.csv
 code/knn_fips/
 code/models - save/
