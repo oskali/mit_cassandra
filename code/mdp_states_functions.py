@@ -75,8 +75,11 @@ def createSamples(df,#, # dataframe: original full dataframe
             print("Missing dates: {} {} - {} missing rows".format(region_colname,
                                                                   region_name,
                                                                   group_.shape[0] - group_region.shape[0]))
-        else:
-            dfs.append(group_)
+
+            last_missing_date = group_[group_["ID"].isnull()].tail(1).index[0]
+            print("last missing date: {}".format(str(last_missing_date)))
+            group_ = group_[group_.index > last_missing_date].copy()
+        dfs.append(group_)
 
     df_new = pd.concat(dfs)
     # print(df_new)

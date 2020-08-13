@@ -26,6 +26,19 @@ def _mape(y_pred, y_true):
 
 _mape = np.vectorize(_mape)
 
+def predict_sml(row, prediction_size, model, scaler):
+    df_frame = row[1:].to_frame().T
+    current_state = scaler.inverse_transform(row[1:].values).tolist()
+    predictions = []
+    for _ in range(prediction_size):
+        y = model.predict(pd.DataFrame(
+            data=[scaler.inverse_transform(current_state)],
+            index=[df_frame.index],
+            columns=df_frame.columns))[0]
+        predictions.append(y)
+        current_state = [y] + current_state[:-1]
+    return np.array(predictions)
+
 
 #% Benchmark Experiment settings
 class BenchMarkSettings:
@@ -95,19 +108,25 @@ class SMLBenchMarkModel:
 
         self.X = self.X[[self.region_colname, self.date_colname] + self.useful_columns].copy()
         # cases features
-        col_to_keep = []
-        self.X["cases"] = self.X.groupby(self.region_colname)["cases"].pct_change().values
-        for lag in [1, 3, 5, 7, 10]:
-            self.X["cases_{}".format(lag)] = self.X.groupby(self.region_colname)["cases"].shift(lag).values
+        if self.target_colname == "cases":
+            self.X["cases"] = self.X.groupby(self.region_colname)["cases"].pct_change().values
+            for lag in range(1, 11):
+                self.X["cases_{}".format(lag)] = self.X.groupby(self.region_colname)["cases"].shift(lag).values
+            self.X.drop("deaths", axis=1, inplace=True)
 
         # death features
-        self.X["deaths"] = self.X.groupby(self.region_colname)["deaths"].pct_change().values
-        for lag in [1, 3, 5, 7, 10]:
-            self.X["deaths_{}".format(lag)] = self.X.groupby(self.region_colname)["deaths"].shift(lag).values
+        elif self.target_colname == "deaths":
+            self.X["deaths"] = self.X.groupby(self.region_colname)["deaths"].pct_change().values
+            for lag in range(1, 11):
+                self.X["deaths_{}".format(lag)] = self.X.groupby(self.region_colname)["deaths"].shift(lag).values
+            self.X.drop("cases", axis=1, inplace=True)
+
+        else:
+            raise Exception
 
         # compute target the target - growth forward
-        self.X["target"] = self.X.groupby(self.region_colname)[self.target_colname].shift(-self.prediction_size).values
-        self.X["prediction_date"] = self.X.groupby(self.region_colname)[self.date_colname].shift(-self.prediction_size)
+        self.X["target"] = self.X.groupby(self.region_colname)[self.target_colname].shift(-1).values
+        self.X["prediction_date"] = self.X.groupby(self.region_colname)[self.date_colname].shift(-1)
 
         # split down into training and testing
         X_train = self.X[self.X["prediction_date"] <= self.training_cutoff
@@ -127,7 +146,7 @@ class SMLBenchMarkModel:
         self.X_all = X_all.loc[:, ~(X_all.columns == "target")].replace([-np.inf, np.inf], np.nan).dropna()
 
         # save last target
-        self.last_target = self._raw_data[self._raw_data[self.date_colname] == self.training_cutoff].set_index(
+        self.last_target = self._raw_data[self._raw_data[self.date_colname].shift(1) == self.training_cutoff].set_index(
             self.region_colname)[self.target_colname].to_dict()
 
         self.last_target_all = self._raw_data.groupby(
@@ -140,11 +159,11 @@ class SMLBenchMarkModel:
             self.X = pd.DataFrame(data=self.scaler.fit_transform(self.X),
                                   index=self.X.index, columns=self.X.columns).copy()
             # apply scaler
-            self.X_val = pd.DataFrame(data=self.scaler.transform(self.X_val),
-                                      index=self.X_val.index, columns=self.X_val.columns).copy()
-
-            self.X_all = pd.DataFrame(data=self.scaler.transform(self.X_all),
-                                      index=self.X_all.index, columns=self.X_all.columns).copy()
+            # self.X_val = pd.DataFrame(data=self.scaler.transform(self.X_val),
+            #                           index=self.X_val.index, columns=self.X_val.columns).copy()
+            #
+            # self.X_all = pd.DataFrame(data=self.scaler.transform(self.X_all),
+            #                           index=self.X_all.index, columns=self.X_all.columns).copy()
 
     def fit(self, data, scaling=True, save=True):
 
@@ -159,20 +178,29 @@ class SMLBenchMarkModel:
         self.observed_metrics = predictions
 
         if save:
-            self.models_dict = clf.model_dict
+            self.models_dict = {key: value for key, value in clf.model_dict.items() if key in {"Ridge", "RandomForestRegressor", "XGBRegressor"}}
 
     def eval(self):
 
         # predictions
-        predictions = pd.DataFrame(index=self.X_val.index).reset_index()
-        predictions[self.date_colname] = predictions.groupby(by=self.region_colname)[self.date_colname].apply(
-            lambda x: x + timedelta(self.prediction_size)).values
+        predictions = pd.DataFrame(index=self.X_val.index)
+        # predictions[self.date_colname] = predictions.groupby(by=self.region_colname)[self.date_colname].apply(
+        #     lambda x: x + timedelta(self.prediction_size)).values
 
         # prediction
-        for name, model in self.models_dict.items():
-            predictions[name] = model.predict(self.X_val) + 1.
-            predictions[name] = predictions.groupby(by=self.region_colname)[name].cumprod().values
+        for name, model in tqdm(self.models_dict.items()):
+            prediction_model = []
+            for region, row in self.X_val.reset_index().groupby(self.region_colname).first().iterrows():
+                prediction_region = pd.DataFrame(
+                    index=pd.date_range(start=row[0] + timedelta(1), periods=self.prediction_size, freq="1D", name=self.date_colname),
+                    data=predict_sml(row, self.prediction_size, model, self.scaler),
+                    columns=[name]).reset_index()
+                prediction_region[self.region_colname] = region
+                prediction_model.append(prediction_region.set_index([self.region_colname, self.date_colname]))
+            prediction_model = pd.concat(prediction_model)
+            predictions = predictions.join(prediction_model, how="left")
 
+        predictions = (predictions+1).groupby(self.region_colname).cumprod().reset_index()
         dfs = []
         for group_name, group in predictions.groupby(self.region_colname):
             dfs.append(group.set_index([self.region_colname, self.date_colname]) * self.last_target[group_name])
@@ -183,36 +211,33 @@ class SMLBenchMarkModel:
             self._raw_data.set_index([self.region_colname, self.date_colname])[self.target_colname], how="left")
         error = predictions.copy()
 
+        self.val_predictions = predictions
+
         for name in self.models_dict.keys():
             error[name] = self.metric(error[name].values, error[self.target_colname].values)
         error.reset_index(inplace=True)
         error.drop([self.target_colname, self.date_colname], axis=1, inplace=True)
 
         error_per_state = error.groupby(self.region_colname).mean()
+        error_last = error.dropna().groupby(self.region_colname).last()
+
         self.test_error = error_per_state
+        self.last_error = error_last.copy()
 
-        return error_per_state.describe()
+        return error_per_state.describe().copy()
 
-    def predict(self):
+    def eval_dates(self, start_date, end_date):
+        val = self.val_predictions.reset_index()
+        val = val[val.date.between(start_date, end_date)]
 
-        # predictions
+        error = val.copy()
+        for name in self.models_dict.keys():
+            error[name] = self.metric(error[name].values, error[self.target_colname].values)
+        error.drop([self.target_colname, self.date_colname], axis=1, inplace=True)
 
-        X_horizon = self.X_all.groupby(by=self.region_colname).tail(self.prediction_size)
-
-        predictions = pd.DataFrame(index=X_horizon.index).reset_index()
-        predictions[self.date_colname] = predictions.groupby(by=self.region_colname)[self.date_colname].apply(
-            lambda x: x + timedelta(self.prediction_size)).values
-
-        # prediction
-        for name, model in self.models_dict.items():
-            predictions[name] = model.predict(X_horizon) + 1.
-            predictions[name] = predictions.groupby(by=self.region_colname)[name].cumprod().values
-
-        dfs = []
-        for group_name, group in predictions.groupby(self.region_colname):
-            dfs.append(group.set_index([self.region_colname, self.date_colname]) * self.last_target_all[group_name])
-        predictions = pd.concat(dfs)
-        return predictions.reset_index()
+        error_per_state = error.groupby(self.region_colname).mean()
+        error_last = error.dropna().groupby(self.region_colname).last()
+        return error_per_state, error_last, val
 
 
 #% Long-Short Term Memory
@@ -404,6 +429,7 @@ class LSTMBenchMarkModel:
                               var_name=self.region_colname)
 
         predictions["LSTM"] = X_pred.values
+        self.val_predictions = predictions
 
         # add target
         error = predictions.copy()
@@ -411,9 +437,11 @@ class LSTMBenchMarkModel:
         error.drop([self.target_colname, self.date_colname], axis=1, inplace=True)
 
         error_per_state = error.groupby(self.region_colname).mean()
+        error_last = error.dropna().groupby(self.region_colname).last()
         self.test_error = error_per_state
+        self.last_error = error_last.copy()
 
-        return error_per_state.describe()
+        return error_per_state.describe().copy()
 
     def predict(self):
 
@@ -448,6 +476,18 @@ class LSTMBenchMarkModel:
 
         return X_pred
 
+    def eval_dates(self, start_date, end_date):
+        val = self.val_predictions.reset_index()
+        val = val[val.date.between(start_date, end_date)]
+
+        error = val.copy()
+        for name in self.models_dict.keys():
+            error[name] = self.metric(error[name].values, error[self.target_colname].values)
+        error.drop([self.target_colname, self.date_colname], axis=1, inplace=True)
+
+        error_per_state = error.groupby(self.region_colname).mean()
+        error_last = error.dropna().groupby(self.region_colname).last()
+        return error_per_state, error_last, val
 
 #% kNN SEIRD MDP Aggregated
 class KSMABenchMarkModel:
@@ -461,7 +501,7 @@ class KSMABenchMarkModel:
         self.observed_metrics = None
         self.last_target = None
         self.column_order = None
-        self.lstm_model = None
+        self.used_models = None
         self.test_error = None
 
     def sanity_check_test(self):
@@ -583,17 +623,20 @@ class KSMABenchMarkModel:
 
         try:
             key = random.choice(used_models)
-            used_models = [key]
+            pred_models = [key]
             predictions = output[key].copy()
             for key_, pred in output.items():
                 if key_ != key:
                     try:
                         predictions[key_] = predictions.join(pred, how='left')[key_]
-                        used_models.append(key_)
+                        pred_models.append(key_)
                     except:
                         pass
 
+            self.used_models = pred_models
+
         except IndexError:
+            self.used_models = []
             return predictions
 
         # true growth rate
@@ -601,6 +644,7 @@ class KSMABenchMarkModel:
             self.X_test.set_index([self.region_colname, self.date_colname]),
             how="left")[self.target_colname].values
 
+        self.val_predictions = predictions
         error = predictions.reset_index().copy()
 
         for model_name in used_models:
@@ -608,10 +652,12 @@ class KSMABenchMarkModel:
 
         error.drop([self.target_colname, self.date_colname], axis=1, inplace=True)
 
-        error_per_state = error.groupby(self.region_colname).mean()
+        error_per_state = error.dropna().groupby(self.region_colname).mean()
+        error_last = error.dropna().groupby(self.region_colname).last()
         self.test_error = error_per_state
+        self.last_error = error_last.copy()
 
-        return error_per_state.describe()
+        return error_per_state.describe().copy()
 
     def predict(self):
 
@@ -666,39 +712,53 @@ class KSMABenchMarkModel:
         # prediction over the prediction size
         predictions = pd.DataFrame()
 
-        try :
+        try:
             key = "sir"
             used_models = [key]
             predictions = output[key].copy()
             for key_, pred in output.items():
                 if key_ != key:
-                    predictions[key_] = predictions.join(pred, how='left')[key_]
+                    predictions[key_] = predictions.join(pred.copy(), how='left')[key_]
                     used_models.append(key_)
         except IndexError:
             return predictions
 
         return predictions.reset_index()
 
+    def eval_dates(self, start_date, end_date):
+        val = self.val_predictions.reset_index()
+        val = val[val.date.between(start_date, end_date)]
+
+        error = val.copy()
+        for name in self.used_models:
+            error[name] = self.metric(error[name].values, error[self.target_colname].values)
+        error.drop([self.target_colname, self.date_colname], axis=1, inplace=True)
+
+        error_per_state = error.groupby(self.region_colname).mean()
+        error_last = error.dropna().groupby(self.region_colname).last()
+        return error_per_state, error_last, val
+
 
 if __name__ == "__main__":
-    df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\07_22_2020_counties_combined.csv'
-    # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\07_16_2020_states_combined.csv'
+    # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\07_22_2020_counties_combined.csv'
+    df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\07_16_2020_states_combined.csv'
     import warnings
 
     warnings.filterwarnings("ignore")
 
     # %% Load Data
     # df_train = pd.read_csv(df_path, parse_dates=["date"])
-    _, df_train, _ = load_data(
+    df_train, _, _ = load_data(
+        file=r"C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\07_16_2020_states_combined_w_pct.csv",
         training_cutoff='2020-06-15',
-        validation_cutoff='2020-07-15',
+        validation_cutoff=None,  # '2020-07-15',
         )
 
     benchmark = BenchMarkSettings(
-        region_colname="fips",
+        region_colname="state",
         target_colname="cases",
         date_colname="date",
-        training_cutoff="20200615",
+        training_cutoff="20200510",
         prediction_size=5,
         useful_columns=["cases", "deaths"],  # , "stayathome"],
         metric=_mape,
@@ -709,8 +769,9 @@ if __name__ == "__main__":
     # sml_models = SMLBenchMarkModel(benchmark)
     # sml_models.fit(df_train)
     # sml_error = sml_models.eval()
-    # sml_predictions = sml_models.predict()
-    #
+    # sml_error_2w = sml_models.eval_dates("20200721", "20200804")
+    # # sml_predictions = sml_models.predict()
+
     # # LSTM model
     # lstm_model = LSTMBenchMarkModel(benchmark)
     # lstm_model.fit(df_train)
@@ -719,11 +780,11 @@ if __name__ == "__main__":
 
     # LSTM model
     model_path_dict = {
-        "mdp": r"C:\Users\david\Desktop\MIT\Courses\Research internship\master_branch\covid19_team2\codes\models\mdp_20200615_cases_fips.pickle",
-        "sir": r"C:\Users\david\Desktop\MIT\Courses\Research internship\master_branch\covid19_team2\codes\models\sir_20200615_cases_fips.pickle",
-        "knn": r"C:\Users\david\Desktop\MIT\Courses\Research internship\master_branch\covid19_team2\codes\models\knn_20200615_cases_fips.pickle",
-        "agg": r"C:\Users\david\Desktop\MIT\Courses\Research internship\master_branch\covid19_team2\codes\models\agg_20200615_cases_fips.pickle",
-        "ci": r"C:\Users\david\Desktop\MIT\Courses\Research internship\master_branch\covid19_team2\codes\models\ci_20200615_cases_fips.pickle",
+        "mdp": r"C:\Users\david\Desktop\MIT\Courses\Research internship\master_branch\covid19_team2\code\models\mdp_20200510_cases_state.pickle",
+        "sir": r"C:\Users\david\Desktop\MIT\Courses\Research internship\master_branch\covid19_team2\code\models\sir_20200510_cases_state.pickle",
+        "knn": r"C:\Users\david\Desktop\MIT\Courses\Research internship\master_branch\covid19_team2\code\models\knn_20200510_cases_state.pickle",
+        "agg": r"C:\Users\david\Desktop\MIT\Courses\Research internship\master_branch\covid19_team2\code\models\agg_20200510_cases_state.pickle",
+        "ci": r"C:\Users\david\Desktop\MIT\Courses\Research internship\master_branch\covid19_team2\code\models\ci_20200510_cases_state.pickle",
         }
 
     load_model_dict = {
@@ -739,6 +800,6 @@ if __name__ == "__main__":
                                     load_model_dict=load_model_dict)
     ksma_model.fit(df_train)
     ksma_error = ksma_model.eval()
-    ksma_predictions = ksma_model.predict()
+    ksma_predictions = ksma_model.eval_dates("20200702", "20200709")
 
     print(ksma_error)

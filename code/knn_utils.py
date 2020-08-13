@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Jun 28 20:15:47 2020
-
 @authors: Yiannis, Bibha, omars
 """
 
@@ -198,7 +197,6 @@ def match_to_real_growth(df, start_date, threshold, n, p, func, memory, forward_
 def predict_covid(df, start_date, memory = 10, forward_days = 14, split_date = '2020-05-01', day_0 = '2020-05-01', real_GR = False, deterministic = True, r = 1, date_col='date', region_col='state', target_col='cases'):
     '''
     everything before split_date is train
-
     '''
 
     #This section of code creates the forward and back features

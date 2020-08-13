@@ -27,8 +27,10 @@ from datetime import datetime
 from datetime import timedelta
 import math
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import GridSearchCV
-
+from itertools import product
+from collections import Counter
 
 #%% New Exception for MDP learning
 class MDPPredictionError(Exception):
@@ -100,14 +102,53 @@ def predict_value_of_cluster(P_df, R_df, # df: MDP parameters
         v = v + R_df.loc[s]
     return v
 
-def complete_p_df(row, df):
-    if pd.isna(row[0]):
-        # if the next cluster is unknown, act as if the action corresponding action was no action
-        return df.at[(row.name[0], 0), "NEXT_CLUSTER"]
 
-    else:
-        # otherwise return the current next_cluster
-        return df.at[row.name, "NEXT_CLUSTER"]
+def complete_P_df(df, P_df, actions, pfeatures, OutputFlag=0):
+
+    risk_model_dict = dict()
+    n_nan_actions = P_df["NEXT_CLUSTER"].isnull().groupby("ACTION").sum()
+
+    for action in actions:
+        if n_nan_actions[action] == 0:
+            continue
+        X = df[(df.ACTION == action) & (df.NEXT_CLUSTER.notnull())].iloc[:, 2: pfeatures + 2].values
+        y = df[(df.ACTION == action) & (df.NEXT_CLUSTER.notnull())]["NEXT_CLUSTER"].values
+
+        params = {
+            'algorithm': ['auto', 'ball_tree', 'kd_tree', 'brute']
+        }
+
+        m = KNeighborsClassifier(n_neighbors=1)
+        m = GridSearchCV(m, params, cv=3, iid=True)  # will return warning if 'idd' param not set to true
+
+        try:
+            m.fit(X, y)
+            risk_model_dict[action] = (m, Counter(y).most_common(1)[0][0])
+        except ValueError:
+            try:
+                m = GridSearchCV(m, params, cv=2, iid=True)  # will return warning if 'idd' param not set to true
+                m.fit(X, y)
+                risk_model_dict[action] = (m, Counter(y).most_common(1)[0][0])
+            except ValueError:
+                risk_model_dict[action] = (None, Counter(y).most_common(1)[0][0])
+                if OutputFlag >=2:
+                    print('ERROR: Fitting KNN for action {}'.format(action), flush=True)
+
+    P_df.reset_index(inplace=True)
+    for action in actions:
+        if n_nan_actions[action] == 0:
+            continue
+        missing_clusters = P_df[(P_df.ACTION == action) & (P_df.NEXT_CLUSTER.isna())].CLUSTER
+        for idx, cluster in missing_clusters.items():
+            try:
+                nc = df[(df.ACTION == action) & (df.CLUSTER == cluster)].iloc[:, 2: pfeatures + 2].values
+                nc = np.argmax(risk_model_dict[action][0].predict(nc))
+            except:
+                nc = risk_model_dict[action][1]
+            P_df.iloc[idx, 2] = nc
+
+    return P_df.set_index(["CLUSTER", "ACTION"])
+
 
 # get_MDP() takes in a clustered dataframe df_new, and returns dataframes
 # P_df and R_df that represent the parameters of the estimated MDP

@@ -297,7 +297,7 @@ class MDPModel:
         date = self.df_trained.loc[region, "TIME"]
 
         if self.verbose >= 2:
-            print('current date:', date,'| current %s:'%self.target_colname, target)
+            print('current date:', date, '| current %s:'%self.target_colname, target)
 
         # cluster the this last point
         s = self.df_trained.loc[region, "CLUSTER"]
@@ -305,19 +305,19 @@ class MDPModel:
             print('predicted initial cluster', s)
 
         r = 1
-        clusters_seq =[s]
+        clusters_seq = [s]
         # run for horizon h, multiply out the ratios
         for i in range(h):
             r = r*np.exp(self.R_df.loc[s])
-            s = self.P_df.loc[s,0].values[0]
+            s = self.P_df.loc[s, 0].values[0]
             clusters_seq.append(s)
 
         if self.verbose >= 2:
             print('Sequence of clusters:', clusters_seq)
-        pred = target*r*(np.exp(self.R_df.loc[s])**(delta/3))
+        pred = target*r*(np.exp(self.R_df.loc[s])**(delta/3.))
 
         if self.verbose >= 2:
-            print('Prediction for date:', date + timedelta(n_days),'| target:', pred)
+            print('Prediction for date:', date + timedelta(n_days), '| target:', pred)
         return pred
 
     # predict_all() takes a time horizon, and returns the predicted number of

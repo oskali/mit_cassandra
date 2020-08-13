@@ -6,7 +6,6 @@ Created on Wed Jun 24 15:01:53 2020
 """
 
 #%% Libraries
-
 import numpy as np
 from scipy.integrate import odeint as ode
 import pandas as pd
@@ -15,16 +14,8 @@ import scipy.optimize as optimize
 from datetime import timedelta
 from sklearn.metrics import mean_squared_error
 from math import sqrt
-from math import exp
 from tqdm import tqdm
 
-# def mob_func(t, b1, b2, p, T):
-#   x =  b2 - b1
-#   try:
-#       y = 1 + exp(p*(-t + T))
-#   except OverflowError:
-#       y = float('inf')
-#   return (x/y) + b1
 
 #%% Helper Functions
 #ode differential equations
@@ -83,11 +74,7 @@ class SIRModel():
                      region='state',
                      target='cases',
                      population='population',
-                     optimizer='trust-ncg',
-                     # betavals = [0.10, 0.15, 0.9, 0.95, 1.1, 1.2],
-                     # gammavals = [0.01, 0.03, 0.25, 0.27, 0.29],
-                     # avals = [0.333, 0.142, 0.0909, 0.0714, 0.0526],
-                     # muvals = [0.001, 0.003, 0.005, 0.007],
+                     optimizer='Nelder-Mead',
                      betavals = [0.1, 0.9],
                      gammavals = [0.01, 0.25],
                      avals = [0.142, 0.0714],
@@ -96,7 +83,7 @@ class SIRModel():
                      nmin_train_set = 10,
                      death_lm = 1,
                      recover_lm = 1, 
-                     verbose = True):
+                     verbose = False):
             self.nmin = nmin
             self.date = date
             self.region = region
@@ -126,13 +113,33 @@ class SIRModel():
             warmstart = dict()
             population_df = dataset.loc[:, [self.region, self.population]]
             population = {population_df.iloc[i, 0] : population_df.iloc[i, 1] for i in range(population_df.shape[0])}
+            nmin_value = self.nmin[self.region]
 
             for i in range(len(regions)):
                 region = regions[i]
-                train_full_set = dataset[[a and b for a, b in zip(dataset[self.region] == region, dataset["active"] > self.nmin)]]
+                train_full_set = dataset[[a and b for a, b in zip(dataset[self.region] == region, dataset["active"] > nmin_value)]]
+                
+                
                 region_pop = population[region]
                 if train_full_set.shape[0] > self.nmin_train_set and region_pop > 0:   
                     train_full_set = train_full_set.sort_values(self.date)
+                    
+                    if self.region == 'fips':
+                        list_1 = []
+                        for i in range(len(train_full_set)):
+                            if train_full_set['state'].values[i] == 'Massachusetts':
+                                #print('This county is in Mass')
+                                val_1 = train_full_set['active'].values[i]
+                                val_2 = ((train_full_set['cases'].values[i])*val_1)/train_full_set['state_cases'].values[i]
+                                list_1.append(val_2)
+                            elif train_full_set['state'].values[i] == 'New Jersey':
+                                #print('This county is in NJ')
+                                val_1 = train_full_set['active'].values[i]
+                                val_2 = ((train_full_set['cases'].values[i])*val_1)/train_full_set['state_cases'].values[i]
+                                list_1.append(val_2)
+                        train_full_set['active'] = list_1                    
+                    
+                    
                     full_times = [j for j in range(len(train_full_set))]
                     full_cases = train_full_set.loc[:, "active"].values
                     full_dead = train_full_set.loc[:, "deaths"].values
@@ -141,12 +148,11 @@ class SIRModel():
                     
                     train_set, valid_set= np.split(train_full_set, [int(self.train_valid_split *len(train_full_set))])
 
-                    timer = [j for j in range(len(train_set))]
                     train_cases = train_set.loc[:, "active"].values
                     train_dead = train_set.loc[:, "deaths"].values
                     train_recover = train_set.loc[:, "cases"].values - train_set.loc[:, "active"].values - train_set.loc[:, "deaths"].values
                     train_recover[train_recover<0] = 0
-                    times = timer
+                    times = [j for j in range(len(train_set))]
 
                     valid_times = [j for j in range(len(valid_set))]
                     valid_cases = valid_set.loc[:, "active"].values
@@ -171,15 +177,15 @@ class SIRModel():
                         mse_list = []
                         if self.verbose:
                             iteration = len(self.betavals)*len(self.gammavals)*len(self.avals)*len(self.muvals)
-                            progress_bar = tqdm(range(iteration), desc = str(region))
+                            progress_bar = tqdm(range(iteration), desc = region)
                         else:
                             print(region)
-                        #print(weight_dead)
-                        #print(weight_recover)  
+              
                         beta_progress = range(len(self.betavals))
                         gamma_progress = range(len(self.gammavals))
                         a_progress = range(len(self.avals))
                         mu_progress = range(len(self.muvals))
+    
                         for betaindex in beta_progress:
                             for gammaindex in gamma_progress:
                                 for aindex in a_progress:
@@ -205,7 +211,7 @@ class SIRModel():
                         a = param_list[minindex][2]
                         mu = param_list[minindex][3]
                         params = [beta, gamma, region_pop, a, mu]
-                        paramnames = ['beta', 'gamma', 'k', 'a', 'mu', 'beta2', 'p', 'T']
+                        paramnames = ['beta', 'gamma', 'pop', 'a', 'mu']
                         warmstart[region] = params
                         
                     else:
@@ -296,4 +302,3 @@ class SIRModel():
 
                     results[region] = df_fin.loc[list(np.array(dates)[[date >= start_date for date in dates]]), 0]
             return results
-
