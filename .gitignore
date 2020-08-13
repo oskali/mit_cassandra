@@ -1,7 +1,7 @@
 # Created by .ignore support plugin (hsz.mobi)
 .idea/shelf/
-# code/__pycache__/benchmark_model.cpython-37.pyc
-# code/__pycache__/mdp_utils.cpython-37.pyc
+code/__pycache__/benchmark_model.cpython-37.pyc
+code/__pycache__/mdp_utils.cpython-37.pyc
 code/error_last.csv
 code/knn_fips/
 code/models - save/
@@ -11,3 +11,4 @@ code/results_east_coast2.csv
 code/tmp_mass_pred.csv
 code/tmp_ny_pred.csv
 data/input/07_08_2020_states_combined_w_pct.csv
+/code/knn_fips/
