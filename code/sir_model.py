@@ -125,19 +125,22 @@ class SIRModel():
                     train_full_set = train_full_set.sort_values(self.date)
                     
                     if self.region == 'fips':
-                        list_1 = []
-                        for i in range(len(train_full_set)):
-                            if train_full_set['state'].values[i] == 'Massachusetts':
-                                #print('This county is in Mass')
-                                val_1 = train_full_set['active'].values[i]
-                                val_2 = ((train_full_set['cases'].values[i])*val_1)/train_full_set['state_cases'].values[i]
-                                list_1.append(val_2)
-                            elif train_full_set['state'].values[i] == 'New Jersey':
-                                #print('This county is in NJ')
-                                val_1 = train_full_set['active'].values[i]
-                                val_2 = ((train_full_set['cases'].values[i])*val_1)/train_full_set['state_cases'].values[i]
-                                list_1.append(val_2)
-                        train_full_set['active'] = list_1                    
+                        try:
+                            list_1 = []
+                            for i in range(len(train_full_set)):
+                                if train_full_set['state'].values[i] == 'Massachusetts':
+                                    #print('This county is in Mass')
+                                    val_1 = train_full_set['active'].values[i]
+                                    val_2 = ((train_full_set['cases'].values[i])*val_1)/train_full_set['state_cases'].values[i]
+                                    list_1.append(val_2)
+                                elif train_full_set['state'].values[i] == 'New Jersey':
+                                    #print('This county is in NJ')
+                                    val_1 = train_full_set['active'].values[i]
+                                    val_2 = ((train_full_set['cases'].values[i])*val_1)/train_full_set['state_cases'].values[i]
+                                    list_1.append(val_2)
+                            train_full_set['active'] = list_1
+                        except:
+                            pass
                     
                     
                     full_times = [j for j in range(len(train_full_set))]

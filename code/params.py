@@ -21,21 +21,23 @@ USER = 'david'
 
 if USER == 'omar':
     df_path = 'C:\\Users\\omars\\Desktop\\covid19_georgia\\covid19_team2\data\\input\\07_08_2020_states_combined.csv'
+    default_path = os.getcwd()
 
 if USER == 'david':
-    df_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\07_22_2020_counties_combined_w_pct.csv"
+    df_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\07_22_2020_counties_combined.csv"
     default_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\"
     # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_05_2020_states_combined.csv'
     # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\07_16_2020_states_combined.csv'
 
 elif USER == 'lpgt':
     df_path = r'../data/input/06_15_2020_MA_only.csv'
+    default_path = os.getcwd()
 
 # %% Target and column names
 
 target_col = 'cases'
 date_col = 'date'
-region_col = 'state'
+region_col = 'fips'
 population = 'population'
 tests_col = 'people_tested'
 
@@ -44,8 +46,8 @@ tests_col = 'people_tested'
 random_state = 42
 retrain = False
 
-training_agg_cutoff = '2020-07-15'
-training_cutoff = '2020-08-01'
+training_agg_cutoff = '2020-05-15'
+training_cutoff = '2020-06-01'
 validation_cutoff = None
 
 regions_dict = {
@@ -58,9 +60,13 @@ unformatted_dates = [datetime.strftime(_, "%Y-%m-%d") for _ in date_range('2020-
 restriction_dict = {
     "fips":
         {
-            "state": ["Massachusetts", "New Jersey", "Connecticut", "New Hampshire",
-                      "Alabama",
-                      "Florida", "California"],
+            "state": [
+                      "Massachusetts",
+                      "New Jersey",
+                      "Connecticut", "New Hampshire",
+                      # "Alabama",
+                      "Florida", "California"
+                      ],
             "county": ["Queens", "New York", "Bronx"]
         },
     "state": None
@@ -148,8 +154,8 @@ mdp_params_dict = \
     {
         "days_avg": 3,
         "horizon": 8,
-        "n_iter": 200,
-        "n_folds_cv": 5,
+        "n_iter": 110,
+        "n_folds_cv": 4,
         "clustering_distance_threshold": 0.1,
         "splitting_threshold": 0.,
         "classification_algorithm": 'DecisionTreeClassifier',
@@ -158,7 +164,7 @@ mdp_params_dict = \
         "action_thresh": ([], 0),  # ([-250, 200], 1),
         "features_list": mdp_features_dict[region_col][target_col],
         "verbose": 1,
-        "n_jobs": 1,
+        "n_jobs": -1,
         "date_colname": date_col,
         "target_colname": target_col,
         "region_colname": region_col,
