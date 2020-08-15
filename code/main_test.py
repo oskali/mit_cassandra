@@ -14,6 +14,7 @@ from params import (load_sir, load_knn, load_mdp, load_agg, load_ci, sir_file,
 import warnings
 warnings.filterwarnings("ignore")
 import json
+import pickle
 import os
 
 #%% Load Models and Make Predictions
@@ -34,6 +35,9 @@ if load_mdp:
 if load_agg:
     agg = load_model(agg_file)
     output['agg'] = agg.predict(regions, dates, output)
+
+with open(os.path.join('output_predictions.pickle'), 'wb') as fp:
+    pickle.dump(output, fp)
 
 if load_ci:
     ci = load_model(ci_file)

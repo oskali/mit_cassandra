@@ -203,7 +203,10 @@ class SMLBenchMarkModel:
         predictions = (predictions+1).groupby(self.region_colname).cumprod().reset_index()
         dfs = []
         for group_name, group in predictions.groupby(self.region_colname):
-            dfs.append(group.set_index([self.region_colname, self.date_colname]) * self.last_target[group_name])
+            try:
+                dfs.append(group.set_index([self.region_colname, self.date_colname]) * self.last_target[group_name])
+            except KeyError:
+                pass
         predictions = pd.concat(dfs)
 
         # add target
