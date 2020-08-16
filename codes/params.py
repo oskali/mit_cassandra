@@ -8,18 +8,17 @@ Created on Sun Jun 28 21:21:18 2020
 
 from datetime import datetime
 import os
+from pandas import date_range
 
 #%% User and path
 
-USER = 'david'
-
-if USER == 'david':
-    # df_path = r'C:\Users\david\Desktop\MIT\Courses\Research internship\covid19_team2\data\input\06_15_2020_states_combined.csv'
-    # df_path = r'C:\Users\david\Desktop\MIT\Courses\Research internship\covid19_team2\data\input\06_15_2020_states_combined_nom_n_pct.csv'
-    df_path = r'C:\Users\david\Desktop\MIT\Courses\Research internship\covid19_team2\data\input\07_08_2020_states_combined_w_pct.csv'
-    # df_path = r'C:\Users\david\Desktop\MIT\Courses\Research internship\covid19_team2\data\input\05_27_states_combined_v2_w_trend.csv'
-    # df_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\07_11_2020_counties_combined_NYNJMA.csv"
-    # df_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\07_16_2020_states_combined_w_pct.csv"
+# df_path = r'C:\Users\david\Desktop\MIT\Courses\Research internship\covid19_team2\data\input\06_15_2020_states_combined.csv'
+# df_path = r'C:\Users\david\Desktop\MIT\Courses\Research internship\covid19_team2\data\input\06_15_2020_states_combined_nom_n_pct.csv'
+# df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\07_16_2020_states_combined_w_pct.csv'
+# df_path = r'C:\Users\david\Desktop\MIT\Courses\Research internship\covid19_team2\data\input\05_27_states_combined_v2_w_trend.csv'
+# df_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\07_11_2020_counties_combined_NYNJMA.csv"
+# df_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\07_16_2020_states_combined_w_pct.csv"
+df_path = None
 
 #%% Target and column names
 
@@ -27,103 +26,91 @@ target_col = 'cases'
 date_col = 'date'
 region_col = 'state'
 population = 'population'
-nmin = 100
+nmin = {"fips": 100, "state": 100}
+tests_col = 'people_tested'
 
 #%% Run Parameters
 
 random_state = 42
-training_cutoff = '2020-07-01'
-validation_cutoff = '2020-07-15'
+training_agg_cutoff = '2020-05-15'
+training_cutoff = '2020-06-01'
+validation_cutoff = None
+
 regions_dict = {
-    "fips": [9013, 36061],
+    "fips": [25017, 34023],
     "state": ['New York', 'Massachusetts'],
 }
 regions = regions_dict[region_col]  # regions to predict  #
-unformatted_dates = ['2020-07-18', '2020-08-15']  # dates to predict  #
+unformatted_dates = [datetime.strftime(_, "%Y-%m-%d") for _ in date_range('2020-08-02', '2020-12-15', freq="1D")]  # dates to predict  #
+
+restriction_dict = {
+    "fips":
+        {
+            "state": ["Massachusetts", "New Jersey", "Connecticut", "New Hampshire",
+                      # "Alabama",
+                      "Florida", "California"],
+            "county": ["Queens", "New York", "Bronx"]
+        },
+    "state": None
+}
 
 #%% Load and Save Parameters
 
-train_knn = False
-train_mdp = False
-train_mdp_gs = True
-train_sir = False
-load_knn = False
+train_mdp = True
+train_mdp_gs = False
 load_mdp = True
-load_sir = False
-sir_file = 'sir.pickle'
-knn_file = 'knn.pickle'
 
-EXPERIMENT_NAME = '12 - 20200724 TEST ERROR COMPUTATION EXPONENTIAL TESTING'
+EXPERIMENT_NAME = '16 - 20200810 TEST ERROR COMPUTATION EXPONENTIAL TESTING'
+default_path = r"C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data"
 
-
-mdp_file = os.path.join(r"C:\Users\david\Desktop\MIT\Courses\Research internship\results",
+mdp_file = lambda mode, folder : os.path.join(r"C:\Users\david\Desktop\MIT\Courses\Research internship\results",
                         EXPERIMENT_NAME,
-                        "MDPs_with_actions",
-                        "mdp_cases_w_act.pickle")
+                        "MDPs_without_actions",
+                        mode,
+                        folder,
+                        "mdp_{}_{}_{}.pickle".format(training_cutoff.replace("-", ""), target_col, region_col))
 
 mdp_gs_savepath = os.path.join(r"C:\Users\david\Desktop\MIT\Courses\Research internship\results",
                                EXPERIMENT_NAME)  # experiment name
 
 mdp_gs_file = os.path.join(mdp_gs_savepath, 'mdp_gs.pickle')
 
+# %% Parameters MDP
 
-#%% Parameters SIR
-
-sir_params_dict = \
-    {
-        "nmin": 120,
-        "optimizer": 'Nelder-Mead',
-        "initial_param": [0.4, 0.06],
-        "nmin_train_set": 10
-    }
-#%% Parameters KNN
-
-knn_params_dict = \
-    {
-        "deterministic": True,
-}
-
-
-#%% Parameters MDP
-
-mdp_exception = {
+region_exceptions = {
     "state":
         ['Guam', 'Northern Mariana Islands',
          'Puerto Rico', 'Diamond Princess',
          'Grand Princess', 'American Samoa', 'Virgin Islands'],
     "fips":
-        None}
-
+        []}
 
 mdp_features_dict = \
     {
-        "state":
-            {
-                "deaths": ["cases_pct2", "cases_pct5"],  # ["mobility_score_trend", "cases_pct3", "cases_pct5"],
-                "cases": ["cases_pct2", "cases_pct5"],
-            },
-        "fips":
-            {
-                "deaths": [],
-                "cases": []
-            }
-
+        'state':
+            {"deaths": ["cases_pct3", "cases_pct5"],
+             "cases": ["cases_pct3", "cases_pct5"]},
+        'fips':
+            {"deaths": [],
+             "cases": []}
     }
 
 mdp_params_dict = \
     {
         "days_avg": 3,
         "horizon": 8,
+        "test_horizon": 15,
         "error_computing": "exponential",
+        "error_function_name": "sym_abs_relative",
         "alpha": 2e-3,
-        "n_iter": 140,
-        "n_folds_cv": 6,
-        "clustering_distance_threshold": 0.1,
+        "n_iter": 50,
+        "n_folds_cv": 3,
+        "clustering_distance_threshold": 0.06,
         "splitting_threshold": 0.,
         "classification_algorithm": "RandomForestClassifier",
         "clustering_algorithm": 'Agglomerative',
         "n_clusters": None,
-        "action_thresh": ([-250, 200], 1),
+        "action_thresh": ([], 0),  # ([-250, 200], 1),
         "features_list": mdp_features_dict[region_col][target_col],
         "verbose": 1,
         "n_jobs": 3,
@@ -134,8 +121,7 @@ mdp_params_dict = \
         "keep_first": True,  # True,
         "save": True,
         "plot": True,
-        "savepath": os.path.dirname(mdp_file),
-        "region_exceptions": mdp_exception[region_col]
+        "savepath": os.path.dirname(mdp_file("", ""))
     }
 
 

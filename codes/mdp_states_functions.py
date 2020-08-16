@@ -30,7 +30,7 @@ from codes.mdp_utils import fit_cv_fold, fit_eval_params
 # days_avg the number of days used to compress datapoints, and returns a data frame with
 # desired features and history, ratio values and history, and 'RISK' and 'ACTION'
 # returns new dataframe with only the desired columns, number of features considered
-def createSamples(df,#, # dataframe: original full dataframe
+def createSamples(df,  # dataframe: original full dataframe
                   # new_cols, # str list: names of columns to be considered
                   target_colname,  # str: col name of target_colname (i.e. 'deaths')
                   region_colname,  # str, col name of region (i.e. 'state')
@@ -41,6 +41,9 @@ def createSamples(df,#, # dataframe: original full dataframe
                   days_avg,  # int: # of days to average when reporting death
                   region_exceptions=None):
 
+    actions = [0]
+
+    df = df.copy()
     df.sort_values(by=[region_colname, date_colname], inplace=True)
     df.rename(columns={date_colname: 'TIME'}, inplace=True)
 
@@ -75,8 +78,11 @@ def createSamples(df,#, # dataframe: original full dataframe
             print("Missing dates: {} {} - {} missing rows".format(region_colname,
                                                                   region_name,
                                                                   group_.shape[0] - group_region.shape[0]))
-        else:
-            dfs.append(group_)
+
+            last_missing_date = group_[group_["ID"].isnull()].tail(1).index[0]
+            print("last missing date: {}".format(str(last_missing_date)))
+            group_ = group_[group_.index > last_missing_date].copy()
+        dfs.append(group_)
 
     df_new = pd.concat(dfs)
     # print(df_new)
@@ -95,7 +101,7 @@ def createSamples(df,#, # dataframe: original full dataframe
     g = df_new.groupby(['ID'])
     cols = df_new.columns
     # print('cols', cols)
-    dictio = {i:'last' for i in cols}
+    dictio = {i: 'last' for i in cols}
     for key in set([target_colname]+features_list):
         dictio[key] = 'mean'
     # dictio['StringencyChange'] = 'sum'
@@ -126,20 +132,19 @@ def createSamples(df,#, # dataframe: original full dataframe
 
     # Here we assign initial clustering by r_t
     df_new['RISK'] = np.log(df_new['r_t'])
+    df_new['RISK_NEXT'] = df_new.groupby("ID")["RISK"].shift(-1).values
+
+    pfeatures = len(features_list) * 3 + 3 * (target_colname not in features_list)
 
     # create action
     if len(action_thresh) == 0:
         df_new['ACTION'] = 0
-        pfeatures = len(df_new.columns)-5
     else:
         action_thresh = [-1e20] + action_thresh + [1e20]
         actions = list(range(-no_action_id, len(action_thresh)-1-no_action_id)) #[0, 1] #[0, 5000, 100000]
         df_new[features_list[0]+'_change'] = df_new[features_list[0]+'-1']-\
             df_new[features_list[0]+'-2']
         df_new['ACTION'] = pd.cut(df_new[features_list[0]+'_change'], bins=action_thresh, right=False, labels=actions)
-
-        # set the no action to 0
-        pfeatures = len(df_new.columns)-6
 
     # df_new = df_new[df_new['r_t'] != 0]
     df_new = df_new.reset_index()
@@ -148,7 +153,6 @@ def createSamples(df,#, # dataframe: original full dataframe
     if target_colname not in features_list:
         df_new = df_new.loc[:, [c for c in df_new if c not in [region_colname, target_colname]]
            + [region_colname] + [target_colname]]
-        pfeatures -= 1
     else:
         df_new = df_new[[c for c in df_new if c not in [region_colname]]
            + [region_colname]]
@@ -156,7 +160,7 @@ def createSamples(df,#, # dataframe: original full dataframe
     # Drop all rows with empty cells
     # df_new.dropna(inplace=True)
 
-    return df_new, pfeatures
+    return df_new, pfeatures, actions
 
 
 # split_train_test_by_id() takes in a dataframe of all the data,
@@ -173,6 +177,7 @@ def split_train_test_by_id(data, # dataframe: all the data
     in_test_set = ids.apply(lambda id_: test_set_check(id_, test_ratio))
     return data.loc[~in_test_set], data.loc[in_test_set]
 
+
 # (MDP functions)
 # Fitting function used for the MDP fitting
 # this function realize the split according to the mode,
@@ -185,8 +190,11 @@ def fit_cv(df,
            classification,
            n_iter,
            n_clusters,
+           actions,
            horizon=5,
+           test_horizon=5,
            error_computing="horizon",
+           error_function_name="relative",
            alpha=1e-5,
            OutputFlag=0,
            cv=3,
@@ -230,11 +238,14 @@ def fit_cv(df,
                                                                    n_clusters=n_clusters,
                                                                    clustering_distance_threshold=clustering_distance_threshold,
                                                                    pfeatures=pfeatures,
+                                                                   actions=actions,
                                                                    splitting_threshold=splitting_threshold,
                                                                    classification=classification,
                                                                    n_iter=n_iter,
                                                                    horizon=horizon,
+                                                                   test_horizon=test_horizon,
                                                                    error_computing=error_computing,
+                                                                   error_function_name=error_function_name,
                                                                    alpha=alpha,
                                                                    n=n,
                                                                    OutputFlag=OutputFlag,
@@ -264,11 +275,14 @@ def fit_cv(df,
                                    n_clusters=n_clusters,
                                    clustering_distance_threshold=clustering_distance_threshold,
                                    pfeatures=pfeatures,
+                                   actions=actions,
                                    splitting_threshold=splitting_threshold,
                                    classification=classification,
                                    n_iter=n_iter,
                                    horizon=horizon,
+                                   test_horizon=test_horizon,
                                    error_computing=error_computing,
+                                   error_function_name=error_function_name,
                                    alpha=alpha,
                                    n=n,
                                    OutputFlag=OutputFlag,
@@ -317,7 +331,10 @@ def fit_cv(df,
         ax1.set_title('Mean CV Error and Accuracy During Splitting')
         ax1.legend()
         if save:
-            plt.savefig(os.path.join(savepath, "plot_mean.PNG"))
+            try:
+                plt.savefig(os.path.join(savepath, "plot_mean.PNG"))
+            except FileNotFoundError:
+                pass
         if OutputFlag >= 2:
             plt.show(block=False)
         else:

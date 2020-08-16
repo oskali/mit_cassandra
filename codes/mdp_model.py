@@ -26,6 +26,7 @@ class MDPModel:
     def __init__(self,
                  days_avg=None,
                  horizon=5,
+                 test_horizon=5,
                  n_iter=40,
                  n_folds_cv=5,
                  clustering_distance_threshold=0.05,
@@ -33,6 +34,7 @@ class MDPModel:
                  classification_algorithm='DecisionTreeClassifier',
                  clustering_algorithm='Agglomerative',
                  error_computing="horizon",
+                 error_function_name="relative",
                  alpha=1e-5,
                  n_clusters=None,
                  action_thresh=([], 0),
@@ -51,7 +53,8 @@ class MDPModel:
 
         # Model dependent input attributes
         self.days_avg = days_avg  # number of days to average and compress datapoints
-        self.horizon = horizon  # size of the validation set by region in terms of the number of forward observations
+        self.horizon = horizon  # size of the train set by region in terms of the number of forward observations
+        self.test_horizon = test_horizon  # size of the test set by region in terms of the number of forward observations
         self.n_iter = n_iter  # number of iterations in the training set
         self.n_folds_cv = n_folds_cv  # number of folds for the cross validation
         self.clustering_distance_threshold = clustering_distance_threshold  # clustering diameter for Agglomerative clustering
@@ -62,6 +65,7 @@ class MDPModel:
         #                                       # horizon : compute error on the h last dates,
         #                                       # exponential : compute an exponential waited average other the whole training set
         #                                       # uniform : compute the error uniformly over the training period
+        self.error_function_name = error_function_name  # [DEV : TO COMMENT]
         self.alpha = alpha  # if computing error is exponential, it define the rate of decay
         self.n_clusters = n_clusters  # number of clusters for KMeans
         self.action_thresh = action_thresh  # ([list of action threshold], default action)  # ex : ([-0.5, 0.5], 1) --> ACTION=[-1, 0, 1]
@@ -93,14 +97,18 @@ class MDPModel:
         self.df_trained = None  # dataframe after optimal training
         self.df_trained_first = None  # dataframe containing the initial clusters (updated if keep_first = True)
         self.pfeatures = None  # number of features
+        self.actions = None
 
+    # ["to update DEV"]
     # create an independent copy of the MDP object
     def __copy__(self):
 
         other = MDPModel(
             days_avg=self.days_avg,
             horizon=self.horizon,
+            test_horizon=self.test_horizon,
             error_computing=self.error_computing,
+            error_function_name=self.error_function_name,  # [DEV : TO COMMENT]
             alpha=self.alpha,
             n_iter=self.n_iter,
             n_folds_cv=self.n_folds_cv,
@@ -141,6 +149,7 @@ class MDPModel:
             other.df_trained_first = None
 
         other.pfeatures = self.pfeatures
+        other.actions = self.actions
 
         return other
 
@@ -166,13 +175,14 @@ class MDPModel:
 
     # provide a condensed representation of the MDP as a string
     def __str__(self):
-        return "mdp__target_{}__h{}__davg{}__cdt_{}pct__n_iter{}__ClAlg_{}__err{}".format(self.target_colname,
-                                                                                          self.horizon,
-                                                                                          self.days_avg,
-                                                                                          int(self.clustering_distance_threshold * 100),
-                                                                                          self.n_iter,
-                                                                                          self.classification_algorithm,
-                                                                                          self.error_computing)
+        return "mdp__target_{}__h{}__davg{}__cdt_{}pct__n_iter{}__ClAlg_{}__err{}_cv{}_nbfs{}".format(self.target_colname,
+                                                                                                      self.horizon,
+                                                                                                      self.days_avg,
+                                                                                                      int(self.clustering_distance_threshold * 100),
+                                                                                                      self.n_iter,
+                                                                                          self.classification_algorithm[:5],
+                                                                                          self.error_computing[:5],
+                                                                                                self.n_folds_cv, len(self.features_list))
 
     # Fitting method to learn from the data
     # data should be a pandas.DataFrame object containing the provided columns
@@ -194,7 +204,7 @@ class MDPModel:
         if self.save:
             try:
                 assert os.path.exists(os.path.join(self.savepath, mode, str(self)))
-            except AssertionError:
+            except AssertionError or FileNotFoundError:
                 os.makedirs(os.path.join(self.savepath, mode, str(self)))
 
         # assert if the training mode is available
@@ -212,16 +222,17 @@ class MDPModel:
             data = pd.read_csv(data)
 
         # creates samples from DataFrame
-        df, pfeatures = createSamples(data.copy(),
-                                      target_colname=self.target_colname,
-                                      region_colname=self.region_colname,
-                                      date_colname=self.date_colname,
-                                      features_list=self.features_list,
-                                      action_thresh_base=self.action_thresh,
-                                      days_avg=self.days_avg,
-                                      region_exceptions=self.region_exceptions)
+        df, pfeatures, actions = createSamples(data.copy(),
+                                               target_colname=self.target_colname,
+                                               region_colname=self.region_colname,
+                                               date_colname=self.date_colname,
+                                               features_list=self.features_list,
+                                               action_thresh_base=self.action_thresh,
+                                               days_avg=self.days_avg,
+                                               region_exceptions=self.region_exceptions)
 
         self.pfeatures = pfeatures
+        self.actions = actions
 
         # run cross validation on the data to find best clusters
         cv_training_error, cv_testing_error = fit_cv(df.copy(),
@@ -232,8 +243,11 @@ class MDPModel:
                                                      classification=self.classification_algorithm,
                                                      n_iter=self.n_iter,
                                                      n_clusters=self.n_clusters,
+                                                     actions=self.actions,
                                                      horizon=self.horizon,
+                                                     test_horizon=self.test_horizon,
                                                      error_computing=self.error_computing,
+                                                     error_function_name=self.error_function_name,
                                                      alpha=self.alpha,
                                                      OutputFlag=self.verbose,
                                                      cv=self.n_folds_cv,
@@ -269,7 +283,9 @@ class MDPModel:
                                    error_computing=self.error_computing,
                                    horizon=self.horizon,
                                    alpha=self.alpha,
-                                   random_state=self.random_state)
+                                   actions=self.actions,
+                                   random_state=self.random_state,
+                                   verbose=self.verbose)
 
         splitter_df.initializeClusters()
 
@@ -282,13 +298,10 @@ class MDPModel:
         df_trained, training_error, testing_error = splitter(splitter_df,
                                                              pfeatures=pfeatures,
                                                              th=self.splitting_threshold,
-                                                             df_test=None,
+                                                             test_splitter_dataframe=None,
                                                              testing=False,
                                                              classification=self.classification_algorithm,
                                                              it=k,
-                                                             h=self.horizon,
-                                                             error_computing=self.error_computing,
-                                                             alpha=self.alpha,
                                                              OutputFlag=self.verbose,
                                                              random_state=self.random_state,
                                                              plot=self.plot,
@@ -576,6 +589,7 @@ if __name__ == "__main__":
             date_colname=mdp_date_colname,  # str, col name of time (i.e. 'date')
             features_list=mdp_features_list,  # list of strs: feature columns
             horizon=6,
+            error_function_name="relative",
             error_computing="exponential",
             alpha=1e-5,
             n_iter=n_iter_mdp,
