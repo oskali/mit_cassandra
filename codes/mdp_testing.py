@@ -26,6 +26,7 @@ from datetime import datetime
 from datetime import timedelta
 import math
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import GridSearchCV
 from itertools import product
@@ -63,10 +64,11 @@ def predict_cluster(df_new,  # dataframe: trained clusters
     y = df_new['CLUSTER']
 
     params = {
-        'max_depth': [3, 4, 6, 10, None]
+        'max_depth': [3, 4, 6, 10, 50, None]
     }
 
     m = DecisionTreeClassifier()
+    # m = RandomForestClassifier()
 
     m = GridSearchCV(m, params, cv=cv, iid=True)  # will return warning if 'idd' param not set to true
 
@@ -153,15 +155,29 @@ def complete_P_df(df, P_df, actions, pfeatures, OutputFlag=0):
 
 # get_MDP() takes in a clustered dataframe df_new, and returns dataframes
 # P_df and R_df that represent the parameters of the estimated MDP
-def get_MDP(df_new, actions, pfeatures, n_cluster, complete=False, OutputFlag=0):
+def get_MDP(df_new, actions, pfeatures, n_cluster, complete=True, OutputFlag=0):
     # removing None values when counting where clusters go
     # df0 = df_new[df_new['NEXT_CLUSTER'] != 'None']
-    transition_df = df_new.dropna(subset=['NEXT_CLUSTER']).groupby(['CLUSTER', 'ACTION', 'NEXT_CLUSTER'])[
-        'RISK'].count()
+    try:
+        # Robust transition cluster : best worst case error (existing cluster)
+        transition_df = df_new[~(df_new["CLUSTER"] == (n_cluster-1))].dropna(subset=['NEXT_CLUSTER']).groupby(['CLUSTER', 'ACTION', 'NEXT_CLUSTER'])[
+        'EST_H_ERROR'].max().groupby(['CLUSTER', 'ACTION']).idxmin()
 
-    # next cluster given how most datapoints transition for the given action
-    transition_df = transition_df.groupby(['CLUSTER', 'ACTION']).idxmax()
+        # Max next cluster appearance (new cluster)
+        transition_df_ = df_new[(df_new["CLUSTER"] == (n_cluster-1))].dropna(subset=['NEXT_CLUSTER']).groupby(['CLUSTER', 'ACTION', 'NEXT_CLUSTER'])[
+            'RISK'].count().groupby(['CLUSTER', 'ACTION']).idxmax()
+
+        transition_df = pd.concat([transition_df, transition_df_]).copy()
+        transition_df.name = "RISK"
+
+    except KeyError:
+        # next cluster given how most datapoints transition for the given action
+        transition_df = df_new.dropna(subset=['NEXT_CLUSTER']).groupby(['CLUSTER', 'ACTION', 'NEXT_CLUSTER'])[
+            'RISK'].count()
+        transition_df = transition_df.groupby(['CLUSTER', 'ACTION']).idxmax()
+
     transition_df = transition_df.dropna()
+
     # P_df = pd.DataFrame()
     P_df = pd.DataFrame(index=pd.MultiIndex.from_tuples(product(range(n_cluster), actions),
                                                         names=['CLUSTER', 'ACTION']))
@@ -171,6 +187,8 @@ def get_MDP(df_new, actions, pfeatures, n_cluster, complete=False, OutputFlag=0)
     P_df.columns = ['TRANSITION_CLUSTER']
     # P_df['NEXT_CLUSTER'] = P_df.apply(lambda x: complete_p_df(x, P_df), axis=1,)
     R_df = pd.DataFrame(index=pd.Index(range(n_cluster), name="CLUSTER"))
+
+    # DEBUD mean --> min (conservative predictions)
     R_df = R_df.join(df_new.groupby('CLUSTER')['RISK'].mean())
     R_df.columns = ['EST_RISK']
 
@@ -205,9 +223,10 @@ def get_MDP(df_new, actions, pfeatures, n_cluster, complete=False, OutputFlag=0)
 # Auxiliary function for deployment
 # predict_region_date() takes a given state and a date and returns the predicted target_colname
 def predict_region_date(mdp,  # MDP_model object
-                        region_last_date,
-                        # tuple (region, first_date, last_date), e.g (Alabama, Timestamp('2020-03-24 00:00:00'), Timestamp('2020-06-22 00:00:00'))
+                        region_last_date,  # tuple (region, last_date), e.g (Alabama, Timestamp('2020-03-24 00:00:00'), Timestamp('2020-06-22 00:00:00'))
                         date,  # target_colname date for prediciton, e.g. (Timestamp('2020-05-24 00:00:00'))
+                        model_key="k_opt",
+                        from_first=False,
                         verbose=0):
     region, last_date = region_last_date
     try:
@@ -219,7 +238,7 @@ def predict_region_date(mdp,  # MDP_model object
     try:
         assert date >= last_date
         n_days = (date - last_date).days
-        return np.ceil(mdp.predict_region_ndays(region, n_days))
+        return np.ceil(mdp.predict_region_ndays(region, n_days, from_first=from_first, model_key=model_key))
     except AssertionError:
         if verbose >= 1:
             print(

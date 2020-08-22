@@ -15,12 +15,11 @@ from itertools import product
 import operator
 
 from codes.mdp_states_functions import createSamples, fit_cv, fit_eval
-from codes.mdp_utils import MDP_Splitter, splitter
-from codes.mdp_testing import predict_cluster, get_MDP, predict_region_date, \
+from codes.mdp_utils import MDP_Splitter, splitter, MDPPredictorError
+from codes.mdp_testing import predict_region_date, \
         MDPPredictionError, MDPTrainingError
 
 #%% Model
-
 
 class MDPModel:
     def __init__(self,
@@ -98,8 +97,8 @@ class MDPModel:
         self.df_trained_first = None  # dataframe containing the initial clusters (updated if keep_first = True)
         self.pfeatures = None  # number of features
         self.actions = None
+        self.splitter_dict = {}
 
-    # ["to update DEV"]
     # create an independent copy of the MDP object
     def __copy__(self):
 
@@ -204,7 +203,7 @@ class MDPModel:
         if self.save:
             try:
                 assert os.path.exists(os.path.join(self.savepath, mode, str(self)))
-            except AssertionError or FileNotFoundError:
+            except:
                 os.makedirs(os.path.join(self.savepath, mode, str(self)))
 
         # assert if the training mode is available
@@ -235,29 +234,33 @@ class MDPModel:
         self.actions = actions
 
         # run cross validation on the data to find best clusters
-        cv_training_error, cv_testing_error = fit_cv(df.copy(),
-                                                     pfeatures=self.pfeatures,
-                                                     splitting_threshold=self.splitting_threshold,
-                                                     clustering=self.clustering_algorithm,
-                                                     clustering_distance_threshold=self.clustering_distance_threshold,
-                                                     classification=self.classification_algorithm,
-                                                     n_iter=self.n_iter,
-                                                     n_clusters=self.n_clusters,
-                                                     actions=self.actions,
-                                                     horizon=self.horizon,
-                                                     test_horizon=self.test_horizon,
-                                                     error_computing=self.error_computing,
-                                                     error_function_name=self.error_function_name,
-                                                     alpha=self.alpha,
-                                                     OutputFlag=self.verbose,
-                                                     cv=self.n_folds_cv,
-                                                     random_state=self.random_state,
-                                                     n_jobs=self.n_jobs,
-                                                     mode=mode,
-                                                     plot=self.plot,
-                                                     save=self.save,
-                                                     savepath=os.path.join(self.savepath, mode, str(self))
-                                                     )
+        cv_training_error, cv_testing_error, trained_splitter_list = fit_cv(df.copy(),
+                                                                            pfeatures=self.pfeatures,
+                                                                            splitting_threshold=self.splitting_threshold,
+                                                                            clustering=self.clustering_algorithm,
+                                                                            clustering_distance_threshold=self.clustering_distance_threshold,
+                                                                            classification=self.classification_algorithm,
+                                                                            n_iter=self.n_iter,
+                                                                            n_clusters=self.n_clusters,
+                                                                            actions=self.actions,
+                                                                            horizon=self.horizon,
+                                                                            test_horizon=self.test_horizon,
+                                                                            error_computing=self.error_computing,
+                                                                            error_function_name=self.error_function_name,
+                                                                            alpha=self.alpha,
+                                                                            OutputFlag=self.verbose,
+                                                                            cv=self.n_folds_cv,
+                                                                            random_state=self.random_state,
+                                                                            n_jobs=self.n_jobs,
+                                                                            mode=mode,
+                                                                            plot=self.plot,
+                                                                            save=self.save,
+                                                                            savepath=os.path.join(self.savepath, mode, str(self))
+                                                                            )
+
+        # save the predictor models
+        for idx, trained_splitter in enumerate(trained_splitter_list):
+            self.splitter_dict[idx] = trained_splitter
 
         # find the best cluster
         try:
@@ -295,27 +298,29 @@ class MDPModel:
         #################################################################
         # Run Iterative Learning Algorithm
 
-        df_trained, training_error, testing_error = splitter(splitter_df,
-                                                             pfeatures=pfeatures,
-                                                             th=self.splitting_threshold,
-                                                             test_splitter_dataframe=None,
-                                                             testing=False,
-                                                             classification=self.classification_algorithm,
-                                                             it=k,
-                                                             OutputFlag=self.verbose,
-                                                             random_state=self.random_state,
-                                                             plot=self.plot,
-                                                             save=self.save,
-                                                             savepath=os.path.join(self.savepath, mode, str(self),  "plot_final.PNG")
-                                                             )
+        trained_splitter_df = splitter(splitter_df,
+                                       pfeatures=pfeatures,
+                                       th=self.splitting_threshold,
+                                       test_splitter_dataframe=None,
+                                       testing=False,
+                                       classification=self.classification_algorithm,
+                                       it=k,
+                                       OutputFlag=self.verbose,
+                                       random_state=self.random_state,
+                                       plot=self.plot,
+                                       save=self.save,
+                                       savepath=os.path.join(self.savepath, mode, str(self),  "plot_final.PNG")
+                                       )
+
+        self.splitter_dict["k_opt"] = trained_splitter_df
 
         # storing trained dataset and predict_cluster function
-        self.df_trained = df_trained
-        self.classifier = splitter_df.model
+        self.df_trained = df
+        # self.classifier = splitter_df.model
 
         # store P_df and R_df values
-        self.P_df = splitter_df.P_df
-        self.R_df = splitter_df.R_df
+        # self.P_df = splitter_df.P_df
+        # self.R_df = splitter_df.R_df
 
         # store the initial clusters
         if self.keep_first:
@@ -330,45 +335,80 @@ class MDPModel:
     def predict_region_ndays(self,
                              region,  # str: i.e. US state for prediction to be made
                              n_days,
-                             from_first=False):  # int: time horizon (number of days) for prediction
+                             model_key="k_opt",
+                             from_first=False
+                             ):  # int: time horizon (number of days) for prediction
         # preferably a multiple of days_avg (default 3)
-        h = int(np.round(n_days/self.days_avg))
-        delta = n_days - self.days_avg*h
+        if not (model_key in {"median", "best_r2", "best_err"}):
+            h = int(np.floor(n_days/self.days_avg))
+            delta = n_days - self.days_avg*h
+            try:
+                mdp_predictor = self.splitter_dict[model_key]
+            except KeyError:
+                print("MDPPredictionError: the model key doesn't exist")
+                raise MDPPredictionError
 
-        # start from the initial dates
-        if from_first:
-            df_clusters = self.df_trained_first
-        # start from the last available dates
-        else:
-            df_clusters = self.df_trained
+            # start from the initial dates
+            if from_first:
+                df_clusters = self.df_trained_first
+            # start from the last available dates
+            else:
+                df_clusters = self.df_trained
 
-        # get initial cases for the state at the latest datapoint
-        target = df_clusters.loc[region, self.target_colname]
-        date = df_clusters.loc[region, "TIME"]
+            # get initial cases for the state at the latest datapoint
+            target = df_clusters.loc[region, self.target_colname]
+            date = df_clusters.loc[region, "TIME"]
 
-        if self.verbose >= 2:
-            print('current date:', date, '| current %s:'%self.target_colname, target)
+            if self.verbose >= 2:
+                print('current date:', date, '| current %s:'%self.target_colname, target)
 
-        # cluster the this last point
-        s = df_clusters.loc[region, "CLUSTER"]
-        if self.verbose >= 2:
-            print('predicted initial cluster', s)
+            # cluster the this last point
+            s = mdp_predictor.classifier.predict(df_clusters.loc[[region], mdp_predictor.columns])[0]
+            if self.verbose >= 2:
+                print('predicted initial cluster', s)
 
-        r = 1
-        clusters_seq = [s]
-        # run for horizon h, multiply out the ratios
-        for i in range(h):
-            r = r*np.exp(self.R_df.loc[s])
-            s = self.P_df.loc[s, 0].values[0]
-            clusters_seq.append(s)
+            r = 1.
+            clusters_seq = [s]
+            # run for horizon h, multiply out the ratios
+            for i in range(h):
+                r = r*np.exp(mdp_predictor.R_df.loc[s])
+                s = mdp_predictor.P_df.loc[s, 0].values[0]
+                clusters_seq.append(s)
 
-        if self.verbose >= 2:
-            print('Sequence of clusters:', clusters_seq)
-        pred = target*r*(np.exp(self.R_df.loc[s])**(delta/3))
+            if self.verbose >= 2:
+                print('Sequence of clusters:', clusters_seq)
+            pred = target*r*(np.exp(mdp_predictor.R_df.loc[s])**(delta/3.))
 
-        if self.verbose >= 2:
-            print('Prediction for date:', date + timedelta(n_days), '| target:', pred)
-        return pred
+            if self.verbose >= 2:
+                print('Prediction for date:', date + timedelta(n_days), '| target:', pred)
+            return pred
+
+        # averaged prediction
+        elif model_key == "median":
+            preds = []
+            for model_key_ in self.splitter_dict.keys():
+                if model_key_ != "k_opt":
+                    preds.append(self.predict_region_ndays(
+                        region,
+                        n_days,
+                        model_key=model_key_,
+                        from_first=from_first
+                    ))
+            return np.median(preds)
+
+        # best r2 score
+        elif model_key == "best_r2":
+            r2_model_dict = {key: (mdp_pred.R2_test[-1]+mdp_pred.R2_train[-1])/2 for key, mdp_pred in self.splitter_dict.items() if key != "k_opt"}
+            best_key = max(r2_model_dict.items(), key=operator.itemgetter(1))[0]
+
+            return self.predict_region_ndays(region, n_days, model_key=best_key, from_first=from_first)
+
+        # best r2 score
+        elif model_key == "best_err":
+            r2_model_dict = {key: mdp_pred.testing_error[-1] for key, mdp_pred in self.splitter_dict.items()}
+            best_key = min(r2_model_dict.items(), key=operator.itemgetter(1))[0]
+
+            return self.predict_region_ndays(region, n_days, model_key=best_key, from_first=from_first)
 
     # predict_all() takes a time horizon, and returns the predicted number of
     # cases after h steps from the most recent datapoint for all states
@@ -386,6 +426,7 @@ class MDPModel:
     def predict(self,
                 regions,  # list of states to predict the target
                 dates,  # list of dates to predict the target
+                model_key="k_opt",
                 from_first=False):
 
         # instantiate the prediction dataframe
@@ -414,8 +455,8 @@ class MDPModel:
             # predict from each dates
             for date in dates:
                 try:
-                    pred = predict_region_date(self, (region, last_date), date, verbose=self.verbose)
-                    pred_df = pred_df.append({self.region_colname: region, "TIME": date, self.target_colname: pred}, ignore_index=True)
+                    pred = predict_region_date(self, (region, last_date), date, model_key=model_key, from_first=from_first, verbose=self.verbose)
+                    pred_df = pred_df.append({self.region_colname: region, "TIME": date, self.target_colname: pred[0]}, ignore_index=True)
                 except MDPPredictionError:
                     pass
         pred_df.rename(columns={'TIME': self.date_colname}, inplace=True)

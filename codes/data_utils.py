@@ -12,15 +12,15 @@ from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
 from codes.params import (target_col, date_col, region_col, training_cutoff,
-                         df_path, default_path, nmin, restriction_dict, region_exceptions)
+                         df_path, default_path, nmin, restriction_dict, region_exceptions_dict)
 import os
 import warnings
 warnings.filterwarnings("ignore")
 
 #%% Helper Functions
 
-def save_model(model,
-               filename):
+def save_model(model, filename):
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
     file_pi = open(filename, 'wb')
     pickle.dump(model, file_pi)
 
@@ -36,7 +36,7 @@ def load_data(file=df_path,
               validation_cutoff=None,
               nmin=nmin,
               restriction_dict=restriction_dict[region_col],
-              region_exceptions=region_exceptions[region_col],
+              region_exceptions=region_exceptions_dict[region_col],
               default_path=default_path):
     if file is None:
         df = get_public_data(default_path)
@@ -65,11 +65,18 @@ def load_data(file=df_path,
     df = df[df[target] >= nmin[region]]
 
     df.sort_values(by=[region, date], inplace=True)
-    df["cases_nom"] = df["cases"] / df["population"]
-    df["deaths_nom"] = df["deaths"] / df["population"]
+    try:
+        df["cases_nom"] = df["cases"] / df["population"]
+        df["deaths_nom"] = df["deaths"] / df["population"]
+    except KeyError:
+        pass
     df["cases_pct3"] = df.groupby(region)["cases"].pct_change(3).values
     df["cases_pct5"] = df.groupby(region)["cases"].pct_change(5).values
-    df[date] = df[date].apply(lambda x: datetime.strptime(x, '%Y-%m-%d'))
+    df["cases_pct10"] = df.groupby(region)["cases"].pct_change(10).values
+    try:
+        df[date] = df[date].apply(lambda x: datetime.strptime(x, '%Y-%m-%d'))
+    except:
+        df[date] = df[date].apply(lambda x: datetime.strptime(x, '%m/%d/%Y'))
     df = df.sort_values(by=[region, date])
     df_train = df[df[date] <= training_cutoff]
     print("Training set contains {} {}.".format(df[region].nunique(), region))
@@ -144,7 +151,7 @@ def get_public_data(path=df_path):
     daily_df.drop(['Country_Region', 'Last_Update', 'Lat', 'Long_', 'UID', 'ISO3'], axis=1, inplace=True)
     daily_df.columns = daily_df.columns.str.replace(
         'Province_State', 'state').str.replace(
-        'Confirmed','cases').str.replace(
+        'Confirmed', 'cases').str.replace(
         'Deaths', 'deaths')
     daily_df['date'] = pd.to_datetime(daily_df['date'], format="%m-%d-%Y")
     # Make sure cases and deaths have the same number of rows

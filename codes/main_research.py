@@ -16,17 +16,23 @@ from codes.mdp_model import MDPModel, MDPGridSearch
 import warnings
 warnings.filterwarnings("ignore")
 
-#%% Load Data
-df, df_train, df_validation = load_data(validation_cutoff=validation_cutoff)
+if __name__ == "__main__":  # required for running multiple kernels
 
-if train_mdp:
-    if __name__ == "__main__":  # required for running multiple kernels
+    #%% Load Data
+    df, df_train, df_validation = load_data(validation_cutoff=validation_cutoff)
+
+    if train_mdp:
         mdp = MDPModel(**mdp_params_dict)
-        mdp.fit(df_train, mode="ID")
-        save_model(mdp, mdp_file("ID", str(mdp)))
+        mode = "TIME_CV"
+        mdp.fit(df_train, mode=mode)
+        try:
+            save_model(mdp, mdp_file(mode, str(mdp)))
+        except:
+            import pickle
+            file_pi = open("mdp_backup_save.pkl", 'wb')
+            pickle.dump(mdp, file_pi)
 
-if train_mdp_gs:
-    if __name__ == "__main__":  # required for running multiple kernels
+    if train_mdp_gs:
         mdp_gs = MDPGridSearch(**mdp_gs_params_dict)
         mdp_gs.fit(df_train)
         save_model(mdp_gs, mdp_gs_file)

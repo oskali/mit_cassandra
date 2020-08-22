@@ -126,7 +126,7 @@ def createSamples(df,  # dataframe: original full dataframe
     df_new['r_t-1'] = df_new.groupby("ID")['r_t'].shift(1)
     df_new['r_t-2'] = df_new.groupby("ID")['r_t'].shift(2)
 
-    new_features = [f+'-1' for f in features_list] + [f+'-2' for f in features_list] + ['r_t', 'r_t-1', 'r_t-2']
+    new_features = features_list+[f+'-1' for f in features_list] + [f+'-2' for f in features_list] + ['r_t', 'r_t-1', 'r_t-2']
     df_new.dropna(subset=new_features,
                   inplace=True)
 
@@ -209,6 +209,7 @@ def fit_cv(df,
     df_training_error = pd.DataFrame(columns=['Clusters'])
     df_testing_error = pd.DataFrame(columns=['Clusters'])
     testing_errors = []
+    splitter_df_list = []
 
     # shuffle ID's and create a new column 'ID_shuffle'
     random.seed(random_state)
@@ -232,33 +233,35 @@ def fit_cv(df,
     if n_jobs in {0, 1}:
         for train_test_idx in split_:
             # cv_bar.set_description("Cross-Validation... | Test set # %i" %i)
-            testing_error, training_error, df_err, _ = fit_cv_fold(train_test_idx,
-                                                                   df,
-                                                                   clustering=clustering,
-                                                                   n_clusters=n_clusters,
-                                                                   clustering_distance_threshold=clustering_distance_threshold,
-                                                                   pfeatures=pfeatures,
-                                                                   actions=actions,
-                                                                   splitting_threshold=splitting_threshold,
-                                                                   classification=classification,
-                                                                   n_iter=n_iter,
-                                                                   horizon=horizon,
-                                                                   test_horizon=test_horizon,
-                                                                   error_computing=error_computing,
-                                                                   error_function_name=error_function_name,
-                                                                   alpha=alpha,
-                                                                   n=n,
-                                                                   OutputFlag=OutputFlag,
-                                                                   random_state=random_state,
-                                                                   plot=plot,
-                                                                   save=save,
-                                                                   savepath=savepath,
-                                                                   mode=mode)
+            testing_error, training_error, splitter_df = fit_cv_fold(train_test_idx,
+                                                                     df,
+                                                                     clustering=clustering,
+                                                                     n_clusters=n_clusters,
+                                                                     clustering_distance_threshold=clustering_distance_threshold,
+                                                                     pfeatures=pfeatures,
+                                                                     actions=actions,
+                                                                     splitting_threshold=splitting_threshold,
+                                                                     classification=classification,
+                                                                     n_iter=n_iter,
+                                                                     horizon=horizon,
+                                                                     test_horizon=test_horizon,
+                                                                     error_computing=error_computing,
+                                                                     error_function_name=error_function_name,
+                                                                     alpha=alpha,
+                                                                     n=n,
+                                                                     OutputFlag=OutputFlag,
+                                                                     random_state=random_state,
+                                                                     plot=plot,
+                                                                     save=save,
+                                                                     savepath=savepath,
+                                                                     mode=mode)
 
             # save the training and testing error
             df_training_error = df_training_error.merge(training_error, how='outer', on=['Clusters'])
             df_testing_error = df_testing_error.merge(testing_error, how='outer', on=['Clusters'])
-            testing_errors.append(df_err)
+            splitter_df_list.append(splitter_df)
+            # testing_errors.append(df_err)
+            # splitter_df_list.append(splitter_df)
             # DEBUG : not used E_v ?
 
     # training using multiprocessing
@@ -296,10 +299,11 @@ def fit_cv(df,
         results = pool.map(fit_cv_fold_pool, split_)
 
         # save the training and testing error
-        for testing_error, training_error, df_err, _ in results:
+        for testing_error, training_error, splitter_df in results:
             df_training_error = df_training_error.merge(training_error, how='outer', on=['Clusters'])
             df_testing_error = df_testing_error.merge(testing_error, how='outer', on=['Clusters'])
-            testing_errors.append(df_err)
+            splitter_df_list.append(splitter_df)
+            # testing_errors.append(df_err)
 
     # --- END PARALLELED TASK ---
     #############################
@@ -343,7 +347,7 @@ def fit_cv(df,
     # for t in testing_errors:
     #    print(t)
 
-    return cv_training_error, cv_testing_error
+    return cv_training_error, cv_testing_error, splitter_df_list
 
 
 # (MDP GridSearch Function)

@@ -18,7 +18,8 @@ from pandas import date_range
 # df_path = r'C:\Users\david\Desktop\MIT\Courses\Research internship\covid19_team2\data\input\05_27_states_combined_v2_w_trend.csv'
 # df_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\07_11_2020_counties_combined_NYNJMA.csv"
 # df_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\07_16_2020_states_combined_w_pct.csv"
-df_path = None
+# df_path = None
+df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_14_2020_states_and_countries_combined_restricted_.csv'
 
 #%% Target and column names
 
@@ -26,19 +27,19 @@ target_col = 'cases'
 date_col = 'date'
 region_col = 'state'
 population = 'population'
-nmin = {"fips": 100, "state": 100}
+nmin = {"fips": 100, "state": 200}
 tests_col = 'people_tested'
 
 #%% Run Parameters
 
 random_state = 42
-training_agg_cutoff = '2020-05-15'
-training_cutoff = '2020-06-01'
+training_agg_cutoff = '2020-07-15'
+training_cutoff = '2020-08-01'
 validation_cutoff = None
 
 regions_dict = {
     "fips": [25017, 34023],
-    "state": ['New York', 'Massachusetts'],
+    "state": ['Massachusetts'],
 }
 regions = regions_dict[region_col]  # regions to predict  #
 unformatted_dates = [datetime.strftime(_, "%Y-%m-%d") for _ in date_range('2020-08-02', '2020-12-15', freq="1D")]  # dates to predict  #
@@ -60,7 +61,7 @@ train_mdp = True
 train_mdp_gs = False
 load_mdp = True
 
-EXPERIMENT_NAME = '16 - 20200810 TEST ERROR COMPUTATION EXPONENTIAL TESTING'
+EXPERIMENT_NAME = '21 - 20200819 - Massachusetts with Boosted MDP new pred'
 default_path = r"C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data"
 
 mdp_file = lambda mode, folder : os.path.join(r"C:\Users\david\Desktop\MIT\Courses\Research internship\results",
@@ -68,28 +69,32 @@ mdp_file = lambda mode, folder : os.path.join(r"C:\Users\david\Desktop\MIT\Cours
                         "MDPs_without_actions",
                         mode,
                         folder,
-                        "mdp_{}_{}_{}.pickle".format(training_cutoff.replace("-", ""), target_col, region_col))
+                        "mdp_{}_{}_{}.pkl".format(training_cutoff.replace("-", ""), target_col, region_col))
 
 mdp_gs_savepath = os.path.join(r"C:\Users\david\Desktop\MIT\Courses\Research internship\results",
                                EXPERIMENT_NAME)  # experiment name
 
-mdp_gs_file = os.path.join(mdp_gs_savepath, 'mdp_gs.pickle')
+mdp_gs_file = os.path.join(mdp_gs_savepath, 'mdp_gs.pkl')
 
 # %% Parameters MDP
 
-region_exceptions = {
+region_exceptions_dict = {
     "state":
-        ['Guam', 'Northern Mariana Islands',
-         'Puerto Rico', 'Diamond Princess',
-         'Grand Princess', 'American Samoa', 'Virgin Islands'],
+        ['Guam', 'Northern Mariana Islands', 'Puerto Rico',
+         'Diamond Princess',
+         'Grand Princess', 'American Samoa', 'Virgin Islands',
+         'Hawaii', "Benin", "Ecuador",
+         "Jordan", "Lithuania", "Uganda",
+         "Georgia"
+         ],
     "fips":
         []}
 
 mdp_features_dict = \
     {
         'state':
-            {"deaths": ["cases_pct3", "cases_pct5"],
-             "cases": ["cases_pct3", "cases_pct5"]},
+            {"deaths": ["cases_pct5", "cases_pct10"],
+             "cases": ["cases_pct5", "cases_pct10"]},
         'fips':
             {"deaths": [],
              "cases": []}
@@ -98,22 +103,22 @@ mdp_features_dict = \
 mdp_params_dict = \
     {
         "days_avg": 3,
-        "horizon": 8,
-        "test_horizon": 15,
-        "error_computing": "exponential",
-        "error_function_name": "sym_abs_relative",
+        "horizon": 5,
+        "test_horizon": 5,
+        "error_computing": "horizon",
+        "error_function_name": "exp_relative",
         "alpha": 2e-3,
-        "n_iter": 50,
-        "n_folds_cv": 3,
-        "clustering_distance_threshold": 0.06,
+        "n_iter": 100,
+        "n_folds_cv": 4,
+        "clustering_distance_threshold": 0.1,
         "splitting_threshold": 0.,
         "classification_algorithm": "RandomForestClassifier",
         "clustering_algorithm": 'Agglomerative',
         "n_clusters": None,
         "action_thresh": ([], 0),  # ([-250, 200], 1),
         "features_list": mdp_features_dict[region_col][target_col],
-        "verbose": 1,
-        "n_jobs": 3,
+        "verbose": 2,
+        "n_jobs": 4,
         "date_colname": date_col,
         "target_colname": target_col,
         "region_colname": region_col,
@@ -150,7 +155,7 @@ mdp_gs_params_dict = \
         "hyperparams": mdp_hparams_dict,
         "n_folds_cv": 6,
         "verbose": 0,
-        "n_jobs": 4,
+        "n_jobs": 1,
         "mdp_n_jobs": 1,
         "random_state": random_state,
         "save": True,

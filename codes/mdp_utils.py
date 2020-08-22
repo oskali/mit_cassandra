@@ -41,6 +41,23 @@ class MDPSplitterError(Exception):
     pass
 
 
+class MDPPredictorError(Exception):
+    pass
+
+
+class MDPPredictor:
+    def __init__(self):
+        self.P_df = None
+        self.R_df = None
+        self.training_error = None
+        self.testing_error = None
+        self.R2_train = None
+        self.R2_test = None
+        self.columns = None
+        self.pfeatures = None
+        self.model = None
+
+
 class MDP_Splitter:
 
     def __init__(self,
@@ -75,8 +92,12 @@ class MDP_Splitter:
         self.P_df = None
         self.R_df = None
         self.error_transition_df = None
-        self.accuracy_cluster = {"train": [], "test": []}
+        # self.accuracy_cluster = {"train": [], "test": []}
         self.n_clusters = None
+        self.R2_train = None
+        self.R2_test = None
+        self.training_error = None
+        self.testing_error = None
 
     # initializeClusters() takes as input a dataframe, a time horizon T,
     # a clustering algorithm, a number of clusters n_clusters,
@@ -114,54 +135,77 @@ class MDP_Splitter:
         self.model = other.model
 
     def compute_risk_error(self, mode="train"):
-        self.df["EST_H_NEXT_CLUSTER"] = self.model.predict(self.df.iloc[:, 2:2 + self.pfeatures])
 
-        # compute accuracy score of cluster prediction
+        df = self.df.copy()
+        df["EST_H_NEXT_CLUSTER"] = self.model.predict(df.iloc[:, 2:2 + self.pfeatures])
+
+        # # compute accuracy score of cluster prediction
         if mode == "train":
-            pred = self.df[["EST_H_NEXT_CLUSTER", "CLUSTER"]].dropna()
-            self.accuracy_cluster[mode].append(accuracy_score(pred["EST_H_NEXT_CLUSTER"], pred["CLUSTER"]))
-            del pred
+            df["TRUE_H_NEXT_CLUSTER"] = df.groupby("ID", sort=False)["CLUSTER"].shift(-self.horizon)
+        #     pred = self.df[["EST_H_NEXT_CLUSTER", "CLUSTER"]].dropna().copy()
+        #     self.accuracy_cluster[mode].append(accuracy_score(pred["EST_H_NEXT_CLUSTER"], pred["CLUSTER"]))
+        #     del pred
 
-        self.df["EST_H_NEXT_RISK"] = 0.
-        self.df["EST_H_ERROR"] = 0.
+        df["EST_H_NEXT_RISK"] = 0.
+        df["EST_H_ERROR"] = 0.
 
         for h in range(1, self.horizon + 1):  # [TO ADAPT WITH EXPONENTIAL]
             # COMPUTE THE NEXT CLUSTER
-            self.df["EST_H_NEXT_CLUSTER"] = pd.merge(
-                self.df,
-                self.P_df.reset_index(),
+            df = pd.merge(
+                df,
+                self.P_df.reset_index().rename(columns={"ACTION" : "ACTION_", "CLUSTER" : "CLUSTER_"}),
                 left_on=["EST_H_NEXT_CLUSTER", "ACTION"],
-                right_on=["CLUSTER", "ACTION"],
-                how="left")["TRANSITION_CLUSTER"]
+                right_on=["CLUSTER_", "ACTION_"],
+                how="left").copy().drop(["CLUSTER_", "ACTION_"],
+                                        axis=1).drop(["EST_H_NEXT_CLUSTER"],
+                                                     axis=1).rename(columns={"TRANSITION_CLUSTER": "EST_H_NEXT_CLUSTER"})
 
             # COMPLETE MISSING TRANSITION WITH THE LAST AVAILABLE CLUSTER
-            self.df["EST_H_NEXT_CLUSTER"] = self.df.groupby(['ID'], sort=False).apply(lambda group: group.ffill())[
+            df["EST_H_NEXT_CLUSTER"] = df.groupby(['ID'], sort=False).apply(lambda group: group.ffill())[
                 'EST_H_NEXT_CLUSTER'].values
 
             # COMPUTE THE ONE STEP ESTIMATED RISK
-            self.df["EST_H_NEXT_RISK"] += pd.merge(
-                self.df.drop('EST_H_NEXT_RISK', axis=1),
+            df["EST_H_NEXT_RISK"] += pd.merge(
+                df.drop('EST_H_NEXT_RISK', axis=1),
                 self.R_df.reset_index(),
                 left_on="EST_H_NEXT_CLUSTER",
                 right_on="CLUSTER",
                 how="left")["EST_RISK"].values
 
-            self.df["TRUE_H_NEXT_RISK"] = self.df.groupby("ID", sort=False).rolling(window=h, min_periods=h)[
+            df["TRUE_H_NEXT_RISK"] = df.groupby("ID", sort=False).rolling(window=h, min_periods=h)[
                 "RISK"].sum().values
-            self.df["TRUE_H_NEXT_RISK"] = self.df.groupby("ID", sort=False)["TRUE_H_NEXT_RISK"].shift(-h)
+            df["TRUE_H_NEXT_RISK"] = df.groupby("ID", sort=False)["TRUE_H_NEXT_RISK"].shift(-h)
 
             # COMPUTE THE ONE STEP ERROR
-            self.df["EST_H_ERROR"] += self.error_eval(self.df["EST_H_NEXT_RISK"].values,
-                                                      self.df["TRUE_H_NEXT_RISK"].values)
+            df["EST_H_ERROR"] += self.error_eval(df["EST_H_NEXT_RISK"].values,
+                                                 df["TRUE_H_NEXT_RISK"].values)
+
+        self.df = df.copy()
 
     def update_cluster(self):
         self.model = predict_cluster(self.df, self.pfeatures)
 
     def compute_transition_error(self):
         n_df = self.df.groupby(["CLUSTER", "ACTION"])["NEXT_CLUSTER"].nunique()
-        e_df = self.df.groupby(["CLUSTER", "ACTION"])["EST_H_ERROR"].sum() / self.horizon
+        e_df = self.df.groupby(["CLUSTER", "ACTION"])["EST_H_ERROR"].max() / self.horizon
         self.error_transition_df = (np.log(n_df) * e_df).copy()
         pass
+
+    def to_mdp(self):
+        mdp_predictor = MDPPredictor()
+        mdp_predictor.P_df = self.P_df
+        mdp_predictor.R_df = self.R_df
+        mdp_predictor.training_error = self.training_error
+        mdp_predictor.testing_error = self.testing_error
+        mdp_predictor.R2_train = self.R2_train
+        mdp_predictor.R2_test = self.R2_test
+        mdp_predictor.columns = self.df.iloc[:, 2: self.pfeatures + 2].columns.tolist()
+        mdp_predictor.pfeatures = self.pfeatures
+        mdp_predictor.classifier = self.model
+        mdp_predictor.verbose = self.verbose
+
+        return mdp_predictor
+
 
 
 #############################################################################
@@ -173,9 +217,10 @@ class MDP_Splitter:
 # get_error_eval (MISSING DESCRIPTION)
 def get_error_eval(function_name):
     try:
-        assert function_name in {"sym_abs_relative", "absolute", "relative"}, "the error function name must be " \
-                                                                              "either 'sym_abs_relative', 'absolute' " \
-                                                                              "or 'relative'"
+        assert function_name in {"sym_abs_relative", "absolute",
+                                 "relative", "exp_relative"}, "the error function name must be " \
+                                                                              "either 'sym_abs_relative', 'absolute', " \
+                                                                              " 'relative' or 'exp_relative'"
     except AssertionError:
         raise MDPSplitterError
 
@@ -191,6 +236,10 @@ def get_error_eval(function_name):
         # return |y_true - y_est|/|y_true|
         return np.vectorize(lambda y_est, y_true: np.abs(y_est - y_true) / np.abs(y_true))
 
+    if function_name == "exp_relative":
+        # return |exp(y_true) - exp(y_est)|/exp(y_true)
+        return np.vectorize(lambda y_est, y_true: np.abs(np.exp(y_est) - np.exp(y_true)) / np.exp(y_true))
+
 
 #############################################################################
 # Function for the Iterations
@@ -199,12 +248,13 @@ def get_error_eval(function_name):
 # initial cluster and action that have the most number of contradictions or
 # (-1, -1) if no such cluster existss
 def findContradiction(error_df,  # pandas dataFrame
-                      th=1e-3):  # integer: threshold split size
+                      th=1e-2):  # integer: threshold split size
     try:
         error_df_ = error_df.dropna()
-        np.random.seed(1234)
-        selectedCont = np.random.choice(error_df_.index,
-                                        p=error_df_.values/error_df_.values.sum())
+        # np.random.seed(1234)
+        # selectedCont = np.random.choice(error_df_.index,
+        #                                 p=error_df_.values/error_df_.values.sum())
+        selectedCont = error_df_.index[error_df_.argmax()]
 
         if error_df[selectedCont] > th:
             return selectedCont
@@ -225,9 +275,26 @@ def contradiction(df,  # pandas dataFrame
         return None, None
     else:
         # nc = nc.groupby("NEXT_CLUSTER")["EST_H_ERROR"].sum().argmax()  # first measure
-        nc = nc.groupby("NEXT_CLUSTER")["EST_H_ERROR"].sum()
+        nc = nc.groupby("NEXT_CLUSTER")["EST_H_ERROR"].max()
         nc = nc.index[nc.argmax()]
         return a, nc
+
+# [DEVELOP]
+# contradiction() outputs one found contradiction given a dataframe,
+# a cluster and a an action or (None, None) if none is found
+# def contradiction(df,  # pandas dataFrame
+#                   i,  # integer: initial clusters
+#                   a):  # integer: action taken
+#     nc = df.query('CLUSTER == @i').query(
+#         'ACTION == @a').query('EST_H_NEXT_CLUSTER.notnull()', engine='python')[['EST_H_NEXT_CLUSTER', 'EST_H_ERROR']]
+#
+#     if len(nc) <= 1:
+#         return None, None
+#     else:
+#         # nc = nc.groupby("NEXT_CLUSTER")["EST_H_ERROR"].sum().argmax()  # first measure
+#         nc = nc.groupby("EST_NEXT_CLUSTER")["EST_H_ERROR"].max()
+#         nc = nc.index[nc.argmax()]
+#         return a, nc
 
 
 # multimode() returns a list of the most frequently occurring values.
@@ -337,9 +404,11 @@ def splitter(splitter_dataframe,  # pandas dataFrame
 
     # Setting progress bar--------------
     if OutputFlag >= 1:
-        split_bar = tqdm(range(it - nc))
+        split_bar = tqdm(range(max(1, it - nc)), position=0)
+        # line1 = tqdm(range(it - nc), position=1)
+        # line2 = tqdm(range(it - nc), position=2)
     else:
-        split_bar = range(it - nc)
+        split_bar = range(max(1, it - nc))
     split_bar.set_description("Splitting...")
     # Setting progress bar--------------
 
@@ -352,7 +421,7 @@ def splitter(splitter_dataframe,  # pandas dataFrame
         # train the decision tree
         splitter_dataframe.update_cluster()
 
-        # compute horizon error
+        # compute horizon error & transition error
         splitter_dataframe.compute_risk_error("train")
 
         # compute transition error
@@ -375,16 +444,16 @@ def splitter(splitter_dataframe,  # pandas dataFrame
             testing_R2.append(R2_test)
             testing_error.append(test_error)
 
-        # training_acc.append(train_acc)
-        # testing_acc.append(test_acc)
+            # printing error and accuracy values
+            # if OutputFlag >= 2:
+                # line1.set_description('testing value R2: {}'.format(R2_test))
+                # line1.set_postfix('testing value error: {}'.format(test_error))
 
         # printing error and accuracy values
-        # if OutputFlag >= 1:
-        #   print('training value R2:', R2_train)
-        #   print('training value error:', train_error)
-        #   if testing:
-        #       print('testing value R2:', R2_test)
-        #       print('testing value error:', test_error)
+        if OutputFlag >= 2:
+            split_bar.set_description('training value R2: {}'.format(R2_train))
+            # line1.set_postfix('training value error: {}'.format(train_error))
+
         # print('predictions:', get_predictions(df_new))
         # print(df_new.head())
 
@@ -458,12 +527,15 @@ def splitter(splitter_dataframe,  # pandas dataFrame
 
     df_train_error = pd.DataFrame(list(zip(its, training_error)), \
                                   columns=['Clusters', 'Error'])
+    splitter_dataframe.training_error = df_train_error
+    splitter_dataframe.R2_train = training_R2
     if testing:
         df_test_error = pd.DataFrame(list(zip(its, testing_error)), \
                                      columns=['Clusters', 'Error'])
-        return splitter_dataframe.df, df_train_error, df_test_error
+        splitter_dataframe.testing_error = df_test_error
+        splitter_dataframe.R2_test = testing_R2
 
-    return splitter_dataframe.df, training_error, testing_error
+    return splitter_dataframe.to_mdp()
 
 
 # (MDP FUNCTION)
@@ -537,8 +609,8 @@ def fit_cv_fold(split_idx,
                                     clustering=clustering,
                                     init_n_clusters=n_clusters,
                                     distance_threshold=clustering_distance_threshold,
-                                    error_computing=error_computing,
-                                    error_function_name=error_function_name,
+                                    error_computing="horizon",
+                                    error_function_name="exp_relative",
                                     actions=actions,
                                     horizon=test_horizon,
                                     random_state=random_state,
@@ -552,25 +624,32 @@ def fit_cv_fold(split_idx,
     #################################################################
     # Run Iterative Learning Algorithm
 
-    df_train, training_error, testing_error = splitter(splitter_df,
-                                                       pfeatures,
-                                                       splitting_threshold,
-                                                       test_splitter_df,
-                                                       testing=True,
-                                                       classification=classification,
-                                                       it=n_iter,
-                                                       OutputFlag=OutputFlag,
-                                                       n=n,
-                                                       random_state=random_state,
-                                                       plot=plot,
-                                                       save=save,
-                                                       savepath=os.path.join(savepath, "plot_{}.PNG".format(idx)))
+    trained_splitter_df = splitter(splitter_df,
+                                   pfeatures,
+                                   splitting_threshold,
+                                   test_splitter_df,
+                                   testing=True,
+                                   classification=classification,
+                                   it=n_iter,
+                                   OutputFlag=OutputFlag,
+                                   n=n,
+                                   random_state=random_state,
+                                   plot=plot,
+                                   save=save,
+                                   savepath=os.path.join(savepath, "plot_{}.PNG".format(idx)))
 
-    m = predict_cluster(df_train, pfeatures)
-    P_df, R_df = splitter_df.P_df, splitter_df.R_df
-    df_err, E_v = error_per_ID(df_test, m, pfeatures, P_df, R_df, relative=True, h=test_horizon, OutputFlag=OutputFlag)
+    testing_error = trained_splitter_df.testing_error
+    training_error = trained_splitter_df.training_error
+    # df_train = trained_splitter_df.df_train
 
-    return testing_error, training_error, df_err, E_v
+
+    # try:
+    #    m = predict_cluster(df_train, pfeatures)
+    #    P_df, R_df = splitter_df.P_df, splitter_df.R_df
+    #    df_err, E_v = error_per_ID(df_test, m, pfeatures, P_df, R_df, relative=True, h=test_horizon, OutputFlag=OutputFlag)
+    #    return testing_error, training_error, df_err, E_v, trained_splitter_df
+    # except KeyError:
+    return testing_error, training_error, trained_splitter_df
 
 
 # (MDP GRID SEARCH FUNCTION)
@@ -586,7 +665,7 @@ def fit_eval_params(param_id_mdp,
     try:
         mdp.fit(data, mode=mode)
         if mdp.save:
-            savepath_model = os.path.join(mdp.savepath, mode, str(mdp), "mdp_model.pickle")
+            savepath_model = os.path.join(mdp.savepath, mode, str(mdp), "mdp_model.pkl")
             save_model(mdp, savepath_model)
 
     except MDPTrainingError:
