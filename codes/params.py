@@ -61,7 +61,7 @@ train_mdp = True
 train_mdp_gs = False
 load_mdp = True
 
-EXPERIMENT_NAME = '21 - 20200819 - Massachusetts with Boosted MDP new pred'
+EXPERIMENT_NAME = '22 - 20200822 - Massachusetts with Boosted MDP new pred'
 default_path = r"C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data"
 
 mdp_file = lambda mode, folder : os.path.join(r"C:\Users\david\Desktop\MIT\Courses\Research internship\results",
@@ -93,8 +93,8 @@ region_exceptions_dict = {
 mdp_features_dict = \
     {
         'state':
-            {"deaths": ["cases_pct5", "cases_pct10"],
-             "cases": ["cases_pct5", "cases_pct10"]},
+            {"deaths": ["cases_pct3", "cases_pct5", "cases_pct10"],
+             "cases": ["cases_pct3", "cases_pct5", "cases_pct10"]},
         'fips':
             {"deaths": [],
              "cases": []}
@@ -108,7 +108,7 @@ mdp_params_dict = \
         "error_computing": "horizon",
         "error_function_name": "exp_relative",
         "alpha": 2e-3,
-        "n_iter": 100,
+        "n_iter": 350,
         "n_folds_cv": 4,
         "clustering_distance_threshold": 0.1,
         "splitting_threshold": 0.,
@@ -118,7 +118,7 @@ mdp_params_dict = \
         "action_thresh": ([], 0),  # ([-250, 200], 1),
         "features_list": mdp_features_dict[region_col][target_col],
         "verbose": 2,
-        "n_jobs": 4,
+        "n_jobs": -1,
         "date_colname": date_col,
         "target_colname": target_col,
         "region_colname": region_col,

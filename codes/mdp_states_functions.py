@@ -159,6 +159,7 @@ def createSamples(df,  # dataframe: original full dataframe
 
     # Drop all rows with empty cells
     # df_new.dropna(inplace=True)
+    df_new.rename(columns={target_colname:'TARGET'}, inplace=True)
 
     return df_new, pfeatures, actions
 
@@ -190,6 +191,7 @@ def fit_cv(df,
            classification,
            n_iter,
            n_clusters,
+           days_avg,
            actions,
            horizon=5,
            test_horizon=5,
@@ -244,6 +246,7 @@ def fit_cv(df,
                                                                      classification=classification,
                                                                      n_iter=n_iter,
                                                                      horizon=horizon,
+                                                                     days_avg=days_avg,
                                                                      test_horizon=test_horizon,
                                                                      error_computing=error_computing,
                                                                      error_function_name=error_function_name,
@@ -279,6 +282,7 @@ def fit_cv(df,
                                    clustering_distance_threshold=clustering_distance_threshold,
                                    pfeatures=pfeatures,
                                    actions=actions,
+                                   days_avg=days_avg,
                                    splitting_threshold=splitting_threshold,
                                    classification=classification,
                                    n_iter=n_iter,

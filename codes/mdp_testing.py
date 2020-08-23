@@ -64,7 +64,7 @@ def predict_cluster(df_new,  # dataframe: trained clusters
     y = df_new['CLUSTER']
 
     params = {
-        'max_depth': [3, 4, 6, 10, 50, None]
+        'max_depth': [3, 4, 6, 10, 20, None]
     }
 
     m = DecisionTreeClassifier()
@@ -92,6 +92,34 @@ def predict_cluster(df_new,  # dataframe: trained clusters
             # m.fit(X, y)
     return m
 
+def compute_state_target(test_init_state,
+                         current_state_target,
+                         transitions,
+                         rewards,
+                         all_data,
+                         days_avg):
+    test_init_state = test_init_state.to_frame()
+    for region_id in test_init_state.index:
+        last_date = test_init_state.loc[region_id, "TIME"]
+        try:
+            current_cluster = current_state_target.loc[region_id, "CLUSTER"]
+            current_target = current_state_target.loc[region_id, "TARGET"]
+            current_date = current_state_target.loc[region_id, "TIME"]
+        except KeyError:
+            continue  # to update
+        previous_cluster = current_cluster
+        previous_target = current_target
+        for date in pd.date_range(start=current_date, end=last_date, freq='%sD' %days_avg):
+            previous_cluster = current_cluster
+            previous_target = current_target
+            action = all_data.loc[(region_id, date), "ACTION"]
+            current_cluster = transitions.loc[(current_cluster, action), "TRANSITION_CLUSTER"]
+            current_target *= np.exp(rewards.loc[current_cluster, "EST_RISK"])
+
+        test_init_state.loc[region_id, "INIT_TARGET"] = previous_target
+        test_init_state.loc[region_id, "EST_H_NEXT_CLUSTER"] = previous_cluster
+
+    return test_init_state
 
 # predict_value_of_cluster() takes in MDP parameters, a cluster label, and
 # and a list of actions, and returns the predicted value of the given cluster
@@ -354,9 +382,9 @@ def training_value_error(splitter_dataframe,  # Outpul of algorithm
 # new clustered data, a model from predict_cluster function, and computes the
 # expected value error given actions and a predicted initial cluster
 # Returns a float of sqrt average value error per ID
-def testing_value_error(test_splitter_dataframe, periods=4):
+def testing_value_error(test_splitter_dataframe):
 
-    error_test = test_splitter_dataframe.df.dropna(subset=["EST_H_ERROR"]).groupby("ID").tail(periods).reset_index()
+    error_test = test_splitter_dataframe.df.dropna(subset=["EST_H_ERROR"]).groupby("ID").last().reset_index()
     return error_test.groupby("ID")["EST_H_ERROR"].mean().mean() / test_splitter_dataframe.horizon
 
 

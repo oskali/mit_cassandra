@@ -241,6 +241,7 @@ class MDPModel:
                                                                             clustering_distance_threshold=self.clustering_distance_threshold,
                                                                             classification=self.classification_algorithm,
                                                                             n_iter=self.n_iter,
+                                                                            days_avg=self.days_avg,
                                                                             n_clusters=self.n_clusters,
                                                                             actions=self.actions,
                                                                             horizon=self.horizon,
@@ -279,7 +280,9 @@ class MDPModel:
         # actual training on all the data
 
         splitter_df = MDP_Splitter(df.copy(),
+                                   all_data=df.copy(),
                                    pfeatures=self.pfeatures,
+                                   days_avg=self.days_avg,
                                    clustering=self.clustering_algorithm,
                                    init_n_clusters=self.n_clusters,
                                    distance_threshold=self.clustering_distance_threshold,
@@ -356,14 +359,15 @@ class MDPModel:
                 df_clusters = self.df_trained
 
             # get initial cases for the state at the latest datapoint
-            target = df_clusters.loc[region, self.target_colname]
-            date = df_clusters.loc[region, "TIME"]
+            region_id = df_clusters.loc[region, "ID"]
+            target = mdp_predictor.current_state_date.loc[region_id, "TARGET"]
+            date = mdp_predictor.current_state_date.loc[region_id, "TIME"]
 
             if self.verbose >= 2:
                 print('current date:', date, '| current %s:'%self.target_colname, target)
 
             # cluster the this last point
-            s = mdp_predictor.classifier.predict(df_clusters.loc[[region], mdp_predictor.columns])[0]
+            s = mdp_predictor.current_state_date.loc[region_id, "CLUSTER"]
             if self.verbose >= 2:
                 print('predicted initial cluster', s)
 
@@ -393,8 +397,8 @@ class MDPModel:
                         n_days,
                         model_key=model_key_,
                         from_first=from_first
-                    ))
-            return np.median(preds)
+                    )[0])
+            return [np.median(preds)]
 
         # best r2 score
         elif model_key == "best_r2":
@@ -489,7 +493,7 @@ class MDPGridSearch:
 
         # Multiprocessing restriction of jobs attribution
         try:
-            assert ((n_jobs==1) | (mdp_n_jobs==1))
+            assert ((n_jobs == 1) | (mdp_n_jobs == 1))
         except AssertionError:
             print("MultiProcessingWarning: cannot process Sub-Serialize tasks on MDP and MDP GradSearch "
                   "(n_jobs (GS) ={}, mdp_n_jobs (MDP) ={}. Default Change : mdp_n_jobs=1)".format(n_jobs, mdp_n_jobs))
