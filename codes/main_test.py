@@ -17,10 +17,10 @@ warnings.filterwarnings("ignore")
 #%% Load Models and Make Predictions
 
 # mdp_file = r"C:\Users\david\Desktop\MIT\Courses\Research internship\results\20 - 20200819 - Massachusetts with Boosted MDP new pred\MDPs_without_actions\TIME_CV\mdp__target_cases__h5__davg3__cdt_10pct__n_iter200__ClAlg_Rando__errhoriz_cv4_nbfs2\mdp_backup_save.pkl"
-mdp_file = r"C:\Users\david\Desktop\MIT\Courses\Research internship\results\22 - 20200822 - Massachusetts with Boosted MDP new pred\MDPs_without_actions\TIME_CV\mdp__target_cases__h5__davg3__cdt_10pct__n_iter350__ClAlg_Rando__errhoriz_cv4_nbfs2\mdp_backup_save.pkl"
+mdp_file = r"C:\Users\david\Desktop\MIT\Courses\Research internship\results\22 - 20200822 - Massachusetts with Boosted MDP new pred\MDPs_without_actions\TIME_CV\mdp__target_cases__h5__davg7__cdt_8pct__n_iter500__ClAlg_Rando__errhoriz_cv4_nbfs3\mdp_20200801_cases_state.pkl"
 output = {}
 mdp = load_model(mdp_file)
-output['mdp'] = mdp.predict(regions, dates, from_first=False, model_key="median")
+output['mdp'] = mdp.predict(regions, dates, from_first=False)
 #
 # with open(os.path.join('output_predictions_country.pickle'), 'wb') as fp:
 #     pickle.dump(output, fp)

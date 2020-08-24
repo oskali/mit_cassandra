@@ -266,7 +266,7 @@ def predict_region_date(mdp,  # MDP_model object
     try:
         assert date >= last_date
         n_days = (date - last_date).days
-        return np.ceil(mdp.predict_region_ndays(region, n_days, from_first=from_first, model_key=model_key))
+        return mdp.predict_region_ndays(region, n_days, from_first=from_first, model_key=model_key)
     except AssertionError:
         if verbose >= 1:
             print(
@@ -632,38 +632,29 @@ def all_paths(df, df_new, pfeatures, opt=True, plot=True):
 
 # plot_pred() takes a trained model, a specific US state name, and the df_true
 # (sorted by TIME), and plots the predicted versus true cases for n_days
-def plot_pred(model, state, df_true, n_days, from_first=False):
-    h = int(np.round(n_days / model.days_avg))
-    df_true.loc[:, [model.date_colname]] = pd.to_datetime(df_true[model.date_colname])
+def plot_pred(model, state, df_true, n_days, from_first=False, model_key="median"):
     if from_first:
-        date = model.df_trained_first.loc[state, "TIME"]
-        target = model.df_trained_first.loc[state, model.target_colname]
-        s = model.df_trained_first.loc[state, "CLUSTER"]
+        init_df_trained = model.df_trained_first
     else:
-        date = model.df_trained.loc[state, "TIME"]
-        target = model.df_trained.loc[state, model.target_colname]
-        s = model.df_trained.loc[state, "CLUSTER"]
-    dates = [date]
-    targets_pred = [target]
+        init_df_trained = model.df_trained
+    last_training_date = init_df_trained.loc[state, "TIME"]
+    state_date_range = pd.date_range(start=last_training_date+timedelta(days=1), periods=n_days, freq="1D")
+    state_predictions = model.predict([state], state_date_range, from_first=from_first, model_key=model_key)
+    try:
+        state_predictions = state_predictions[state]
+        state_target = df_true[df_true[model.region_colname] == state][[model.date_colname, model.target_colname]].set_index(model.date_colname)
 
-    r = 1
-    for i in range(h):
-        dates.append(date + timedelta((i + 1) * model.days_avg))
-        r = r * np.exp(model.R_df.loc[s])
-        targets_pred.append(target * r)
-        s = model.P_df.loc[s, 0].values[0]
-
-    fig, ax = plt.subplots()
-    ax.plot(df_true.loc[df_true[model.region_colname] == state][model.date_colname], \
-            df_true.loc[df_true[model.region_colname] == state][model.target_colname], \
-            label='True ' + model.target_colname)
-    ax.plot(dates, targets_pred, label='Predicted ' + model.target_colname)
-    ax.set_title('%s True vs Predicted ' % state + model.target_colname)
-    ax.set_xlabel('Date')
-    ax.set_ylabel(model.target_colname)
-    plt.xticks(rotation=45, ha='right')
-    plt.legend()
-    plt.show(block=False)
+        fig, ax = plt.subplots()
+        state_target.plot(label='True ' + model.target_colname, ax=ax)
+        state_predictions.plot(label='Predicted ' + model.target_colname, ax=ax)
+        ax.set_title('%s True vs Predicted ' % state + model.target_colname)
+        ax.set_xlabel('Date')
+        ax.set_ylabel(model.target_colname)
+        plt.xticks(rotation=45, ha='right')
+        plt.legend()
+        plt.show(block=False)
+    except:
+        pass
 
 
 # plot_pred() takes a trained model, a specific US state name, and the df_true
@@ -832,3 +823,17 @@ def mape(df_pred, df_true, target_colname):
 def mape_(y_pred, y_true):
     return abs(y_pred - y_true) / y_true
 #############################################################################
+
+
+if __name__ == "__main__":
+    from codes.data_utils import (load_data, load_model)
+    from codes.params import validation_cutoff
+    from codes.mdp_model import MDPModel, MDPGridSearch
+    import warnings
+    warnings.filterwarnings("ignore")
+    df, _, _ = load_data(validation_cutoff=validation_cutoff)
+    n_days = 15
+
+    mdp_file = r"C:\Users\david\Desktop\MIT\Courses\Research internship\results\22 - 20200822 - Massachusetts with Boosted MDP new pred\MDPs_without_actions\TIME_CV\mdp__target_cases__h5__davg7__cdt_8pct__n_iter500__ClAlg_Rando__errhoriz_cv4_nbfs3\mdp_20200801_cases_state.pkl"
+    mdp = load_model(mdp_file)
+    plot_pred(mdp, "California", df, n_days, model_key="median")

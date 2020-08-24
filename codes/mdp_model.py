@@ -342,88 +342,94 @@ class MDPModel:
                              from_first=False
                              ):  # int: time horizon (number of days) for prediction
         # preferably a multiple of days_avg (default 3)
-        if not (model_key in {"median", "best_r2", "best_err"}):
-            h = int(np.floor(n_days/self.days_avg))
-            delta = n_days - self.days_avg*h
-            try:
-                mdp_predictor = self.splitter_dict[model_key]
-            except KeyError:
-                print("MDPPredictionError: the model key doesn't exist")
-                raise MDPPredictionError
+        try:
+            if not (model_key in {"median", "best_r2", "best_err"}):
+                h = int(np.floor(n_days/self.days_avg))
+                delta = n_days - self.days_avg*h
+                try:
+                    mdp_predictor = self.splitter_dict[model_key]
+                except KeyError:
+                    print("MDPPredictionError: the model key doesn't exist")
+                    raise MDPPredictionError
 
-            # start from the initial dates
-            if from_first:
-                df_clusters = self.df_trained_first
-            # start from the last available dates
-            else:
-                df_clusters = self.df_trained
+                # start from the initial dates
+                if from_first:
+                    df_clusters = self.df_trained_first
+                # start from the last available dates
+                else:
+                    df_clusters = self.df_trained
 
-            # get initial cases for the state at the latest datapoint
-            region_id = df_clusters.loc[region, "ID"]
-            target = mdp_predictor.current_state_date.loc[region_id, "TARGET"]
-            date = mdp_predictor.current_state_date.loc[region_id, "TIME"]
+                # get initial cases for the state at the latest datapoint
+                region_id = df_clusters.loc[region, "ID"]
+                target = mdp_predictor.current_state_date.loc[region_id, "TARGET"]
+                date = mdp_predictor.current_state_date.loc[region_id, "TIME"]
 
-            if self.verbose >= 2:
-                print('current date:', date, '| current %s:'%self.target_colname, target)
+                if self.verbose >= 2:
+                    print('current date:', date, '| current %s:'%self.target_colname, target)
 
-            # cluster the this last point
-            s = mdp_predictor.current_state_date.loc[region_id, "CLUSTER"]
-            if self.verbose >= 2:
-                print('predicted initial cluster', s)
+                # cluster the this last point
+                s = mdp_predictor.current_state_date.loc[region_id, "CLUSTER"]
+                if self.verbose >= 2:
+                    print('predicted initial cluster', s)
 
-            r = 1.
-            clusters_seq = [s]
-            # run for horizon h, multiply out the ratios
-            for i in range(h):
-                r = r*np.exp(mdp_predictor.R_df.loc[s])
+                r = 1.
+                clusters_seq = [s]
+                # run for horizon h, multiply out the ratios
+                for i in range(h):
+                    s = mdp_predictor.P_df.loc[s, 0].values[0]
+                    r = r*np.exp(mdp_predictor.R_df.loc[s])
+                    clusters_seq.append(s)
+
+                # last next cluster
                 s = mdp_predictor.P_df.loc[s, 0].values[0]
                 clusters_seq.append(s)
+                if self.verbose >= 2:
+                    print('Sequence of clusters:', clusters_seq)
+                pred = target*r*(np.exp(mdp_predictor.R_df.loc[s])**(float(delta/self.days_avg)))
 
-            if self.verbose >= 2:
-                print('Sequence of clusters:', clusters_seq)
-            pred = target*r*(np.exp(mdp_predictor.R_df.loc[s])**(delta/3.))
+                if self.verbose >= 2:
+                    print('Prediction for date:', date + timedelta(n_days), '| target:', pred)
+                return pred
 
-            if self.verbose >= 2:
-                print('Prediction for date:', date + timedelta(n_days), '| target:', pred)
-            return pred
+            # averaged prediction
+            elif model_key == "median":
+                preds = []
+                for model_key_ in self.splitter_dict.keys():
+                    if model_key_ != "k_opt":
+                        preds.append(self.predict_region_ndays(
+                            region,
+                            n_days,
+                            model_key=model_key_,
+                            from_first=from_first
+                        )[0])
+                return [np.median(preds)]
 
-        # averaged prediction
-        elif model_key == "median":
-            preds = []
-            for model_key_ in self.splitter_dict.keys():
-                if model_key_ != "k_opt":
-                    preds.append(self.predict_region_ndays(
-                        region,
-                        n_days,
-                        model_key=model_key_,
-                        from_first=from_first
-                    )[0])
-            return [np.median(preds)]
+            # best r2 score
+            elif model_key == "best_r2":
+                r2_model_dict = {key: (mdp_pred.R2_test[-1]+mdp_pred.R2_train[-1])/2 for key, mdp_pred in self.splitter_dict.items() if key != "k_opt"}
+                best_key = max(r2_model_dict.items(), key=operator.itemgetter(1))[0]
 
-        # best r2 score
-        elif model_key == "best_r2":
-            r2_model_dict = {key: (mdp_pred.R2_test[-1]+mdp_pred.R2_train[-1])/2 for key, mdp_pred in self.splitter_dict.items() if key != "k_opt"}
-            best_key = max(r2_model_dict.items(), key=operator.itemgetter(1))[0]
+                return self.predict_region_ndays(region, n_days, model_key=best_key, from_first=from_first)
 
-            return self.predict_region_ndays(region, n_days, model_key=best_key, from_first=from_first)
+            # best r2 score
+            elif model_key == "best_err":
+                r2_model_dict = {key: mdp_pred.testing_error.last() for key, mdp_pred in self.splitter_dict.items()}
+                best_key = min(r2_model_dict.items(), key=operator.itemgetter(1))[0]
 
-        # best r2 score
-        elif model_key == "best_err":
-            r2_model_dict = {key: mdp_pred.testing_error[-1] for key, mdp_pred in self.splitter_dict.items()}
-            best_key = min(r2_model_dict.items(), key=operator.itemgetter(1))[0]
-
-            return self.predict_region_ndays(region, n_days, model_key=best_key, from_first=from_first)
-
+                return self.predict_region_ndays(region, n_days, model_key=best_key, from_first=from_first)
+        except:
+            return [np.nan]
     # predict_all() takes a time horizon, and returns the predicted number of
     # cases after h steps from the most recent datapoint for all states
     def predict_allregions_ndays(self,
                                  n_days,
-                                 from_first=False): # time horizon for prediction, preferably a multiple of days_avg (default 3)
+                                 from_first=False,
+                                 model_key="median"): # time horizon for prediction, preferably a multiple of days_avg (default 3)
         df = self.df_trained.copy()
-        df = df[['TIME', self.target_colname]]
+        df = df[['TIME', "TARGET"]]
         df['TIME'] = df['TIME'] + timedelta(n_days)
-        df[self.target_colname] = df.index.map(
-            lambda region: int(self.predict_region_ndays(region, n_days, from_first=from_first)))
+        df["TARGET"] = df.index.map(
+            lambda region: np.ceil(self.predict_region_ndays(region, n_days, from_first=from_first, model_key=model_key)[0]))
         return df
 
     # predict_class() takes a dictionary of states and time horizon and returns their predicted number of cases

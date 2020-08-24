@@ -12,14 +12,14 @@ from pandas import date_range
 
 #%% User and path
 
-# df_path = r'C:\Users\david\Desktop\MIT\Courses\Research internship\covid19_team2\data\input\06_15_2020_states_combined.csv'
+# df_path = r'C:\Users\david\Desktop\MIT\Courses\Research internship\master_branch\covid19_team2\data\input\05_27_states_combined_v2.csv'
 # df_path = r'C:\Users\david\Desktop\MIT\Courses\Research internship\covid19_team2\data\input\06_15_2020_states_combined_nom_n_pct.csv'
 # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\07_16_2020_states_combined_w_pct.csv'
-# df_path = r'C:\Users\david\Desktop\MIT\Courses\Research internship\covid19_team2\data\input\05_27_states_combined_v2_w_trend.csv'
+df_path = r'C:\Users\david\Desktop\MIT\Courses\Research internship\covid19_team2\data\input\05_27_states_combined_v2_w_trend.csv'
 # df_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\07_11_2020_counties_combined_NYNJMA.csv"
 # df_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\07_16_2020_states_combined_w_pct.csv"
 # df_path = None
-df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_14_2020_states_and_countries_combined_restricted_.csv'
+# df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_14_2020_states_and_countries_combined_restricted_.csv'
 
 #%% Target and column names
 
@@ -33,8 +33,8 @@ tests_col = 'people_tested'
 #%% Run Parameters
 
 random_state = 42
-training_agg_cutoff = '2020-07-15'
-training_cutoff = '2020-08-01'
+training_agg_cutoff = '2020-05-15'
+training_cutoff = '2020-06-01'
 validation_cutoff = None
 
 regions_dict = {
@@ -61,12 +61,12 @@ train_mdp = True
 train_mdp_gs = False
 load_mdp = True
 
-EXPERIMENT_NAME = '22 - 20200822 - Massachusetts with Boosted MDP new pred'
+EXPERIMENT_NAME = '23 - 20200823 - Testing and comparison'
 default_path = r"C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data"
 
 mdp_file = lambda mode, folder : os.path.join(r"C:\Users\david\Desktop\MIT\Courses\Research internship\results",
                         EXPERIMENT_NAME,
-                        "MDPs_without_actions",
+                        "MDPs_with_actions",
                         mode,
                         folder,
                         "mdp_{}_{}_{}.pkl".format(training_cutoff.replace("-", ""), target_col, region_col))
@@ -94,7 +94,7 @@ mdp_features_dict = \
     {
         'state':
             {"deaths": ["cases_pct3", "cases_pct5", "cases_pct10"],
-             "cases": ["cases_pct3", "cases_pct5", "cases_pct10"]},
+             "cases": ["mobility_score_trend", "cases_pct3", "cases_pct5", "cases_pct10"]},
         'fips':
             {"deaths": [],
              "cases": []}
@@ -108,17 +108,17 @@ mdp_params_dict = \
         "error_computing": "horizon",
         "error_function_name": "exp_relative",
         "alpha": 2e-3,
-        "n_iter": 350,
-        "n_folds_cv": 4,
+        "n_iter": 250,
+        "n_folds_cv": 5,
         "clustering_distance_threshold": 0.1,
         "splitting_threshold": 0.,
         "classification_algorithm": "RandomForestClassifier",
         "clustering_algorithm": 'Agglomerative',
         "n_clusters": None,
-        "action_thresh": ([], 0),  # ([-250, 200], 1),
+        "action_thresh": ([-250, 200], 1),  # ([], 0)
         "features_list": mdp_features_dict[region_col][target_col],
         "verbose": 2,
-        "n_jobs": -1,
+        "n_jobs": 3,
         "date_colname": date_col,
         "target_colname": target_col,
         "region_colname": region_col,

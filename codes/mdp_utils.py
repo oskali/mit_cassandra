@@ -59,6 +59,26 @@ class MDPPredictor:
         self.model = None
         self.accuracy_cluster = None
 
+    def complete_path(self, all_data):
+        for region_id in self.current_state_date.index:
+            current_date = self.current_state_date.loc[region_id, "TIME"]
+            current_cluster = self.current_state_date.loc[region_id, "CLUSTER"]
+
+            state_data = all_data.loc[region_id]
+            state_data = state_data[state_data["TIME"] >= current_date].reset_index()
+            missing_size = state_data.shape[0] - 1
+            if missing_size > 0 :
+                previous_cluster = current_cluster
+                for row_id, row in state_data.iterrows():
+                    previous_cluster = current_cluster
+                    current_date = row["TIME"]
+                    action = row["ACTION"]
+                    target = row["TARGET"]
+                    current_cluster = self.P_df.loc[(current_cluster, action)][0]
+                self.current_state_date.loc[region_id, "TIME"] = current_date
+                self.current_state_date.loc[region_id, "CLUSTER"] = previous_cluster
+                self.current_state_date.loc[region_id, "TARGET"] = target
+
 
 class MDP_Splitter:
 
@@ -158,9 +178,9 @@ class MDP_Splitter:
 
         # # compute accuracy score of cluster prediction
         df["TRUE_H_NEXT_CLUSTER"] = df.groupby("ID", sort=False)["CLUSTER"].shift(-self.horizon)
-        pred = df[["EST_H_NEXT_CLUSTER", "CLUSTER"]].dropna().copy()
-        self.accuracy_cluster.append(accuracy_score(pred["EST_H_NEXT_CLUSTER"], pred["CLUSTER"]))
-        del pred
+        # pred = df[["EST_H_NEXT_CLUSTER", "CLUSTER"]].dropna().copy()
+        # self.accuracy_cluster.append(accuracy_score(pred["EST_H_NEXT_CLUSTER"], pred["CLUSTER"]))
+        # del pred
 
         df["EST_H_NEXT_RISK"] = 0.
         df["EST_H_ERROR"] = 0.
@@ -169,7 +189,7 @@ class MDP_Splitter:
             # COMPUTE THE NEXT CLUSTER
             df = pd.merge(
                 df,
-                self.P_df.reset_index().rename(columns={"ACTION" : "ACTION_", "CLUSTER" : "CLUSTER_"}),
+                self.P_df.reset_index().rename(columns={"ACTION": "ACTION_", "CLUSTER": "CLUSTER_"}),
                 left_on=["EST_H_NEXT_CLUSTER", "ACTION"],
                 right_on=["CLUSTER_", "ACTION_"],
                 how="left").copy().drop(["CLUSTER_", "ACTION_"],
@@ -250,7 +270,8 @@ class MDP_Splitter:
         self.df = df.copy()
 
     def update_cluster(self):
-        self.model = predict_cluster(self.df, self.pfeatures)
+        pass
+        # self.model = predict_cluster(self.df, self.pfeatures)
 
     def compute_transition_error(self):
         n_df = self.df.groupby(["CLUSTER", "ACTION"])["NEXT_CLUSTER"].nunique()
@@ -541,7 +562,7 @@ def splitter(splitter_dataframe,  # pandas dataFrame
             testing_R2.append(R2_test)
             testing_error.append(test_error)
 
-            if test_error < best_testing_error:
+            if (test_error < best_testing_error) & (_ > 30):  # DEBUG
                 best_mdp_predictor = splitter_dataframe.to_mdp()
                 best_testing_error = test_error
 
@@ -615,9 +636,8 @@ def splitter(splitter_dataframe,  # pandas dataFrame
         testing_R2.append(R2_test)
         testing_error.append(test_error)
 
-        if test_error < best_testing_error:
+        if (test_error < best_testing_error) & (_ > 30):  # DEBUG
             best_mdp_predictor = splitter_dataframe.to_mdp()
-            best_testing_error = test_error
 
         # printing error and accuracy values
         # if OutputFlag >= 2:
@@ -651,26 +671,29 @@ def splitter(splitter_dataframe,  # pandas dataFrame
     # Plotting value error E((v_est - v_true)^2) FOR COVID: plotting MAPE
     # for training
     if plot:
-        fig2, ax2 = plt.subplots()
-        ax2.plot(its, training_error, label="Training Error")
-        if testing:
-            ax2.plot(its, testing_error, label="Testing Error")
-        if n > 0:
-            ax2.axvline(x=n, linestyle='--', color='r')  # Plotting vertical line at #cluster =n
-        ax2.set_ylim(0)
-        ax2.set_xlabel('# of Clusters')
-        ax2.set_ylabel('Cases MAPE error')
-        ax2.set_title('MAPE error by number of clusters')
-        ax2.legend()
-        if save:
-            try:
-                plt.savefig(savepath)
-            except:
-                pass
-        if OutputFlag >= 2:
-            plt.show(block=False)
-        else:
-            plt.close()
+        try:
+            fig2, ax2 = plt.subplots()
+            ax2.plot(its, training_error, label="Training Error")
+            if testing:
+                ax2.plot(its, testing_error, label="Testing Error")
+            if n > 0:
+                ax2.axvline(x=n, linestyle='--', color='r')  # Plotting vertical line at #cluster =n
+            ax2.set_ylim(0)
+            ax2.set_xlabel('# of Clusters')
+            ax2.set_ylabel('Cases MAPE error')
+            ax2.set_title('MAPE error by number of clusters')
+            ax2.legend()
+            if save:
+                try:
+                    plt.savefig(savepath)
+                except:
+                    pass
+            if OutputFlag >= 2:
+                plt.show(block=False)
+            else:
+                plt.close()
+        except ValueError:
+            pass
 
     df_train_error = pd.DataFrame(list(zip(its, training_error)), \
                                   columns=['Clusters', 'Error'])
@@ -683,6 +706,7 @@ def splitter(splitter_dataframe,  # pandas dataFrame
         best_mdp_predictor.testing_error = df_test_error
         best_mdp_predictor.training_error = df_train_error
         best_mdp_predictor.R2_train = training_R2
+        best_mdp_predictor.complete_path(splitter_dataframe.all_data.reset_index().set_index("ID"))
         return best_mdp_predictor
 
     return splitter_dataframe.to_mdp()
