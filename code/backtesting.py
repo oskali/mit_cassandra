@@ -11,13 +11,13 @@ from data_utils import (load_data, dict_to_df, get_mapes, load_model)
 from params import (load_sir, load_knn, load_mdp, load_agg, load_ci, sir_file,
                     knn_file, mdp_file, agg_file, ci_file, training_cutoff,
                     validation_cutoff, region_col, target_col,
-                    date_col, export_file)
+                    date_col, export_file, add_countries)
 import warnings
 warnings.filterwarnings("ignore")
 
 #%%
 
-df, df_train, df_test = load_data(training_cutoff=training_cutoff, validation_cutoff=validation_cutoff)
+df, df_train, df_test = load_data(training_cutoff=training_cutoff, validation_cutoff=validation_cutoff, add_countries=add_countries)
 
 regions = list(set(df_test[region_col]))
 dates = list(set(df_test[date_col]))

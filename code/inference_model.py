@@ -15,7 +15,8 @@ from models.common.model import Model
 
 #%% Inference Model
 class InferenceModel(Model):
-    def sample(self,  t_0: str, n_samples: int, dates: list, input_samples: dict) -> dict:
+    def sample(self,  t_0: str, n_samples: int, dates: list, input_samples: dict, validation_cutoff:str) -> dict:
+
         dir_path = os.path.dirname(os.path.abspath(__file__))
         repo_path = os.path.join(dir_path, '..', '..', '..')
 
@@ -42,6 +43,9 @@ class InferenceModel(Model):
 
         regions = ['Massachusetts', 'New York']
         output = {}
+
+        if any([datetime.datetime.strptime(validation_cutoff, '%Y-%m-%d') <= date for date in dates]):
+            raise Exception('Prediction dates appear in the training data. Please make predictions for a date after ' + validation_cutoff)
 
         sir = load_model(sir_file)
         output['sir'] = sir.predict(regions, dates)
