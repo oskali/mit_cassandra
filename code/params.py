@@ -17,7 +17,7 @@ import os
 
 # %% User and path
 
-USER = 'lpgt'
+USER = 'asterios'
 
 if USER == 'omar':
     df_path = 'C:\\Users\\omars\\Desktop\\covid19_georgia\\covid19_team2\data\\input\\07_08_2020_states_combined.csv'
@@ -29,9 +29,16 @@ if USER == 'david':
     df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_05_2020_states_combined.csv'
     # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\07_16_2020_states_combined.csv'
 
+if USER == 'asterios':
+
+    # df_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\08_13_2020_counties_combined_seird.csv"
+    default_path = "D:\\Personal Data\\Dropbox (MIT)\\COVID-19-Team2\Data\\"
+    df_path = r'D:\Personal Data\Dropbox (MIT)\COVID-19-Team2\Data\08_05_2020_states_combined.csv'
+    # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\07_16_2020_states_combined.csv'
+
 elif USER == 'lpgt':
-    df_path = r'../../../../../../Dropbox (MIT)/COVID-19-Team2/Data/08_11_2020_states_combined.csv'
-    default_path =  os.getcwd()
+    df_path = r'../data/input/06_15_2020_MA_only.csv'
+    default_path = os.getcwd()
 
 # %% Target and column names
 
@@ -46,8 +53,8 @@ tests_col = 'people_tested'
 random_state = 42
 retrain = False
 
-training_agg_cutoff = '2020-08-11'
-training_cutoff = '2020-08-11'
+training_agg_cutoff = '2020-07-15'
+training_cutoff = '2020-08-01'
 validation_cutoff = None
 
 regions_dict = {
@@ -77,23 +84,31 @@ n_samples = 3
 
 train_knn = False
 train_mdp = False
-train_sir = True
+train_sir = False
+train_bilstm = True
+
 train_knn_agg = False
 train_mdp_agg = False
-train_sir_agg = True
+train_sir_agg = False
+train_bilstm_agg = False
+
 train_agg = False
 train_ci = False
 train_preval = False
-load_knn = True
-load_mdp = True
-load_sir = True
-load_agg = True
-load_ci = True
-load_preval = True
+load_knn = False
+load_mdp = False
+load_sir = False
+load_agg = False
+load_ci = False
+load_preval = False
+load_bilstm = True
+
 sir_file = os.path.join('models', 'sir_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
 knn_file = os.path.join('models', 'knn_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
 mdp_file = os.path.join('models', 'mdp_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
 agg_file = os.path.join('models', 'agg_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
+bilstm_file = os.path.join('models', 'bilstm_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
+
 ci_file = os.path.join('models', 'ci_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
 preval_file = os.path.join('models', 'preval_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
 export_file = 'export_{}_{}.csv'.format(training_cutoff.replace("-", ""), target_col, region_col)
@@ -105,7 +120,7 @@ optimizer = 'Nelder-Mead'
 
 sir_params_dict = \
     {
-        "nmin": nmin[region_col]  ,
+        "nmin": nmin,
         'date': date_col,
 		'region': region_col,
 		'target': target_col,
@@ -123,6 +138,14 @@ sir_params_dict = \
 # %% Parameters KNN
 
 knn_params_dict = \
+    {
+        "deterministic": True,
+        'date': date_col,
+        'region': region_col,
+        'target': target_col,
+    }
+
+bilstm_params_dict = \
     {
         "deterministic": True,
         'date': date_col,

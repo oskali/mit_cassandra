@@ -9,16 +9,17 @@ if __name__ == "__main__":
     #%% Libraries and Parameters
 
     from data_utils import (save_model, load_model, load_data, dict_to_df)
-    from params import (train_sir, train_knn, train_mdp, train_agg, train_ci,
+    from params import (train_sir, train_bilstm, train_bilstm_agg, train_knn, train_mdp, train_agg, train_ci,
                         date_col, region_col, target_col, sir_file, knn_file, mdp_file, agg_file, ci_file,
                         validation_cutoff, training_cutoff, training_agg_cutoff,
                         per_region, ml_methods, ml_mapping, ml_hyperparams, ci_range,
                         knn_params_dict, sir_params_dict, mdp_params_dict, retrain,
                         train_mdp_agg, train_sir_agg, train_knn_agg,
-                        load_sir, load_knn, load_mdp, train_preval, tests_col, population,
-                        preval_file, alpha)
+                        load_sir, load_knn, load_bilstm, load_mdp, train_preval, tests_col, population,
+                        preval_file, bilstm_file, bilstm_params_dict, alpha)
 
     from sir_model import SIRModel
+    from bilstm_model import BILSTMModel
     from knn_model import KNNModel
     from mdp_model import MDPModel
     from agg_model import AGGModel
@@ -40,6 +41,7 @@ if __name__ == "__main__":
     dates_val = list(set(df_validation[date_col]))
     validation_predictions = {}
 
+
     if train_sir:
         sir = SIRModel(**sir_params_dict)
         sir.fit(df_train)
@@ -58,6 +60,16 @@ if __name__ == "__main__":
         knn = load_model(knn_file)
         validation_predictions['knn'] = knn.predict(regions_val, dates_val)
         models.append('knn')
+
+    if train_bilstm:
+        bilstm = BILSTMModel(**bilstm_params_dict)
+        bilstm.fit(df_train)
+        models.append('bilstm')
+        save_model(bilstm, bilstm_file)
+    if load_bilstm:
+        bilstm = load_model(bilstm_file)
+        validation_predictions['bilstm'] = bilstm.predict(regions_val, dates_val)
+        models.append('bilstm')
 
     if train_mdp:
         mdp = MDPModel(**mdp_params_dict)
@@ -95,6 +107,16 @@ if __name__ == "__main__":
             knn_agg = load_model(knn_file.replace(".pickle", "_agg.pickle"))
             validation_predictions_agg['knn'] = knn_agg.predict(regions_agg, dates_agg)
             models_agg.append('knn')
+
+        # train kNN
+        if train_bilstm_agg:
+            bilstm_agg = BILSTMModel(**bilstm_params_dict)
+            bilstm_agg.fit(df_train_agg)
+            save_model(bilstm_agg, bilstm_file.replace(".pickle", "_agg.pickle"))
+        if load_bilstm:
+            bilstm_agg = load_model(bilstm_file.replace(".pickle", "_agg.pickle"))
+            validation_predictions_agg['bilstm'] = bilstm_agg.predict(regions_agg, dates_agg)
+            models_agg.append('bilstm')
 
         # train MDP
         if train_mdp_agg:
@@ -147,6 +169,12 @@ if __name__ == "__main__":
             sir = SIRModel(**sir_params_dict)
             sir.fit(df)
             save_model(sir, sir_file)
+
+        if train_bilstm:
+            bilstm = BILSTMModel(**bilstm_params_dict)
+            bilstm.fit(df)
+            save_model(bilstm, bilstm_file)
+
         if train_knn:
             knn = KNNModel(**knn_params_dict)
             knn.fit(df)
