@@ -177,7 +177,10 @@ def match_to_real_growth(df, start_date, threshold, n, p, func, memory, forward_
             x_train = x_train.fillna(x_train.mean())
             nn = KNeighborsRegressor(n_neighbors=n, weights = lambda x: func(x, threshold), p=p)
             nn.fit(x_train, y_train)
-            distances, indexes = nn.kneighbors(x_test)
+            try:
+                distances, indexes = nn.kneighbors(x_test)
+            except:
+                pass
             weights = func(distances)[0]
             # values is the GrowthRate of the n nearest neighbors
             values = np.array(y_train.iloc[indexes[0]])

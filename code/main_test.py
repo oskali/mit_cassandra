@@ -36,7 +36,7 @@ if load_agg:
     agg = load_model(agg_file)
     output['agg'] = agg.predict(regions, dates, output)
 
-with open(os.path.join('output_predictions.pickle'), 'wb') as fp:
+with open(os.path.join('output_predictions_country_new.pickle'), 'wb') as fp:
     pickle.dump(output, fp)
 
 if load_ci:

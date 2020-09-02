@@ -123,7 +123,7 @@ def createSamples(df,#, # dataframe: original full dataframe
     df_new['r_t-1'] = df_new.groupby("ID")['r_t'].shift(1)
     df_new['r_t-2'] = df_new.groupby("ID")['r_t'].shift(2)
 
-    new_features = [f+'-1' for f in features_list] + [f+'-2' for f in features_list] + ['r_t', 'r_t-1', 'r_t-2']
+    new_features = features_list + [f+'-1' for f in features_list] + [f+'-2' for f in features_list] + ['r_t', 'r_t-1', 'r_t-2']
     df_new.dropna(subset=new_features,
                   inplace=True)
 

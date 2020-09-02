@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
 from params import (target_col, date_col, region_col, training_cutoff,
-                         df_path, default_path, nmin, restriction_dict, region_exceptions)
+                         df_path, default_path, nmin, restriction_dict, region_exceptions_dict)
 import os
 import warnings
 warnings.filterwarnings("ignore")
@@ -36,7 +36,7 @@ def load_data(file=df_path,
               validation_cutoff=None,
               nmin=nmin,
               restriction_dict=restriction_dict[region_col],
-              region_exceptions=region_exceptions[region_col],
+              region_exceptions=region_exceptions_dict[region_col],
               default_path=default_path):
     if file is None:
         df = get_public_data(default_path)
@@ -65,11 +65,17 @@ def load_data(file=df_path,
     df = df[df[target] >= nmin[region]]
 
     df.sort_values(by=[region, date], inplace=True)
-    df["cases_nom"] = df["cases"] / df["population"]
-    df["deaths_nom"] = df["deaths"] / df["population"]
+    try:
+        df["cases_nom"] = df["cases"] / df["population"]
+        df["deaths_nom"] = df["deaths"] / df["population"]
+    except KeyError:
+        pass
     df["cases_pct3"] = df.groupby(region)["cases"].pct_change(3).values
     df["cases_pct5"] = df.groupby(region)["cases"].pct_change(5).values
-    df[date] = df[date].apply(lambda x: datetime.strptime(x, '%Y-%m-%d'))
+    try:
+        df[date] = df[date].apply(lambda x: datetime.strptime(x, '%Y-%m-%d'))
+    except:
+        df[date] = df[date].apply(lambda x: datetime.strptime(x, '%m/%d/%Y'))
     df = df.sort_values(by=[region, date])
     df_train = df[df[date] <= training_cutoff]
     print("Training set contains {} {}.".format(df[region].nunique(), region))

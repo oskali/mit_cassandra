@@ -26,12 +26,22 @@ if USER == 'omar':
 if USER == 'david':
     # df_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\08_13_2020_counties_combined_seird.csv"
     default_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\"
-    df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_05_2020_states_combined.csv'
+    # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_14_2020_states_and_countries_combined_restricted_.csv'
+    # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_14_2020_states_and_countries_combined_restricted_new.csv'
     # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\07_16_2020_states_combined.csv'
+    df_path = None
 
 elif USER == 'lpgt':
     df_path = r'../data/input/06_15_2020_MA_only.csv'
     default_path = os.getcwd()
+
+    # Please uncomment and adjust the appropriate path
+
+    # [Long-term prediction state]
+    # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\09_02_2020_states_combined.csv'
+
+    # [Long-term prediction county]
+    # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_13_2020_counties_combined_seird.csv'
 
 # %% Target and column names
 
@@ -46,8 +56,8 @@ tests_col = 'people_tested'
 random_state = 42
 retrain = False
 
-training_agg_cutoff = '2020-07-15'
-training_cutoff = '2020-08-01'
+training_agg_cutoff = '2020-08-15'
+training_cutoff = '2020-09-01'
 validation_cutoff = None
 
 regions_dict = {
@@ -75,32 +85,32 @@ n_samples = 3
 
 # %% Load and Save Parameters
 
-train_knn = True
-train_mdp = True
+train_knn = False
+train_mdp = False
 train_sir = True
-train_knn_agg = True
-train_mdp_agg = True
+train_knn_agg = False
+train_mdp_agg = False
 train_sir_agg = True
 train_agg = True
-train_ci = True
-train_preval = True
-load_knn = True
-load_mdp = True
-load_sir = True
-load_agg = True
-load_ci = True
-load_preval = True
-sir_file = os.path.join('models', 'sir_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
-knn_file = os.path.join('models', 'knn_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
-mdp_file = os.path.join('models', 'mdp_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
-agg_file = os.path.join('models', 'agg_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
+train_ci = False
+train_preval = False
+load_knn = False
+load_mdp = False
+load_sir = False
+load_agg = False
+load_ci = False
+load_preval = False
+sir_file = os.path.join('models', 'sir_{}_{}_{}_country.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
+knn_file = os.path.join('models', 'knn_{}_{}_{}_country.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
+mdp_file = os.path.join('models', 'mdp_{}_{}_{}_country.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
+agg_file = os.path.join('models', 'agg_{}_{}_{}_country.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
 ci_file = os.path.join('models', 'ci_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
 preval_file = os.path.join('models', 'preval_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
 export_file = 'export_{}_{}.csv'.format(training_cutoff.replace("-", ""), target_col, region_col)
 
 # %% Parameters SIR
 
-nmin = {"fips": 100, "state": 100}
+nmin = {"fips": 100, "state": 200}
 optimizer = 'Nelder-Mead'
 
 sir_params_dict = \
@@ -132,11 +142,15 @@ knn_params_dict = \
 
 # %% Parameters MDP
 
-region_exceptions = {
+region_exceptions_dict = {
     "state":
-        ['Guam', 'Northern Mariana Islands',
-         'Puerto Rico', 'Diamond Princess',
-         'Grand Princess', 'American Samoa', 'Virgin Islands'],
+        ['Guam', 'Northern Mariana Islands', 'Puerto Rico',
+         'Diamond Princess',
+         'Grand Princess', 'American Samoa', 'Virgin Islands',
+         'Hawaii', "Benin", "Ecuador",
+         "Jordan", "Lithuania", "Uganda",
+         "Georgia", "International",
+         ],
     "fips":
         []}
 
@@ -144,7 +158,7 @@ mdp_features_dict = \
     {
         'state':
             {"deaths": ["cases_pct3", "cases_pct5"],
-             "cases": ["cases_nom", "cases_pct3", "cases_pct5"]},
+             "cases": ["cases_pct3", "cases_pct5"]},  # ["cases_nom", "cases_pct3", "cases_pct5"]},
         'fips':
             {"deaths": [],
              "cases": []}
@@ -153,12 +167,12 @@ mdp_features_dict = \
 mdp_params_dict = \
     {
         "days_avg": 3,
-        "horizon": 8,
-        "n_iter": 110,
+        "horizon": 5,
+        "n_iter": 240,
         "n_folds_cv": 4,
-        "clustering_distance_threshold": 0.1,
+        "clustering_distance_threshold": 0.08,
         "splitting_threshold": 0.,
-        "classification_algorithm": 'DecisionTreeClassifier',
+        "classification_algorithm": 'RndomForestClassifier',
         "clustering_algorithm": 'Agglomerative',
         "n_clusters": None,
         "action_thresh": ([], 0),  # ([-250, 200], 1),
@@ -173,7 +187,6 @@ mdp_params_dict = \
         "save": False,
         "plot": False,
         "savepath": "",  # os.path.dirname(mdp_file),
-        "region_exceptions": region_exceptions[region_col]
     }
 # %% Parameters AGG
 
