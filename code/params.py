@@ -17,7 +17,7 @@ import os
 
 # %% User and path
 
-USER = 'david'
+USER = 'lpgt'
 
 if USER == 'omar':
     df_path = 'C:\\Users\\omars\\Desktop\\covid19_georgia\\covid19_team2\data\\input\\07_08_2020_states_combined.csv'
@@ -29,19 +29,18 @@ if USER == 'david':
     # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_14_2020_states_and_countries_combined_restricted_.csv'
     # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_14_2020_states_and_countries_combined_restricted_new.csv'
     # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\07_16_2020_states_combined.csv'
-    df_path = None
 
 elif USER == 'lpgt':
-    df_path = r'../data/input/06_15_2020_MA_only.csv'
-    default_path = os.getcwd()
+    df_path = r'../../../../../../Dropbox (MIT)/COVID-19-Team2/Data/08_11_2020_states_combined.csv'
+    default_path =  os.getcwd()
 
     # Please uncomment and adjust the appropriate path
 
     # [Long-term prediction state]
-    # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\09_02_2020_states_combined.csv'
+    # df_path = r'../../../../../../Dropbox (MIT)/COVID-19-Team2/Data/09_02_2020_states_combined.csv'
 
     # [Long-term prediction county]
-    # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_13_2020_counties_combined_seird.csv'
+    # df_path = r'../../../../../../Dropbox (MIT)/COVID-19-Team2/Data/08_13_2020_counties_combined_seird.csv'
 
 # %% Target and column names
 
@@ -115,7 +114,7 @@ optimizer = 'Nelder-Mead'
 
 sir_params_dict = \
     {
-        "nmin": nmin,
+        "nmin": nmin[region_col],
         'date': date_col,
 		'region': region_col,
 		'target': target_col,
@@ -187,6 +186,7 @@ mdp_params_dict = \
         "save": False,
         "plot": False,
         "savepath": "",  # os.path.dirname(mdp_file),
+        "region_exceptions": ""
     }
 # %% Parameters AGG
 

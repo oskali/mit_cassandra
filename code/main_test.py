@@ -10,7 +10,8 @@ Created on Sun Jun 28 22:02:43 2020
 from data_utils import (load_model)
 from params import (load_sir, load_knn, load_mdp, load_agg, load_ci, sir_file,
                     knn_file, mdp_file, agg_file, ci_file, regions, dates,
-                    random_state, df_path, n_samples, load_preval, preval_file)
+                    random_state, df_path, n_samples, load_preval, preval_file, validation_cutoff)
+from datetime import datetime
 import warnings
 warnings.filterwarnings("ignore")
 import json
@@ -18,6 +19,9 @@ import pickle
 import os
 
 #%% Load Models and Make Predictions
+
+if any([datetime.strptime(validation_cutoff, '%Y-%m-%d') <= date for date in dates]):
+    raise Exception('Prediction dates appear in the training data. Please make predictions for a date after ' + validation_cutoff)
 
 output = {}
 if load_sir:
