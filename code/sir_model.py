@@ -89,20 +89,15 @@ class SIRModel():
                      target='cases',
                      population='population',
                      optimizer='Nelder-Mead',
-                     beta1vals = [0.01, 0.2, 1],
-                     beta2vals = [0.05, 2.25, 4.5],
+                     beta1vals = [],
+                     beta2vals = [],
                      gammavals = [0.01],
                      avals = [0.0714],#0.142
                      muvals = [0.001],
                      pvals = [5],
                      Tvals = [40, 72],
-#                      beta1vals = [0.01, 0.2, 1, 3],
-#                      beta2vals = [0.003, 0.05, 3.5],
-#                      gammavals = [0.01],
-#                      avals = [0.0714],#0.142
-#                      muvals = [0.001],
-#                      pvals = [5],
-#                      Tvals = [10, 40, 72],
+                     # beta1vals = [0.01, 0.2, 1],
+                     # beta2vals = [0.05, 2.25, 4.5],
                      train_valid_split = 0.8,
                      nmin_train_set = 10,
                      death_lm = 2,
@@ -154,16 +149,9 @@ class SIRModel():
                         try:
                             list_1 = []
                             for i in range(len(train_full_set)):
-                                if train_full_set['state'].values[i] == 'Massachusetts':
-                                    #print('This county is in Mass')
-                                    val_1 = train_full_set['active'].values[i]
-                                    val_2 = ((train_full_set['cases'].values[i])*val_1)/train_full_set['state_cases'].values[i]
-                                    list_1.append(val_2)
-                                elif train_full_set['state'].values[i] == 'New Jersey':
-                                    #print('This county is in NJ')
-                                    val_1 = train_full_set['active'].values[i]
-                                    val_2 = ((train_full_set['cases'].values[i])*val_1)/train_full_set['state_cases'].values[i]
-                                    list_1.append(val_2)
+                                val_1 = train_full_set['active'].values[i]
+                                val_2 = ((train_full_set['cases'].values[i])*val_1)/train_full_set['cases_state_state'].values[i]
+                                list_1.append(val_2)
                             train_full_set['active'] = list_1
                         except:
                             pass
@@ -227,13 +215,12 @@ class SIRModel():
                         #region_gammavals.append(gamma)
                         #region_muvals.append(mu)
 
-                        print(region_beta1vals)
-
+                
                         param_list = []
                         mse_list = []
                         if self.verbose:
                             iteration = len(region_beta1vals)*len(region_beta2vals)*len(region_gammavals)*len(region_avals)*len(region_muvals)*len(region_pvals)*len(region_Tvals)
-                            progress_bar = tqdm(range(iteration), desc = region)
+                            progress_bar = tqdm(range(iteration), desc = str(region))
 
                         beta1_progress = range(len(region_beta1vals))
                         gamma_progress = range(len(region_gammavals))
