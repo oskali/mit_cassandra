@@ -289,7 +289,7 @@ class MDPModel:
                 region,  # str: i.e. US state for prediction to be made
                 n_days):  # int: time horizon (number of days) for prediction
         # preferably a multiple of days_avg (default 3)
-        h = int(np.round(n_days/self.days_avg))
+        h = int(np.floor(n_days/self.days_avg))
         delta = n_days - self.days_avg*h
 
         # get initial cases for the state at the latest datapoint
@@ -314,7 +314,7 @@ class MDPModel:
 
         if self.verbose >= 2:
             print('Sequence of clusters:', clusters_seq)
-        pred = target*r*(np.exp(self.R_df.loc[s])**(delta/3.))
+        pred = target*r*(np.exp(self.R_df.loc[s])**(delta/self.days_avg))
 
         if self.verbose >= 2:
             print('Prediction for date:', date + timedelta(n_days), '| target:', pred)
