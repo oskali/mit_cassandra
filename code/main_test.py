@@ -10,18 +10,19 @@ Created on Sun Jun 28 22:02:43 2020
 from data_utils import (load_model)
 from params import (load_sir, load_knn, load_mdp, load_agg, load_ci, sir_file,
                     knn_file, mdp_file, agg_file, ci_file, regions, dates,
-                    random_state, df_path, n_samples, load_preval, preval_file, validation_cutoff)
+                    random_state, df_path, n_samples, load_preval, preval_file, training_cutoff, new_cases, infection_period, severe_infections)
 from datetime import datetime
 import warnings
 warnings.filterwarnings("ignore")
 import json
 import pickle
 import os
+from copy import deepcopy
 
 #%% Load Models and Make Predictions
 
-if any([datetime.strptime(validation_cutoff, '%Y-%m-%d') <= date for date in dates]):
-    raise Exception('Prediction dates appear in the training data. Please make predictions for a date after ' + validation_cutoff)
+if any([datetime.strptime(training_cutoff, '%Y-%m-%d') > date for date in dates]):
+    raise Exception('Prediction dates appear in the training data. Please make predictions for a date after ' + training_cutoff)
 
 output = {}
 if load_sir:
@@ -66,7 +67,52 @@ if load_ci:
 
         if load_preval:
             preval = load_model(preval_file)
+            confirmed_samples = deepcopy(samples)
             samples = preval.convert(samples)
+
+        if new_cases:
+            new_samples = {}
+            new_samples['dates'] = samples['dates'][infection_period:]
+            #new_samples['samples'] = []
+            tags = ['Total_uncontained_infections', 'Total_contained_infections', 'Total_confirmed_infections', 'New_uncontained_infections', 'New_contained_infections', 'New_confirmed_infections']
+
+            l = []
+            for i in range(len(samples['samples'])):
+                cl_dic = {}
+                for state in samples['samples'][i][0].keys():
+                    sub_sample = [samples['samples'][i][j][state] -samples['samples'][i][j-1][state] for j in range(1, len(dates))]
+                    total_new = [sum(sub_sample[i+j] for i in range(infection_period)) for j in range(len(dates)-infection_period)]
+
+                    total = [samples['samples'][i][j][state] for j in range(1, len(dates))]
+
+                    total_severe = [severe_infections*a for a in total]
+                    total_mild = [(1-severe_infections)*a for a in total]
+
+                    total_new_severe = [severe_infections*a for a in total_new]
+                    total_new_mild = [(1-severe_infections)*a for a in total_new]
+                    confirmed_sub_sample = [confirmed_samples['samples'][i][j][state] -samples['samples'][i][j-1][state] for j in range(1, len(dates))]
+                    confirmed_total_new = [sum(confirmed_sub_sample[i+j] for i in range(infection_period)) for j in range(len(dates)-infection_period)]
+
+                    confirmed_sub_sample_total = [confirmed_samples['samples'][i][j][state] for j in range(1, len(dates))]
+                    confirmed_total = [sum(confirmed_sub_sample_total[i+j] for i in range(infection_period)) for j in range(len(dates)-infection_period)]
+
+                    cl_dic[state] = (total_severe, total_mild, confirmed_total, total_new_severe, total_new_mild, confirmed_total_new)
+                sample_dic = [{state: {tags[i]: cl_dic[state][i][j] for i in range(len(tags))} for state in samples['samples'][i][0].keys()} for j in range(len(dates)-infection_period)]
+                l.append(sample_dic)
+            new_samples['samples'] = l
+            samples = new_samples
 
         with open(os.path.join(pathstr[0], model_type + '_prevalence_output_samples.json'), 'w') as fp:
             json.dump(samples, fp)
+
+
+
+
+
+
+
+
+
+################################################
+
+

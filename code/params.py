@@ -6,7 +6,7 @@ Created on Sun Jun 28 21:21:18 2020
 """
 # %% Libraries
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from sklearn.linear_model import ElasticNetCV, LinearRegression
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
@@ -17,7 +17,7 @@ import os
 
 # %% User and path
 
-USER = 'lpgt'
+USER = 'omar'
 
 if USER == 'omar':
     df_path = 'C:\\Users\\omars\\Desktop\\covid19_georgia\\covid19_team2\data\\input\\07_08_2020_states_combined.csv'
@@ -49,7 +49,9 @@ date_col = 'date'
 region_col = 'fips'
 population = 'population'
 tests_col = 'people_tested'
-
+new_cases = True
+infection_period = 3
+severe_infections = .15
 # %% Run Parameters
 
 random_state = 42
@@ -64,7 +66,11 @@ regions_dict = {
     "state": ['Massachusetts'],
 }
 regions = regions_dict[region_col]  # regions to predict  #
-unformatted_dates = [datetime.strftime(_, "%Y-%m-%d") for _ in date_range('2020-08-02', '2020-12-15', freq="1D")]  # dates to predict  #
+
+# unformatted_dates = [datetime.strftime(_, "%Y-%m-%d") for _ in date_range('2020-08-02', '2020-12-15', freq="1D")]  # dates to predict  #
+
+unformatted_dates = ['2020-08-23', '2020-08-24', '2020-08-25']  # dates to predict  #
+
 
 restriction_dict = {
     "fips":
@@ -221,4 +227,11 @@ ci_range = 0.75
 alpha = 0.11
 
 # %% Date Formatting
+
+if new_cases:
+    unformatted_dates = [datetime.strftime(_, "%Y-%m-%d") for _ in date_range(min(unformatted_dates), max(unformatted_dates), freq="1D")]
+
 dates = [datetime.strptime(d, '%Y-%m-%d') for d in unformatted_dates]
+
+if new_cases:
+    dates = list(reversed([min(dates) - timedelta(i+1) for i in range( infection_period)])) + dates
