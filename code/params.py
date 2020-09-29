@@ -17,7 +17,7 @@ import os
 
 # %% User and path
 
-USER = 'omar'
+USER = 'lpgt'
 
 if USER == 'omar':
     df_path = 'C:\\Users\\omars\\Desktop\\covid19_georgia\\covid19_team2\data\\input\\07_08_2020_states_combined.csv'
@@ -37,16 +37,17 @@ elif USER == 'lpgt':
     # Please uncomment and adjust the appropriate path
 
     # [Long-term prediction state]
-    #df_path = r'../../../../../../Dropbox (MIT)/COVID-19-Team2/Data/09_02_2020_states_combined.csv'
+    df_path = r'../../../../../../../Dropbox (MIT)/COVID-19-Team2/Data/09_02_2020_states_combined.csv'
 
     # [Long-term prediction county]
-    df_path = r'../../../../../../Dropbox (MIT)/COVID-19-Team2/Data/08_13_2020_counties_combined_seird.csv'
+    #df_path = r'../../../../../../Dropbox (MIT)/COVID-19-Team2/Data/08_13_2020_counties_combined_seird.csv'
+
 
 # %% Target and column names
 
 target_col = 'cases'
 date_col = 'date'
-region_col = 'fips'
+region_col = 'state'
 population = 'population'
 tests_col = 'people_tested'
 new_cases = True
@@ -84,7 +85,15 @@ restriction_dict = {
                       ],
             "county": ["Queens", "New York", "Bronx"]
         },
-    "state": None
+    "state": {
+            "state": [
+                      "Massachusetts",
+                      "New Jersey",
+                      "Connecticut", "New Hampshire",
+                      # "Alabama",
+                      "Florida", "California"
+                      ]
+        }
 }
 n_samples = 3
 
@@ -95,13 +104,13 @@ train_mdp = False
 train_sir = True
 train_knn_agg = False
 train_mdp_agg = False
-train_sir_agg = True
-train_agg = True
+train_sir_agg = False
+train_agg = False
 train_ci = False
 train_preval = False
 load_knn = False
 load_mdp = False
-load_sir = False
+load_sir = True
 load_agg = False
 load_ci = False
 load_preval = False
@@ -133,6 +142,8 @@ sir_params_dict = \
         # "train_valid_split": 0.8,
         #'initial_param' :[0.4, 0.06],
         #"nmin_train_set": 10
+        'lvals': [15],
+        'tauvals': [10],
     }
 
 # %% Parameters KNN

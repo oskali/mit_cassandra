@@ -11,13 +11,13 @@ from data_utils import (load_data, dict_to_df, get_mapes, load_model)
 from params import (load_sir, load_knn, load_mdp, load_agg, load_ci, sir_file,
                     knn_file, mdp_file, agg_file, ci_file, training_cutoff,
                     validation_cutoff, region_col, target_col,
-                    date_col, export_file, add_countries)
+                    date_col, export_file)
 import warnings
 warnings.filterwarnings("ignore")
 
 #%%
 
-df, df_train, df_test = load_data(training_cutoff=training_cutoff, validation_cutoff=validation_cutoff, add_countries=add_countries)
+df, df_train, df_test = load_data(training_cutoff=training_cutoff, validation_cutoff=validation_cutoff)
 
 regions = list(set(df_test[region_col]))
 dates = list(set(df_test[date_col]))
@@ -63,6 +63,7 @@ results = get_mapes(df_agg,
                     models,
                     region_col=region_col,
                     target_col=target_col)
+print(results)
 
 export = df.merge(df_agg.iloc[:, :-1], how='left', on=[region_col, date_col])
 export.to_csv(export_file)
