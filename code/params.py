@@ -22,6 +22,7 @@ USER = 'omar'
 if USER == 'omar':
     df_path = 'C:\\Users\\omars\\Desktop\\covid19_georgia\\covid19_team2\data\\input\\07_08_2020_states_combined.csv'
     default_path = os.getcwd()
+    fips_path = 'C:/Users/omars/Downloads/ZIP-COUNTY-FIPS_2018-03.csv'
 
 if USER == 'david':
     # df_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\08_13_2020_counties_combined_seird.csv"
@@ -65,6 +66,10 @@ regions_dict = {
     "fips": [25017, 34023],
     "state": ['Massachusetts'],
 }
+
+zip_codes = [2139, 2141]
+use_zips = True
+
 regions = regions_dict[region_col]  # regions to predict  #
 
 # unformatted_dates = [datetime.strftime(_, "%Y-%m-%d") for _ in date_range('2020-08-02', '2020-12-15', freq="1D")]  # dates to predict  #

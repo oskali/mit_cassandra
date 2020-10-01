@@ -10,7 +10,7 @@ Created on Sun Jun 28 22:02:43 2020
 from data_utils import (load_model)
 from params import (load_sir, load_knn, load_mdp, load_agg, load_ci, sir_file,
                     knn_file, mdp_file, agg_file, ci_file, regions, dates,
-                    random_state, df_path, n_samples, load_preval, preval_file, training_cutoff, new_cases, infection_period, severe_infections)
+                    random_state, df_path, n_samples, load_preval, preval_file, training_cutoff, new_cases, infection_period, severe_infections, zip_codes, fips_path, use_zips)
 from datetime import datetime
 import warnings
 warnings.filterwarnings("ignore")
@@ -18,11 +18,28 @@ import json
 import pickle
 import os
 from copy import deepcopy
+from uszipcode import SearchEngine
+import pandas as pd
 
 #%% Load Models and Make Predictions
 
 if any([datetime.strptime(training_cutoff, '%Y-%m-%d') > date for date in dates]):
     raise Exception('Prediction dates appear in the training data. Please make predictions for a date after ' + training_cutoff)
+
+search = SearchEngine(simple_zipcode=True)
+
+if use_zips:
+    fips = pd.read_csv(fips_path)
+    regions_dic = {zipcode_number:fips.query('ZIP == @zipcode_number').iloc[0, 1] for zipcode_number in zip_codes}
+    regions = list(set(regions_dic.values()))
+    ratio_dic = {}
+for zipcode_number in zip_codes:
+    fips_number = regions_dic[zipcode_number]
+    zip_list = set(fips.query('STCOUNTYFP == @fips_number')['ZIP'])
+    total_population = sum([search.by_zipcode(z).population for z in zip_list if search.by_zipcode(z).population is not None])
+    population = search.by_zipcode(zipcode_number).population
+    ratio = population/total_population
+    ratio_dic[zipcode_number] = ratio
 
 output = {}
 if load_sir:
@@ -98,21 +115,12 @@ if load_ci:
 
                     cl_dic[state] = (total_severe, total_mild, confirmed_total, total_new_severe, total_new_mild, confirmed_total_new)
                 sample_dic = [{state: {tags[i]: cl_dic[state][i][j] for i in range(len(tags))} for state in samples['samples'][i][0].keys()} for j in range(len(dates)-infection_period)]
+                if use_zips:
+                    sample_dic = [{zipcode_number: {tags[i]: cl_dic[regions_dic[zipcode_number]][i][j]*ratio_dic[zipcode_number] for i in range(len(tags))} for zipcode_number in zip_codes} for j in range(len(dates)-infection_period)]
                 l.append(sample_dic)
             new_samples['samples'] = l
             samples = new_samples
 
+
         with open(os.path.join(pathstr[0], model_type + '_prevalence_output_samples.json'), 'w') as fp:
             json.dump(samples, fp)
-
-
-
-
-
-
-
-
-
-################################################
-
-
