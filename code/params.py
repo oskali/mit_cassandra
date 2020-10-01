@@ -7,6 +7,7 @@ Created on Sun Jun 28 21:21:18 2020
 # %% Libraries
 
 from datetime import datetime
+from datetime import timedelta
 from sklearn.linear_model import ElasticNetCV, LinearRegression
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
@@ -17,11 +18,12 @@ import os
 
 # %% User and path
 
-USER = 'lpgt'
+USER = 'plb'
 
 if USER == 'omar':
     df_path = 'C:\\Users\\omars\\Desktop\\covid19_georgia\\covid19_team2\data\\input\\07_08_2020_states_combined.csv'
     default_path = os.getcwd()
+    fips_path = 'C:/Users/omars/Downloads/ZIP-COUNTY-FIPS_2018-03.csv'
 
 if USER == 'david':
     # df_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\08_13_2020_counties_combined_seird.csv"
@@ -29,6 +31,14 @@ if USER == 'david':
     # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_14_2020_states_and_countries_combined_restricted_.csv'
     # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_14_2020_states_and_countries_combined_restricted_new.csv'
     # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\07_16_2020_states_combined.csv'
+
+if USER == 'asterios':
+
+    # df_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\08_13_2020_counties_combined_seird.csv"
+    default_path = "D:\\Personal Data\\Dropbox (MIT)\\COVID-19-Team2\Data\\"
+    df_path = r'D:\Personal Data\Dropbox (MIT)\COVID-19-Team2\Data\08_05_2020_states_combined.csv'
+    # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\07_16_2020_states_combined.csv'
+
 
 elif USER == 'lpgt':
     #df_path = r'../../../../../../Dropbox (MIT)/COVID-19-Team2/Data/08_11_2020_states_combined.csv'
@@ -42,29 +52,44 @@ elif USER == 'lpgt':
     # [Long-term prediction county]
     df_path = r'../../../../../../Dropbox (MIT)/COVID-19-Team2/Data/08_13_2020_counties_combined_seird.csv'
 
+elif USER == 'plb':
+    df_path = "/Users/pierre-louisbourlon/Code/MIT/RA/restructuring_clone/covid19_team2/data/input/08_14_2020_states_combined.csv"
+    default_path = os.getcwd()
+
+
 # %% Target and column names
 
 target_col = 'cases'
 date_col = 'date'
-region_col = 'fips'
+region_col = 'state'
 population = 'population'
 tests_col = 'people_tested'
-
+new_cases = True
+infection_period = 3
+severe_infections = .15
 # %% Run Parameters
 
 random_state = 42
 retrain = False
 
-training_agg_cutoff = '2020-07-31'
-training_cutoff = '2020-08-14'
-validation_cutoff = None
+training_agg_cutoff = '2020-07-01'
+training_cutoff = '2020-07-15'
+validation_cutoff = '2020-08-01'
 
 regions_dict = {
     "fips": [25017, 34023],
     "state": ['Massachusetts'],
 }
+
+zip_codes = [2139, 2141]
+use_zips = True
+
 regions = regions_dict[region_col]  # regions to predict  #
-unformatted_dates = [datetime.strftime(_, "%Y-%m-%d") for _ in date_range('2020-08-02', '2020-12-15', freq="1D")]  # dates to predict  #
+
+# unformatted_dates = [datetime.strftime(_, "%Y-%m-%d") for _ in date_range('2020-08-02', '2020-12-15', freq="1D")]  # dates to predict  #
+
+unformatted_dates = ['2020-08-23', '2020-08-24', '2020-08-25']  # dates to predict  #
+
 
 restriction_dict = {
     "fips":
@@ -86,23 +111,31 @@ n_samples = 3
 
 train_knn = False
 train_mdp = False
-train_sir = True
+train_sir = False
+train_bilstm = False
+
 train_knn_agg = False
 train_mdp_agg = False
-train_sir_agg = True
-train_agg = True
-train_ci = False
-train_preval = False
-load_knn = False
-load_mdp = False
-load_sir = False
-load_agg = False
-load_ci = False
-load_preval = False
-sir_file = os.path.join('models', 'sir_{}_{}_{}_country.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
-knn_file = os.path.join('models', 'knn_{}_{}_{}_country.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
-mdp_file = os.path.join('models', 'mdp_{}_{}_{}_country.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
-agg_file = os.path.join('models', 'agg_{}_{}_{}_country.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
+train_sir_agg = False
+train_bilstm_agg = False
+
+train_agg = False
+train_ci = True
+train_preval = True
+load_knn = True
+load_mdp = True
+load_sir = True
+load_bilstm = True
+load_agg = True
+load_ci = True
+load_preval = True
+
+sir_file = os.path.join('models', 'sir_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
+knn_file = os.path.join('models', 'knn_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
+mdp_file = os.path.join('models', 'mdp_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
+agg_file = os.path.join('models', 'agg_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
+bilstm_file = os.path.join('models', 'bilstm_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
+
 ci_file = os.path.join('models', 'ci_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
 preval_file = os.path.join('models', 'preval_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
 export_file = 'export_{}_{}.csv'.format(training_cutoff.replace("-", ""), target_col, region_col)
@@ -132,6 +165,16 @@ sir_params_dict = \
 # %% Parameters KNN
 
 knn_params_dict = \
+    {
+        "deterministic": True,
+        'date': date_col,
+        'region': region_col,
+        'target': target_col,
+    }
+
+# %% Parameters Bi LSTM
+
+bilstm_params_dict = \
     {
         "deterministic": True,
         'date': date_col,
@@ -171,7 +214,7 @@ mdp_params_dict = \
         "n_folds_cv": 4,
         "clustering_distance_threshold": 0.08,
         "splitting_threshold": 0.,
-        "classification_algorithm": 'RndomForestClassifier',
+        "classification_algorithm": 'RandomForestClassifier',
         "clustering_algorithm": 'Agglomerative',
         "n_clusters": None,
         "action_thresh": ([], 0),  # ([-250, 200], 1),
@@ -186,7 +229,7 @@ mdp_params_dict = \
         "save": False,
         "plot": False,
         "savepath": "",  # os.path.dirname(mdp_file),
-        "region_exceptions": ""
+        "region_exceptions": None
     }
 # %% Parameters AGG
 
@@ -221,4 +264,11 @@ ci_range = 0.75
 alpha = 0.11
 
 # %% Date Formatting
+
+if new_cases:
+    unformatted_dates = [datetime.strftime(_, "%Y-%m-%d") for _ in date_range(min(unformatted_dates), max(unformatted_dates), freq="1D")]
+
 dates = [datetime.strptime(d, '%Y-%m-%d') for d in unformatted_dates]
+
+if new_cases:
+    dates = list(reversed([min(dates) - timedelta(i+1) for i in range( infection_period)])) + dates

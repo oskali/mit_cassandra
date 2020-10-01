@@ -32,6 +32,9 @@ class InferenceModel(Model):
         mdp_file = pd.read_csv(os.path.join(
             repo_path, self.model_parameters['mdp_file']))
 
+        bilstm_file = pd.read_csv(os.path.join(
+            repo_path, self.model_parameters['bilstm_file']))
+
         agg_file = pd.read_csv(os.path.join(
             repo_path, self.model_parameters['agg_file']))
 
@@ -55,6 +58,9 @@ class InferenceModel(Model):
 
         mdp = load_model(mdp_file)
         output['mdp'] = mdp.predict(regions, dates)
+
+        bilstm = load_model(bilstm_file)
+        output['bilstm'] = bilstm.predict(regions, dates)
 
         agg = load_model(agg_file)
         output['agg'] = agg.predict(regions, dates, output)

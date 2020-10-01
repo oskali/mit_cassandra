@@ -81,4 +81,3 @@ class CI():
                     continue
 
         return new_output
-

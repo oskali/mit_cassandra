@@ -608,6 +608,22 @@ class KSMABenchMarkModel:
             except:
                 pass
 
+        if self.load_model_dict["bilstm"]:
+            try:
+                bilstm = load_model(self.models_path_dict["bilstm"])
+                output_agg['bilstm'] = bilstm.predict(regions, dates)
+                output['bilstm'] = pd.DataFrame.from_dict(output_agg['bilstm'])
+                output['bilstm'] = pd.DataFrame.from_dict(bilstm.predict(regions, dates))
+                output['bilstm'] = pd.melt(output['bilstm'].reset_index(),
+                                        id_vars="index",
+                                        value_name="bilstm",
+                                        var_name=self.region_colname).rename(
+                    columns={"index": self.date_colname}).set_index(
+                    [self.region_colname, self.date_colname])
+                used_models.append("bilstm")
+            except:
+                pass
+
         if self.load_model_dict["agg"]:
             try:
                 agg = load_model(self.models_path_dict["agg"])
@@ -699,6 +715,16 @@ class KSMABenchMarkModel:
             output['mdp'] = pd.melt(output['mdp'].reset_index(),
                                     id_vars=self.date_colname,
                                     value_name="mdp",
+                                    var_name=self.region_colname).set_index(
+                [self.region_colname, self.date_colname])
+
+        if self.load_model_dict["bilstm"]:
+            bilstm = load_model(self.models_path_dict["bilstm"])
+            output_agg['bilstm'] = bilstm.predict(regions, dates)
+            output['bilstm'] = pd.DataFrame.from_dict(output_agg['bilstm'])
+            output['bilstm'] = pd.melt(output['bilstm'].reset_index(),
+                                    id_vars=self.date_colname,
+                                    value_name="bilstm",
                                     var_name=self.region_colname).set_index(
                 [self.region_colname, self.date_colname])
 
