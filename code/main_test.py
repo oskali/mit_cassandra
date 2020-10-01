@@ -23,8 +23,8 @@ import pandas as pd
 
 #%% Load Models and Make Predictions
 
-if any([datetime.strptime(validation_cutoff, '%Y-%m-%d') > date for date in dates]):
-    raise Exception('Prediction dates appear in the training data. Please make predictions for a date after ' + validation_cutoff) 
+if any([datetime.strptime(training_cutoff, '%Y-%m-%d') > date for date in dates]):
+    raise Exception('Prediction dates appear in the training data. Please make predictions for a date after ' + training_cutoff)
 
 search = SearchEngine(simple_zipcode=True)
 
@@ -39,6 +39,8 @@ for zipcode_number in zip_codes:
     total_population = sum([search.by_zipcode(z).population for z in zip_list if search.by_zipcode(z).population is not None])
     population = search.by_zipcode(zipcode_number).population
     ratio = population/total_population
+
+    ratio_dic[zipcode_number] = ratio
 
 output = {}
 if load_sir:

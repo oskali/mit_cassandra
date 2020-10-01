@@ -6,8 +6,12 @@ Created on Sun Jun 28 21:21:18 2020
 """
 # %% Libraries
 
+<<<<<<< HEAD
 from datetime import datetime
 from datetime import timedelta
+=======
+from datetime import datetime, timedelta
+>>>>>>> e992b218e7afc432784e3295de8606cd087d8eef
 from sklearn.linear_model import ElasticNetCV, LinearRegression
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
@@ -18,7 +22,7 @@ import os
 
 # %% User and path
 
-USER = 'plb'
+USER = 'omar'
 
 if USER == 'omar':
     df_path = 'C:\\Users\\omars\\Desktop\\covid19_georgia\\covid19_team2\data\\input\\07_08_2020_states_combined.csv'
