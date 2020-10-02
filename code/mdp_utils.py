@@ -18,7 +18,7 @@ import os
 import warnings
 warnings.filterwarnings("ignore")
 
-from mdp_testing import R2_value_training, training_value_error,  \
+from mdp_testing import R2_value_training, training_value_error, get_MDP, \
     predict_cluster, R2_value_testing, testing_value_error, error_per_ID, MDPTrainingError, prediction_score
 
 from data_utils import save_model
@@ -186,6 +186,7 @@ def split(df,  # pandas dataFrame
 # (MDP GRID SEARCH FUNCTION)
 # Splitting function from the MDP learning algorithm
 def splitter(df,  # pandas dataFrame
+             actions,
              pfeatures,  # integer: number of features
              th,  # integer: threshold for minimum split
              df_test=None,
@@ -237,18 +238,24 @@ def splitter(df,  # pandas dataFrame
 
             # error and accuracy calculations
 
-            R2_train = R2_value_training(df_new, OutputFlag=OutputFlag)
+            R2_train = R2_value_training(df_new, actions=actions, pfeatures=pfeatures, n_cluster=nc+1, complete=True, OutputFlag=OutputFlag)
 
             if testing:
-                model = predict_cluster(df_new, pfeatures)
-                R2_test = R2_value_testing(df_test, df_new, model, pfeatures, OutputFlag=OutputFlag)
-                test_error = testing_value_error(df_test, df_new, model, pfeatures, relative=True, h=h,
+                # model = predict_cluster(df_new, pfeatures)
+                model = None
+                R2_test = R2_value_testing(df_test, df_new, model, pfeatures, actions=actions, n_cluster=nc+1, OutputFlag=OutputFlag)
+                test_error = testing_value_error(df_test.copy(), df_new, model,
+                                                 actions=actions,
+                                                 pfeatures=pfeatures, n_cluster=nc+1,
+                                                 relative=True, h=h,
                                                  OutputFlag=OutputFlag)
                 testing_R2.append(R2_test)
                 testing_error.append(test_error)
             # train_acc = training_accuracy(df_new)[0]
             # test_acc = testing_accuracy(df_test, df_new, model, pfeatures)[0]
-            train_error = training_value_error(df_new, relative=True, h=h, OutputFlag=OutputFlag)
+            P_df,R_df = get_MDP(df_new, complete=True, actions=actions, pfeatures=pfeatures,
+                                n_cluster=nc+1,  OutputFlag=0)
+            train_error = training_value_error(df_new, P_df=P_df, R_df=R_df, relative=True, h=h, OutputFlag=OutputFlag)
             training_R2.append(R2_train)
             training_error.append(train_error)
             # training_acc.append(train_acc)
@@ -330,6 +337,7 @@ def fit_cv_fold(split_idx,
                 n_clusters,
                 clustering_distance_threshold,
                 pfeatures,
+                actions,
                 splitting_threshold,
                 classification,
                 n_iter,
@@ -382,9 +390,10 @@ def fit_cv_fold(split_idx,
     # Run Iterative Learning Algorithm
 
     df_train, training_error, testing_error = splitter(df_train,
-                                                       pfeatures,
-                                                       splitting_threshold,
-                                                       df_test,
+                                                       actions=actions,
+                                                       pfeatures=pfeatures,
+                                                       th=splitting_threshold,
+                                                       df_test=df_test,
                                                        testing=True,
                                                        classification=classification,
                                                        it=n_iter,
@@ -397,6 +406,9 @@ def fit_cv_fold(split_idx,
                                                        savepath=os.path.join(savepath, "plot_{}.PNG".format(idx)))
 
     m = predict_cluster(df_train, pfeatures)
-    df_err, E_v = error_per_ID(df_test, df_train, m, pfeatures, relative=True, h=horizon, OutputFlag=OutputFlag)
-
+    try:
+        df_err, E_v = error_per_ID(df_test=df_test, df_new=df_train, model=m, actions=actions, n_cluster=n_clusters,
+                                   pfeatures=pfeatures, relative=True, h=horizon, OutputFlag=OutputFlag)
+    except:
+        df_err, E_v = None, None
     return testing_error, training_error, df_err, E_v
