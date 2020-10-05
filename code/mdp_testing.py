@@ -40,6 +40,11 @@ class MDPPredictionError(Exception):
 class MDPTrainingError(Exception):
     pass
 
+#%% New Exception for MDP learning
+class MDPPredictionError(Exception):
+    pass
+
+
 
 #%% Helper Functions for Prediction
 
@@ -103,10 +108,10 @@ def predict_value_of_cluster(P_df, R_df, # df: MDP parameters
     return v
 
 
-def complete_P_df(df, P_df, actions, pfeatures, OutputFlag=0):
+def complete_P_df(df, P_df, R_df, actions, pfeatures, OutputFlag=0):
 
     risk_model_dict = dict()
-    n_nan_actions = P_df["NEXT_CLUSTER"].isnull().groupby("ACTION").sum()
+    n_nan_actions = P_df["TRANSITION_CLUSTER"].isnull().groupby("ACTION").sum()
 
     for action in actions:
         if n_nan_actions[action] == 0:
@@ -138,7 +143,7 @@ def complete_P_df(df, P_df, actions, pfeatures, OutputFlag=0):
     for action in actions:
         if n_nan_actions[action] == 0:
             continue
-        missing_clusters = P_df[(P_df.ACTION == action) & (P_df.NEXT_CLUSTER.isna())].CLUSTER
+        missing_clusters = P_df[(P_df.ACTION == action) & (P_df.TRANSITION_CLUSTER.isna())].CLUSTER
         for idx, cluster in missing_clusters.items():
             try:
                 nc = df[(df.ACTION == action) & (df.CLUSTER == cluster)].iloc[:, 2: pfeatures + 2].values
@@ -147,25 +152,97 @@ def complete_P_df(df, P_df, actions, pfeatures, OutputFlag=0):
                 nc = risk_model_dict[action][1]
             P_df.iloc[idx, 2] = nc
 
-    return P_df.set_index(["CLUSTER", "ACTION"])
+    #
+    clusters = P_df.CLUSTER.unique()
+    P_df = P_df.set_index(["CLUSTER", "ACTION"])
+    try:
+        for cluster in clusters:
+
+            if R_df.loc[P_df.loc[(cluster, 1)]].values[0,0] < R_df.loc[P_df.loc[(cluster, 0)]].values[0,0]:
+                P_df.loc[(cluster, 1)] = P_df.loc[(cluster, 0)]
+
+            if R_df.loc[P_df.loc[(cluster, -1)]].values[0,0] > R_df.loc[P_df.loc[(cluster, 0)]].values[0,0]:
+                P_df.loc[(cluster, -1)] = P_df.loc[(cluster, 0)]
+    except:
+        pass
+    return P_df
+
+
+# def complete_P_df(df, P_df, actions, pfeatures, OutputFlag=0):
+#
+#     risk_model_dict = dict()
+#     n_nan_actions = P_df["NEXT_CLUSTER"].isnull().groupby("ACTION").sum()
+#
+#     for action in actions:
+#         if n_nan_actions[action] == 0:
+#             continue
+#         X = df[(df.ACTION == action) & (df.NEXT_CLUSTER.notnull())].iloc[:, 2: pfeatures + 2].values
+#         y = df[(df.ACTION == action) & (df.NEXT_CLUSTER.notnull())]["NEXT_CLUSTER"].values
+#
+#         params = {
+#             'algorithm': ['auto', 'ball_tree', 'kd_tree', 'brute']
+#         }
+#
+#         m = KNeighborsClassifier(n_neighbors=1)
+#         m = GridSearchCV(m, params, cv=3, iid=True)  # will return warning if 'idd' param not set to true
+#
+#         try:
+#             m.fit(X, y)
+#             risk_model_dict[action] = (m, Counter(y).most_common(1)[0][0])
+#         except ValueError:
+#             try:
+#                 m = GridSearchCV(m, params, cv=2, iid=True)  # will return warning if 'idd' param not set to true
+#                 m.fit(X, y)
+#                 risk_model_dict[action] = (m, Counter(y).most_common(1)[0][0])
+#             except ValueError:
+#                 risk_model_dict[action] = (None, Counter(y).most_common(1)[0][0])
+#                 if OutputFlag >=2:
+#                     print('ERROR: Fitting KNN for action {}'.format(action), flush=True)
+#
+#     P_df.reset_index(inplace=True)
+#     for action in actions:
+#         if n_nan_actions[action] == 0:
+#             continue
+#         missing_clusters = P_df[(P_df.ACTION == action) & (P_df.NEXT_CLUSTER.isna())].CLUSTER
+#         for idx, cluster in missing_clusters.items():
+#             try:
+#                 nc = df[(df.ACTION == action) & (df.CLUSTER == cluster)].iloc[:, 2: pfeatures + 2].values
+#                 nc = np.argmax(risk_model_dict[action][0].predict(nc))
+#             except:
+#                 nc = risk_model_dict[action][1]
+#             P_df.iloc[idx, 2] = nc
+#
+#     return P_df.set_index(["CLUSTER", "ACTION"])
 
 
 # get_MDP() takes in a clustered dataframe df_new, and returns dataframes
 # P_df and R_df that represent the parameters of the estimated MDP
-def get_MDP(df_new):
+def get_MDP(df_new, actions, pfeatures, n_cluster, complete=False, OutputFlag=0):
     # removing None values when counting where clusters go
     # df0 = df_new[df_new['NEXT_CLUSTER'] != 'None']
     transition_df = df_new.dropna(subset=['NEXT_CLUSTER']).groupby(['CLUSTER', 'ACTION', 'NEXT_CLUSTER'])['RISK'].count()
+    transition_df = transition_df[transition_df != 0].copy()
 
     # next cluster given how most datapoints transition for the given action
     transition_df = transition_df.groupby(['CLUSTER', 'ACTION']).idxmax()
     transition_df = transition_df.dropna()
-    P_df = pd.DataFrame()
+    # P_df = pd.DataFrame()
+    P_df = pd.DataFrame(index=pd.MultiIndex.from_tuples(product(range(n_cluster), actions),
+                                                        names=['CLUSTER', 'ACTION']))
     # DEBUG 07132020 : NaN in P_df
-    P_df['NEXT_CLUSTER'] = transition_df.apply(lambda x: np.nan if pd.isna(x) else x[2])
+    P_df['NEXT_CLUSTER'] = P_df.join(transition_df.apply(lambda x: np.nan if pd.isna(x) else x[2]),
+                                     how="left").values
+    P_df.columns = ['TRANSITION_CLUSTER']
     # P_df['NEXT_CLUSTER'] = P_df.apply(lambda x: complete_p_df(x, P_df), axis=1,)
-    R_df = df_new.groupby('CLUSTER')['RISK'].mean()
-    return P_df,R_df
+    R_df = pd.DataFrame(index=pd.Index(range(n_cluster), name="CLUSTER"))
+
+    # DEBUD mean --> min (conservative predictions)
+    R_df = R_df.join(df_new.groupby('CLUSTER')['RISK'].mean())
+    R_df.columns = ['EST_RISK']
+
+    if complete:
+        P_df = complete_P_df(df_new, P_df, R_df, actions, pfeatures, OutputFlag).copy()
+    return P_df, R_df
 
 
 # Auxiliary function for deployment
@@ -273,16 +350,16 @@ def purity(df):
 # E((\hat{v}-v)^2) expected error in estimating values (risk) given actions
 # Returns a float of average value error per ID
 def training_value_error(df_new, #Outpul of algorithm
+                         P_df,
+                         R_df,
                          relative=False, #Output Raw error or RMSE ie ((\hat{v}-v)/v)^2
                          h=5, #Length of forcast. The error is computed on v_h = \sum_{t=h}^H v_t
                          OutputFlag=0,
                          ):
     E_v = 0
-    P_df,R_df = get_MDP(df_new)
     df2 = df_new.reset_index()
     df2 = df2.groupby(['ID']).first()
     N_train = df2.shape[0]
-
 
     for i in range(N_train):
         index = df2['index'].iloc[i]
@@ -303,7 +380,7 @@ def training_value_error(df_new, #Outpul of algorithm
         s = df_new['CLUSTER'].loc[index + t]
         a = df_new['ACTION'].loc[index + t]
         v_true = df_new['RISK'].loc[index + t]
-        v_estim = R_df.loc[s]
+        v_estim = R_df.loc[s].values[0]
         t += 1
         #t = H-h +1
         # predicting path of each ID
@@ -323,7 +400,7 @@ def training_value_error(df_new, #Outpul of algorithm
                     print('WARNING: In training value evaluation, trying to predict next state from state',s,'taking action',a,', but this transition is never seen in the data. Data point:',i,t)
 
             a = df_new['ACTION'].loc[index + t]
-            v_estim = v_estim + R_df.loc[s]
+            v_estim = v_estim + R_df.loc[s].values[0]
 
             try:
                 df_new['ID'].loc[index+t+1]
@@ -342,27 +419,60 @@ def training_value_error(df_new, #Outpul of algorithm
     #return E_v
 
 
+def populate_cluster(df_test, df_new, P_df):
+    starting_clusters = df_new.groupby("ID").first()[["CLUSTER", "ACTION"]].to_dict()
+    df2 = df_test.reset_index().groupby("ID").first()
+    N_test = df_test.ID.nunique()
+    for i in range(N_test):
+        # initializing index of first state for each ID
+        index = df2['index'].iloc[i]
+        region_id = df2.index[i]
+
+        # first cluster
+        try:
+            previous_cluster = starting_clusters["CLUSTER"][region_id]
+        except:
+            continue
+        previous_action = starting_clusters["ACTION"][region_id]
+        cluster = P_df.loc[(previous_cluster, previous_action)][0]
+        action = df_test.loc[index, "ACTION"]
+        df_test.at[index, "CLUSTER"] = cluster
+
+        cont = True
+        H = -1
+        # Computing Horizon H of ID i
+        while cont:
+            H += 1
+            try:
+                df_test['ID'].loc[index+H+1]
+            except:
+                break
+            if df_test['ID'].loc[index+H] != df_test['ID'].loc[index+H+1]:
+                break
+            else:
+                cluster, action = P_df.loc[(cluster, action)][0], df_test['ACTION'].loc[index+H+1]
+                df_test.at[index+H+1, "CLUSTER"] = cluster
+    return df_test
+
+
 # testing_value_error() takes in a dataframe of testing data, and dataframe of
 # new clustered data, a model from predict_cluster function, and computes the
 # expected value error given actions and a predicted initial cluster
 # Returns a float of sqrt average value error per ID
-def testing_value_error(df_test, df_new, model, pfeatures, OutputFlag=0, relative=False, h=5):
-    try:
-        df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
-    except ValueError:
-        print('ERROR: Feature columns have missing values! Please drop' \
-              ' rows or fill in missing data.', flush=True)
-        df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
-    #except ValueError:
-        #print('Warning: Feature Columns missing values!')
-        #df_test.dropna(inplace=True)
-        #model.predict(df_test.iloc[:, 2:2+pfeatures])
-        #df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
+def testing_value_error(df_test, df_new, model, actions, pfeatures, n_cluster, OutputFlag=0, relative=False, h=5):
+    # try:
+    #     df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
+    # except ValueError:
+    #     print('ERROR: Feature columns have missing values! Please drop' \
+    #           ' rows or fill in missing data.', flush=True)
+    #     df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
 
     E_v = 0
-    P_df,R_df = get_MDP(df_new)
-    df2 = df_test.reset_index()
-    df2 = df2.groupby(['ID']).first()
+
+    # compute initial clusters
+    P_df, R_df = get_MDP(df_new, actions=actions, pfeatures=pfeatures, n_cluster=n_cluster, complete=True)
+    df_test = populate_cluster(df_test, df_new, P_df)
+    df2 = df_test.reset_index().dropna(subset=["CLUSTER"]).groupby(['ID']).first().copy()
     N_test = df2.shape[0]
 
     for i in range(N_test):
@@ -372,7 +482,7 @@ def testing_value_error(df_test, df_new, model, pfeatures, OutputFlag=0, relativ
         H = -1
         # Computing Horizon H of ID i
         while cont:
-            H+= 1
+            H += 1
             try:
                 df_test['ID'].loc[index+H+1]
             except:
@@ -426,7 +536,7 @@ def testing_value_error(df_test, df_new, model, pfeatures, OutputFlag=0, relativ
     return E_v
 
 
-def error_per_ID(df_test, df_new, model, pfeatures, OutputFlag=0, relative=False, h=5):
+def error_per_ID(df_test, df_new, model, actions, pfeatures, n_cluster, OutputFlag=0, relative=False, h=5):
     try:
         df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
     except ValueError:
@@ -439,12 +549,11 @@ def error_per_ID(df_test, df_new, model, pfeatures, OutputFlag=0, relative=False
         #model.predict(df_test.iloc[:, 2:2+pfeatures])
         #df_test['CLUSTER'] = model.predict(df_test.iloc[:, 2:2+pfeatures])
     E_v = 0
-    P_df,R_df = get_MDP(df_new)
+    P_df,R_df = get_MDP(df_new, actions=actions, pfeatures=pfeatures, n_cluster=n_cluster, complete=True)
     df2 = df_test.reset_index()
     df2 = df2.groupby(['ID']).first()
     N_test = df2.shape[0]
-#    print(df2)
-
+    # print(df2)
 
     V_true,V_estim,V_err,C_err,State = [],[],[],[],[]
 
@@ -536,9 +645,9 @@ def error_per_ID(df_test, df_new, model, pfeatures, OutputFlag=0, relative=False
 
 # R2_value_training() takes in a clustered dataframe, and returns a float
 # of the R-squared value between the expected value and true value of samples
-def R2_value_training(df_new, OutputFlag=0):
+def R2_value_training(df_new, actions, pfeatures, n_cluster, complete=False, OutputFlag=0):
     E_v = 0
-    P_df, R_df = get_MDP(df_new)
+    P_df, R_df = get_MDP(df_new, actions=actions, pfeatures=pfeatures, n_cluster=n_cluster, complete=True)
     df2 = df_new.reset_index()
     df2 = df2.groupby(['ID']).first()
     N = df2.shape[0]
@@ -549,7 +658,7 @@ def R2_value_training(df_new, OutputFlag=0):
         a = df2['ACTION'].iloc[i]
         v_true = df2['RISK'].iloc[i]
 
-        v_estim = R_df.loc[s]
+        v_estim = R_df.loc[s].values[0]
         index = df2['index'].iloc[i]
         cont = True
         t = 1
@@ -571,7 +680,7 @@ def R2_value_training(df_new, OutputFlag=0):
                     print('WARNING: In training value evaluation, trying to predict next state from state',s,'taking action',a,', but this transition is never seen in the data. Data point:',i,t)
 
             a = df_new['ACTION'].loc[index + t]
-            v_estim = v_estim + R_df.loc[s]
+            v_estim = v_estim + R_df.loc[s].values[0]
             try:
                 df_new['ID'].loc[index+t+1]
             except KeyError:
@@ -586,30 +695,47 @@ def R2_value_training(df_new, OutputFlag=0):
     V_true = np.array(V_true)
     v_mean = V_true.mean()
     SS_tot = sum((V_true-v_mean)**2)/N
-    return max(1- E_v/SS_tot,0)
+    return max(1- E_v/SS_tot, 0)
 
 
 # R2_value_testing() takes a dataframe of testing data, a clustered dataframe,
 # a model outputted by predict_cluster, and returns a float of the R-squared
 # value between the expected value and true value of samples in the test set
-def R2_value_testing(df_test, df_new, model, pfeatures, OutputFlag=0):
+def R2_value_testing(df_test, df_new, model, pfeatures, actions, n_cluster, OutputFlag=0):
     E_v = 0
-    P_df, R_df = get_MDP(df_new)
+    P_df, R_df = get_MDP(df_new, pfeatures=pfeatures, actions=actions, n_cluster=n_cluster, complete=True)
     df2 = df_test.reset_index()
     df2 = df2.groupby(['ID']).first()
-    N = df2.shape[0]
+
 
     # predicting clusters based on features
-    clusters = model.predict(df2.iloc[:, 2:2+pfeatures])
-    df2['CLUSTER'] = clusters
+    # clusters = model.predict(df2.iloc[:, 2:2+pfeatures])
+    # df2['CLUSTER'] = clusters
 
+    # update the clusters (test)
+    for id_cluster in df2.index:
+        try:
+
+            # end_date = df2.loc[id_cluster, "TIME"]
+            start_date, start_cluster, action = df_new.loc[df_new.ID == id_cluster, ["TIME", "CLUSTER", "ACTION"]].tail(1).values[0]
+            next_cluster = P_df.loc[(start_cluster, action)][0]
+            df2.at[id_cluster, 'CLUSTER'] = next_cluster
+        except:
+            # raise MDPTrainingError("Transition not found")
+            pass
+
+    df2 = df2.dropna(subset=["CLUSTER"]).copy()
+    N = df2.shape[0]
     V_true = []
     for i in range(N):
         s = df2['CLUSTER'].iloc[i]
         a = df2['ACTION'].iloc[i]
         v_true = df2['RISK'].iloc[i]
 
-        v_estim = R_df.loc[s]
+        try:
+            v_estim = R_df.loc[s].values[0]
+        except:
+            pass
         index = df2['index'].iloc[i]
         cont = True
         t = 1
@@ -627,10 +753,10 @@ def R2_value_testing(df_test, df_new, model, pfeatures, OutputFlag=0):
             # error raises in case we never saw a given transition in the data
             except(TypeError, KeyError):
                 if OutputFlag >= 3:
-                    print('WARNING: In training value evaluation, trying to predict next state from state',s,'taking action',a,', but this transition is never seen in the data. Data point:',i,t)
+                    print('WARNING: In training value evaluation, trying to predict next state from state', s, 'taking action', a, ', but this transition is never seen in the data. Data point:',i,t)
 
             a = df_test['ACTION'].loc[index + t]
-            v_estim = v_estim + R_df.loc[s]
+            v_estim = v_estim + R_df.loc[s].values[0]
 
             try:
                 df_test['ID'].loc[index+t+1]
@@ -645,7 +771,7 @@ def R2_value_testing(df_test, df_new, model, pfeatures, OutputFlag=0):
     V_true = np.array(V_true)
     v_mean = V_true.mean()
     SS_tot = sum((V_true-v_mean)**2)/N
-    return max(1- E_v/SS_tot,0)
+    return max(1 - E_v/SS_tot, 0)
 #############################################################################
 
 
@@ -769,7 +895,8 @@ def all_paths(df, df_new, pfeatures, opt=True, plot=True):
 # plot_pred() takes a trained model, a specific US state name, and the df_true
 # (sorted by TIME), and plots the predicted versus true cases for n_days
 def plot_pred(model, state, df_true, n_days, from_first=False):
-    h = int(np.round(n_days/model.days_avg))
+    h = int(np.floor(n_days/model.days_avg))
+    delta = n_days - model.days_avg*h
     df_true.loc[:, [model.date_colname]]= pd.to_datetime(df_true[model.date_colname])
     if from_first:
         date = model.df_trained_first.loc[state, "TIME"]
@@ -805,7 +932,7 @@ def plot_pred(model, state, df_true, n_days, from_first=False):
 # plot_pred() takes a trained model, a specific US state name, and the df_true
 # (sorted by TIME), and plots the predicted versus true cases for n_days
 def plot_pred_action(model, state, df_true, n_days, action_day=0, from_first=False):
-    h = int(np.round(n_days/model.days_avg))
+    h = int(np.floor(n_days/model.days_avg))
     action_adj = int(np.floor(action_day/model.days_avg))
     df_true.loc[:, [model.date_colname]]= pd.to_datetime(df_true[model.date_colname])
     if from_first:
@@ -818,7 +945,7 @@ def plot_pred_action(model, state, df_true, n_days, action_day=0, from_first=Fal
         s_init = model.df_trained.loc[state, "CLUSTER"]
 
     actions = [a - model.action_thresh[1] for a in range(len(model.action_thresh[0])+1)]
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(22,11))
 
     # prediction 0
     for a in actions:
@@ -828,7 +955,7 @@ def plot_pred_action(model, state, df_true, n_days, action_day=0, from_first=Fal
         r = 1
         for i in range(h):
             dates.append(date + timedelta((i+1)*model.days_avg))
-            r = r*np.exp(model.R_df.loc[s])
+            r = r*np.exp(model.R_df.loc[s].values[0])
             targets_pred.append(target*r)
             try:
                 if i == action_adj:
@@ -841,16 +968,19 @@ def plot_pred_action(model, state, df_true, n_days, action_day=0, from_first=Fal
                 print("Transition not found:", (s, a))
                 break
 
-        ax.plot(dates, targets_pred, label='Predicted '+model.target_colname+ ' with ACTION {} after {} days'.format(a, action_day))
+        target_pred_act = pd.Series(index=dates, data=targets_pred)
+        target_pred_act.plot(label='Predicted '+model.target_colname+ ' with ACTION {} after {} days'.format(a, action_day), ax=ax)
 
-    ax.plot(df_true.loc[df_true[model.region_colname]==state][model.date_colname], \
-            df_true.loc[df_true[model.region_colname]==state][model.target_colname], \
-            label = 'True '+model.target_colname)
+    true_cases = pd.Series(index=df_true.loc[df_true[model.region_colname]==state][model.date_colname],
+                           data=df_true.loc[df_true[model.region_colname]==state][model.target_colname].values)
+    true_cases.plot(label='True '+ model.target_colname, ax=ax, color="k", linestyle="--")
+
     ax.set_title('%s True vs Predicted '%state + model.target_colname)
     ax.set_xlabel('Date')
     ax.set_ylabel(model.target_colname)
     plt.xticks(rotation=45, ha='right')
     plt.legend()
+    plt.grid()
     plt.show(block=False)
 
 
@@ -875,7 +1005,7 @@ def plot_pred_fact(model, state, df_w_act, starting_date, n_days=30):
                                                                                                          str(first_date)))
         raise AssertionError
 
-    h = int(np.round(n_days/model.days_avg))
+    h = int(np.floor(n_days/model.days_avg))
     h_start = int(np.floor(starting_n_days/model.days_avg))
 
     date = df_state.iloc[h_start]["TIME"]

@@ -41,6 +41,8 @@ def createSamples(df,#, # dataframe: original full dataframe
                   days_avg,  # int: # of days to average when reporting death
                   region_exceptions=None):
 
+    actions = [0]
+
     df.sort_values(by=[region_colname, date_colname], inplace=True)
     df.rename(columns={date_colname: 'TIME'}, inplace=True)
 
@@ -159,7 +161,7 @@ def createSamples(df,#, # dataframe: original full dataframe
     # Drop all rows with empty cells
     # df_new.dropna(inplace=True)
 
-    return df_new, pfeatures
+    return df_new, pfeatures, actions
 
 
 # split_train_test_by_id() takes in a dataframe of all the data,
@@ -176,6 +178,7 @@ def split_train_test_by_id(data, # dataframe: all the data
     in_test_set = ids.apply(lambda id_: test_set_check(id_, test_ratio))
     return data.loc[~in_test_set], data.loc[in_test_set]
 
+
 # (MDP functions)
 # Fitting function used for the MDP fitting
 # this function realize the split according to the mode,
@@ -184,6 +187,7 @@ def fit_cv(df,
            pfeatures,
            splitting_threshold,
            clustering,
+           actions,
            clustering_distance_threshold,
            classification,
            n_iter,
@@ -229,6 +233,7 @@ def fit_cv(df,
                                                                    df,
                                                                    clustering=clustering,
                                                                    n_clusters=n_clusters,
+                                                                   actions=actions,
                                                                    clustering_distance_threshold=clustering_distance_threshold,
                                                                    pfeatures=pfeatures,
                                                                    splitting_threshold=splitting_threshold,
@@ -262,6 +267,7 @@ def fit_cv(df,
                                    clustering=clustering,
                                    n_clusters=n_clusters,
                                    clustering_distance_threshold=clustering_distance_threshold,
+                                   actions=actions,
                                    pfeatures=pfeatures,
                                    splitting_threshold=splitting_threshold,
                                    classification=classification,

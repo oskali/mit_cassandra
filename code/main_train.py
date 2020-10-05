@@ -41,7 +41,6 @@ if __name__ == "__main__":
     dates_val = list(set(df_validation[date_col]))
     validation_predictions = {}
 
-
     if train_sir:
         sir = SIRModel(**sir_params_dict)
         sir.fit(df_train)
@@ -146,6 +145,8 @@ if __name__ == "__main__":
         df_agg = dict_to_df(validation_predictions,
                             df_validation)
         models.append('agg')
+
+    df_agg.to_csv("tmp.csv")
 
     if train_ci & train_agg:
         ci = CI(region_col=region_col,

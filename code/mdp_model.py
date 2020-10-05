@@ -87,6 +87,7 @@ class MDPModel:
         self.df_trained = None  # dataframe after optimal training
         self.df_trained_first = None  # dataframe containing the initial clusters (updated if keep_first = True)
         self.pfeatures = None  # number of features
+        self.actions = None
 
     # create an independent copy of the MDP object
     def __copy__(self):
@@ -132,6 +133,7 @@ class MDPModel:
             other.df_trained_first = None
 
         other.pfeatures = self.pfeatures
+        other.actions = self.actions
 
         return other
 
@@ -200,7 +202,7 @@ class MDPModel:
             data = pd.read_csv(data)
 
         # creates samples from DataFrame
-        df, pfeatures = createSamples(data.copy(),
+        df, pfeatures, actions = createSamples(data.copy(),
                                       target_colname=self.target_colname,
                                       region_colname=self.region_colname,
                                       date_colname=self.date_colname,
@@ -210,6 +212,7 @@ class MDPModel:
                                       region_exceptions=self.region_exceptions)
 
         self.pfeatures = pfeatures
+        self.actions = actions
 
         # run cross validation on the data to find best clusters
         cv_training_error, cv_testing_error = fit_cv(df.copy(),
@@ -218,6 +221,7 @@ class MDPModel:
                                                      clustering=self.clustering_algorithm,
                                                      clustering_distance_threshold=self.clustering_distance_threshold,
                                                      classification=self.classification_algorithm,
+                                                     actions=self.actions,
                                                      n_iter=self.n_iter,
                                                      n_clusters=self.n_clusters,
                                                      horizon=self.horizon,
@@ -233,8 +237,9 @@ class MDPModel:
 
         # find the best cluster
         try:
-            k = cv_testing_error.idxmin()
-            self.CV_error = cv_testing_error.loc[k]
+            cv_testing_error_skip = cv_testing_error.iloc[30:]
+            k = cv_testing_error_skip.idxmin()
+            self.CV_error = cv_testing_error_skip.loc[k]
         except:
             k = self.n_iter
 
@@ -253,6 +258,7 @@ class MDPModel:
                                         random_state=self.random_state)
 
         df_trained, training_error, testing_error = splitter(df_trained.copy(),
+                                                             actions=self.actions,
                                                              pfeatures=self.pfeatures,
                                                              th=self.splitting_threshold,
                                                              df_test=None,
@@ -271,7 +277,7 @@ class MDPModel:
         self.classifier = predict_cluster(self.df_trained, self.pfeatures)
 
         # store P_df and R_df values
-        P_df,R_df = get_MDP(self.df_trained)
+        P_df,R_df = get_MDP(self.df_trained, n_cluster=k, actions=self.actions, pfeatures=pfeatures, complete=True)
         self.P_df = P_df
         self.R_df = R_df
 
@@ -308,13 +314,13 @@ class MDPModel:
         clusters_seq = [s]
         # run for horizon h, multiply out the ratios
         for i in range(h):
-            r = r*np.exp(self.R_df.loc[s])
+            r = r*np.exp(self.R_df.loc[s].values[0])
             s = self.P_df.loc[s, 0].values[0]
             clusters_seq.append(s)
 
         if self.verbose >= 2:
             print('Sequence of clusters:', clusters_seq)
-        pred = target*r*(np.exp(self.R_df.loc[s])**(delta/self.days_avg))
+        pred = target*r*(np.exp(self.R_df.loc[s].values[0])**(delta/self.days_avg))
 
         if self.verbose >= 2:
             print('Prediction for date:', date + timedelta(n_days), '| target:', pred)

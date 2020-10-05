@@ -17,7 +17,7 @@ import os
 
 # %% User and path
 
-USER = 'omar'
+USER = 'david'
 
 if USER == 'omar':
     df_path = 'C:\\Users\\omars\\Desktop\\covid19_georgia\\covid19_team2\data\\input\\07_08_2020_states_combined.csv'
@@ -29,7 +29,7 @@ if USER == 'david':
     default_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\"
     # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_14_2020_states_and_countries_combined_restricted_.csv'
     # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_14_2020_states_and_countries_combined_restricted_new.csv'
-    # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\07_16_2020_states_combined.csv'
+    df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_13_2020_counties_countries_combined_seird.csv'
 
 if USER == 'asterios':
 
@@ -41,7 +41,7 @@ if USER == 'asterios':
 
 elif USER == 'lpgt':
     #df_path = r'../../../../../../Dropbox (MIT)/COVID-19-Team2/Data/08_11_2020_states_combined.csv'
-    default_path =  os.getcwd()
+    default_path = os.getcwd()
 
     # Please uncomment and adjust the appropriate path
 
@@ -60,7 +60,7 @@ elif USER == 'plb':
 
 target_col = 'cases'
 date_col = 'date'
-region_col = 'state'
+region_col = 'fips'
 population = 'population'
 tests_col = 'people_tested'
 new_cases = True
@@ -71,9 +71,9 @@ severe_infections = .15
 random_state = 42
 retrain = False
 
-training_agg_cutoff = '2020-07-01'
-training_cutoff = '2020-07-15'
-validation_cutoff = '2020-08-01'
+training_agg_cutoff = '2020-07-05'
+training_cutoff = '2020-07-20'
+validation_cutoff = '2020-08-10'
 
 regions_dict = {
     "fips": [25017, 34023],
@@ -118,7 +118,7 @@ train_mdp_agg = False
 train_sir_agg = False
 train_bilstm_agg = False
 
-train_agg = False
+train_agg = True
 train_ci = True
 train_preval = True
 load_knn = True
@@ -208,10 +208,10 @@ mdp_features_dict = \
 mdp_params_dict = \
     {
         "days_avg": 3,
-        "horizon": 5,
-        "n_iter": 240,
+        "horizon": 8,
+        "n_iter":100,
         "n_folds_cv": 4,
-        "clustering_distance_threshold": 0.08,
+        "clustering_distance_threshold": 0.1,
         "splitting_threshold": 0.,
         "classification_algorithm": 'RandomForestClassifier',
         "clustering_algorithm": 'Agglomerative',
