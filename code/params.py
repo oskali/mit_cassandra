@@ -28,8 +28,9 @@ if USER == 'david':
     # df_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\08_13_2020_counties_combined_seird.csv"
     default_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\"
     # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_14_2020_states_and_countries_combined_restricted_.csv'
-    # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_14_2020_states_and_countries_combined_restricted_new.csv'
-    df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_13_2020_counties_countries_combined_seird.csv'
+    # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_15_2020_states_countries_combined_with_GooPCADavid.csv'
+    # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_13_2020_counties_countries_combined_seird.csv'
+    df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\10_08_2020_states_combined.csv'
 
 if USER == 'asterios':
 
@@ -71,9 +72,9 @@ severe_infections = .15
 random_state = 42
 retrain = False
 
-training_agg_cutoff = '2020-07-05'
-training_cutoff = '2020-07-20'
-validation_cutoff = '2020-08-10'
+training_agg_cutoff = '2020-09-08'
+training_cutoff = '2020-10-08'
+validation_cutoff = None
 
 regions_dict = {
     "fips": [25017, 34023],
@@ -109,7 +110,7 @@ n_samples = 3
 # %% Load and Save Parameters
 
 train_knn = False
-train_mdp = False
+train_mdp = True
 train_sir = False
 train_bilstm = False
 
@@ -118,20 +119,20 @@ train_mdp_agg = False
 train_sir_agg = False
 train_bilstm_agg = False
 
-train_agg = True
-train_ci = True
-train_preval = True
-load_knn = True
+train_agg = False
+train_ci = False
+train_preval = False
+load_knn = False
 load_mdp = True
-load_sir = True
-load_bilstm = True
-load_agg = True
-load_ci = True
-load_preval = True
+load_sir = False
+load_bilstm = False
+load_agg = False
+load_ci = False
+load_preval = False
 
 sir_file = os.path.join('models', 'sir_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
 knn_file = os.path.join('models', 'knn_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
-mdp_file = os.path.join('models', 'mdp_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
+mdp_file = os.path.join('models', 'mdp_{}_{}_{}_workplace2.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
 agg_file = os.path.join('models', 'agg_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
 bilstm_file = os.path.join('models', 'bilstm_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
 
@@ -199,7 +200,7 @@ mdp_features_dict = \
     {
         'state':
             {"deaths": ["cases_pct3", "cases_pct5"],
-             "cases": ["cases_pct3", "cases_pct5"]},  # ["cases_nom", "cases_pct3", "cases_pct5"]},
+             "cases": ["mobility_pca", "cases_pct3", "cases_pct5"]},  # ["cases_nom", "cases_pct3", "cases_pct5"]},
         'fips':
             {"deaths": [],
              "cases": []}
@@ -209,15 +210,16 @@ mdp_params_dict = \
     {
         "days_avg": 3,
         "horizon": 8,
-        "n_iter":100,
+        "n_iter": 120,
         "n_folds_cv": 4,
         "clustering_distance_threshold": 0.1,
         "splitting_threshold": 0.,
         "classification_algorithm": 'RandomForestClassifier',
         "clustering_algorithm": 'Agglomerative',
         "n_clusters": None,
-        "action_thresh": ([], 0),  # ([-250, 200], 1),
+        "action_thresh": ([-65, -30, 30, 70], 2),  # ([-250, 200], 1),
         "features_list": mdp_features_dict[region_col][target_col],
+        "completion_algorithm": "unbias_completion",
         "verbose": 1,
         "n_jobs": -1,
         "date_colname": date_col,

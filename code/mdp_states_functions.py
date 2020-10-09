@@ -39,6 +39,7 @@ def createSamples(df,#, # dataframe: original full dataframe
                   action_thresh_base,  # int list: defining size of jumps in stringency
                   # d_delay, # int: day lag before calculating death impact
                   days_avg,  # int: # of days to average when reporting death
+                  d_delay=7,
                   region_exceptions=None):
 
     actions = [0]
@@ -51,6 +52,9 @@ def createSamples(df,#, # dataframe: original full dataframe
         df = df[~(df[region_colname].isin(region_exceptions))]
 
     action_thresh, no_action_id = action_thresh_base
+    if not (no_action_id is None):
+        df[features_list[0] + "_delay"] = df.groupby(region_colname)[features_list[0]].shift(d_delay)
+        features_list.append(features_list[0] + "_delay")
 
     # new_cols = ['state', 'date', 'cases', 'mobility_score']
     if target_colname not in features_list:
@@ -64,7 +68,7 @@ def createSamples(df,#, # dataframe: original full dataframe
     df_new.insert(0, 'ID', ids, True)
 
     # print(df.columns)
-    df_new.loc[:, ['TIME']]= pd.to_datetime(df_new['TIME'])
+    df_new.loc[:, ['TIME']] = pd.to_datetime(df_new['TIME'])
     dfs = []
     for region_name, group_region in df_new.groupby(region_colname):
         first_date = group_region.TIME.min()
@@ -139,9 +143,7 @@ def createSamples(df,#, # dataframe: original full dataframe
     else:
         action_thresh = [-1e20] + action_thresh + [1e20]
         actions = list(range(-no_action_id, len(action_thresh)-1-no_action_id)) #[0, 1] #[0, 5000, 100000]
-        df_new[features_list[0]+'_change'] = df_new[features_list[0]+'-1']-\
-            df_new[features_list[0]+'-2']
-        df_new['ACTION'] = pd.cut(df_new[features_list[0]+'_change'], bins=action_thresh, right=False, labels=actions)
+        df_new['ACTION'] = pd.cut(df_new[features_list[0] + "_delay"], bins=action_thresh, right=False, labels=actions)
 
         # set the no action to 0
         pfeatures = len(df_new.columns)-6
@@ -189,6 +191,7 @@ def fit_cv(df,
            clustering,
            actions,
            clustering_distance_threshold,
+           completion_algorithm,
            classification,
            n_iter,
            n_clusters,
@@ -235,6 +238,7 @@ def fit_cv(df,
                                                                    n_clusters=n_clusters,
                                                                    actions=actions,
                                                                    clustering_distance_threshold=clustering_distance_threshold,
+                                                                   completion_algorithm=completion_algorithm,
                                                                    pfeatures=pfeatures,
                                                                    splitting_threshold=splitting_threshold,
                                                                    classification=classification,
@@ -267,6 +271,7 @@ def fit_cv(df,
                                    clustering=clustering,
                                    n_clusters=n_clusters,
                                    clustering_distance_threshold=clustering_distance_threshold,
+                                   completion_algorithm=completion_algorithm,
                                    actions=actions,
                                    pfeatures=pfeatures,
                                    splitting_threshold=splitting_threshold,

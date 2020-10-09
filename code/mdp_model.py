@@ -17,7 +17,7 @@ import operator
 
 from mdp_states_functions import createSamples, fit_cv, fit_eval
 from mdp_utils import initializeClusters, splitter
-from mdp_testing import predict_cluster, get_MDP, predict_region_date, \
+from mdp_testing import predict_cluster, predict_region_date, \
         MDPPredictionError, MDPTrainingError
 
 #%% Model
@@ -25,13 +25,15 @@ from mdp_testing import predict_cluster, get_MDP, predict_region_date, \
 
 class MDPModel:
     def __init__(self,
-                 days_avg=None,
+                 days_avg=3,
+                 d_delay=7,
                  horizon=5,
                  n_iter=40,
                  n_folds_cv=5,
                  clustering_distance_threshold=0.05,
                  splitting_threshold=0.,
                  classification_algorithm='DecisionTreeClassifier',
+                 completion_algorithm='bias_completion',
                  clustering_algorithm='Agglomerative',
                  n_clusters=None,
                  action_thresh=([], 0),
@@ -50,6 +52,7 @@ class MDPModel:
 
         # Model dependent input attributes
         self.days_avg = days_avg  # number of days to average and compress datapoints
+        self.d_delay = d_delay
         self.horizon = horizon  # size of the validation set by region in terms of the number of forward observations
         self.n_iter = n_iter  # number of iterations in the training set
         self.n_folds_cv = n_folds_cv  # number of folds for the cross validation
@@ -79,11 +82,12 @@ class MDPModel:
         # Training output attributes
         self.CV_error = None  # error at minimum point of CV
         self.classifier = None  # model for predicting cluster number from features # done
-        self.P_df = None  # Transition function of the learnt MDP
-        self.R_df = None  # Reward function of the learnt MDP
+        self.mdp_transition = None  # model transition matrix (algorithm, including completion for missing transition)
         self.optimal_cluster_size = None  # optimal number of clusters of the MDP
+        self.completion_algorithm = completion_algorithm
 
         # Training data attributes
+        self.cv_testing_error = None
         self.df_trained = None  # dataframe after optimal training
         self.df_trained_first = None  # dataframe containing the initial clusters (updated if keep_first = True)
         self.pfeatures = None  # number of features
@@ -94,10 +98,12 @@ class MDPModel:
 
         other = MDPModel(
             days_avg=self.days_avg,
+            d_delay=self.d_delay,
             horizon=self.horizon,
             n_iter=self.n_iter,
             n_folds_cv=self.n_folds_cv,
             clustering_distance_threshold=self.clustering_distance_threshold,
+            completion_algorithm=self.completion_algorithm,
             splitting_threshold=self.splitting_threshold,
             classification_algorithm=self.classification_algorithm,
             clustering_algorithm=self.clustering_algorithm,
@@ -116,10 +122,10 @@ class MDPModel:
             keep_first=self.keep_first)
 
         # trained attributes
+        other.cv_testing_error = self.cv_testing_error
         other.CV_error = self.CV_error
         other.classifier = self.classifier
-        other.P_df = self.P_df
-        other.R_df = self.R_df
+        other.mdp_transition = self.mdp_transition
         other.optimal_cluster_size = self.optimal_cluster_size
 
         try:
@@ -203,13 +209,14 @@ class MDPModel:
 
         # creates samples from DataFrame
         df, pfeatures, actions = createSamples(data.copy(),
-                                      target_colname=self.target_colname,
-                                      region_colname=self.region_colname,
-                                      date_colname=self.date_colname,
-                                      features_list=self.features_list,
-                                      action_thresh_base=self.action_thresh,
-                                      days_avg=self.days_avg,
-                                      region_exceptions=self.region_exceptions)
+                                               target_colname=self.target_colname,
+                                               region_colname=self.region_colname,
+                                               date_colname=self.date_colname,
+                                               features_list=self.features_list,
+                                               action_thresh_base=self.action_thresh,
+                                               days_avg=self.days_avg,
+                                               d_delay=self.d_delay,
+                                               region_exceptions=self.region_exceptions)
 
         self.pfeatures = pfeatures
         self.actions = actions
@@ -220,6 +227,7 @@ class MDPModel:
                                                      splitting_threshold=self.splitting_threshold,
                                                      clustering=self.clustering_algorithm,
                                                      clustering_distance_threshold=self.clustering_distance_threshold,
+                                                     completion_algorithm=self.completion_algorithm,
                                                      classification=self.classification_algorithm,
                                                      actions=self.actions,
                                                      n_iter=self.n_iter,
@@ -239,6 +247,7 @@ class MDPModel:
         try:
             cv_testing_error_skip = cv_testing_error.iloc[30:]
             k = cv_testing_error_skip.idxmin()
+            self.cv_testing_error = cv_testing_error
             self.CV_error = cv_testing_error_skip.loc[k]
         except:
             k = self.n_iter
@@ -257,29 +266,28 @@ class MDPModel:
                                         distance_threshold=self.clustering_distance_threshold,
                                         random_state=self.random_state)
 
-        df_trained, training_error, testing_error = splitter(df_trained.copy(),
-                                                             actions=self.actions,
-                                                             pfeatures=self.pfeatures,
-                                                             th=self.splitting_threshold,
-                                                             df_test=None,
-                                                             testing=False,
-                                                             classification=self.classification_algorithm,
-                                                             it=k,
-                                                             h=self.horizon,
-                                                             OutputFlag=self.verbose,
-                                                             plot=self.plot,
-                                                             save=self.save,
-                                                             savepath=os.path.join(self.savepath, mode, str(self),  "plot_final.PNG")
-                                                             )
+        df_trained, training_error, testing_error, mdp_transition = splitter(df_trained.copy(),
+                                                                             actions=self.actions,
+                                                                             pfeatures=self.pfeatures,
+                                                                             th=self.splitting_threshold,
+                                                                             df_test=None,
+                                                                             testing=False,
+                                                                             classification=self.classification_algorithm,
+                                                                             completion_algorithm=self.completion_algorithm,
+                                                                             it=k,
+                                                                             h=self.horizon,
+                                                                             OutputFlag=self.verbose,
+                                                                             plot=self.plot,
+                                                                             save=self.save,
+                                                                             savepath=os.path.join(self.savepath, mode, str(self),  "plot_final.PNG")
+                                                                             )
 
         # storing trained dataset and predict_cluster function
         self.df_trained = df_trained
         self.classifier = predict_cluster(self.df_trained, self.pfeatures)
 
         # store P_df and R_df values
-        P_df,R_df = get_MDP(self.df_trained, n_cluster=k, actions=self.actions, pfeatures=pfeatures, complete=True)
-        self.P_df = P_df
-        self.R_df = R_df
+        self.mdp_transition = mdp_transition
 
         # store the initial clusters
         if self.keep_first:
@@ -292,8 +300,10 @@ class MDPModel:
     # predict() takes a state name and a time horizon, and returns the predicted
     # number of cases after h steps from the most recent datapoint
     def predict_region_ndays(self,
-                region,  # str: i.e. US state for prediction to be made
-                n_days):  # int: time horizon (number of days) for prediction
+                             region,  # str: i.e. US state for prediction to be made
+                             n_days,
+                             actions_df=None,
+                             verbose=0):  # int: time horizon (number of days) for prediction
         # preferably a multiple of days_avg (default 3)
         h = int(np.floor(n_days/self.days_avg))
         delta = n_days - self.days_avg*h
@@ -301,6 +311,15 @@ class MDPModel:
         # get initial cases for the state at the latest datapoint
         target = self.df_trained.loc[region, self.target_colname]
         date = self.df_trained.loc[region, "TIME"]
+        if not (actions_df is None):
+            actions_list = actions_df.loc[actions_df[self.region_colname] == region]
+            actions_list = list(actions_list[actions_list["TIME"] >= date]["ACTION"].values)
+            actions_list = actions_list + [0] * (max(h-len(actions_list), 0))
+
+        else:
+            actions_list = [0] * h
+        if verbose > 0:
+            print(region, actions_list)
 
         if self.verbose >= 2:
             print('current date:', date, '| current %s:'%self.target_colname, target)
@@ -314,13 +333,13 @@ class MDPModel:
         clusters_seq = [s]
         # run for horizon h, multiply out the ratios
         for i in range(h):
-            r = r*np.exp(self.R_df.loc[s].values[0])
-            s = self.P_df.loc[s, 0].values[0]
+            r *= np.exp(self.mdp_transition(s))
+            s, _ = self.mdp_transition(s, actions_list[i])
             clusters_seq.append(s)
 
         if self.verbose >= 2:
             print('Sequence of clusters:', clusters_seq)
-        pred = target*r*(np.exp(self.R_df.loc[s].values[0])**(delta/self.days_avg))
+        pred = target*r*(np.exp(self.mdp_transition(s))**(delta/self.days_avg))
 
         if self.verbose >= 2:
             print('Prediction for date:', date + timedelta(n_days), '| target:', pred)
@@ -329,12 +348,14 @@ class MDPModel:
     # predict_all() takes a time horizon, and returns the predicted number of
     # cases after h steps from the most recent datapoint for all states
     def predict_allregions_ndays(self,
-                                 n_days): # time horizon for prediction, preferably a multiple of days_avg (default 3)
+                                 n_days,
+                                 actions_df=None,
+                                 verbose=0): # time horizon for prediction, preferably a multiple of days_avg (default 3)
         df = self.df_trained.copy()
         df = df[['TIME', self.target_colname]]
         df['TIME'] = df['TIME'] + timedelta(n_days)
         df[self.target_colname] = df.index.map(
-            lambda region: int(self.predict_region_ndays(region, n_days)))
+            lambda region: int(self.predict_region_ndays(region, n_days, actions_df, verbose=verbose)))
         return df
 
     # predict_class() takes a dictionary of states and time horizon and returns their predicted number of cases
@@ -357,7 +378,7 @@ class MDPModel:
 
             # the state doesn't appear not in the region set
             except AssertionError:
-                if self.verbose >=1:
+                if self.verbose >= 1:
                     print("The region '{}' is not in the trained region set".format(region))
                 continue  # skip skip to the next region
 

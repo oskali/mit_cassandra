@@ -18,7 +18,7 @@ import os
 import warnings
 warnings.filterwarnings("ignore")
 
-from mdp_testing import R2_value_training, training_value_error, get_MDP, \
+from mdp_testing import R2_value_training, training_value_error, MDPTransition,\
     predict_cluster, R2_value_testing, testing_value_error, error_per_ID, MDPTrainingError, prediction_score
 
 from data_utils import save_model
@@ -192,6 +192,7 @@ def splitter(df,  # pandas dataFrame
              df_test=None,
              testing=False,
              classification='LogisticRegression',  # string: classification alg
+             completion_algorithm="bias_completion",
              it=6,  # integer: max number of clusters
              h=5,
              OutputFlag=1,
@@ -200,6 +201,10 @@ def splitter(df,  # pandas dataFrame
              plot=False,
              save=False,
              savepath=None):  #If we plot error
+
+    # initiate the transition matrix
+    mdp_trans = MDPTransition(pfeatures=pfeatures, actions=actions, completion_algorithm=completion_algorithm, verbose=0)
+
     # initializing lists for error & accuracy data
     training_R2 = []
     testing_R2 = []
@@ -238,24 +243,30 @@ def splitter(df,  # pandas dataFrame
 
             # error and accuracy calculations
 
-            R2_train = R2_value_training(df_new, actions=actions, pfeatures=pfeatures, n_cluster=nc+1, complete=True, OutputFlag=OutputFlag)
+            # ## DEBUG : OLD < 10/6/2020
+            # P_df,R_df = get_MDP(df_new, complete=True, actions=actions, pfeatures=pfeatures,
+            #                     n_cluster=nc+1,  OutputFlag=0)
+
+            # ## DEBUG : NEW 10/6/2020
+            mdp_trans.update(df_new, n_cluster=nc+1)
+            train_error = training_value_error(df_new, mdp_transition=mdp_trans, relative=True, h=h, OutputFlag=OutputFlag)
+            R2_train = R2_value_training(df_new, mdp_transition=mdp_trans, OutputFlag=OutputFlag)
 
             if testing:
                 # model = predict_cluster(df_new, pfeatures)
                 model = None
-                R2_test = R2_value_testing(df_test, df_new, model, pfeatures, actions=actions, n_cluster=nc+1, OutputFlag=OutputFlag)
+                R2_test = R2_value_testing(df_test, df_new, model, mdp_transition=mdp_trans, OutputFlag=OutputFlag)
                 test_error = testing_value_error(df_test.copy(), df_new, model,
-                                                 actions=actions,
-                                                 pfeatures=pfeatures, n_cluster=nc+1,
+                                                 mdp_transition=mdp_trans,
                                                  relative=True, h=h,
                                                  OutputFlag=OutputFlag)
                 testing_R2.append(R2_test)
                 testing_error.append(test_error)
             # train_acc = training_accuracy(df_new)[0]
             # test_acc = testing_accuracy(df_test, df_new, model, pfeatures)[0]
-            P_df,R_df = get_MDP(df_new, complete=True, actions=actions, pfeatures=pfeatures,
-                                n_cluster=nc+1,  OutputFlag=0)
-            train_error = training_value_error(df_new, P_df=P_df, R_df=R_df, relative=True, h=h, OutputFlag=OutputFlag)
+
+
+            # train_error = training_value_error(df_new, P_df=P_df, R_df=R_df, relative=True, h=h, OutputFlag=OutputFlag)
             training_R2.append(R2_train)
             training_error.append(train_error)
             # training_acc.append(train_acc)
@@ -324,9 +335,9 @@ def splitter(df,  # pandas dataFrame
     if testing:
         df_test_error = pd.DataFrame(list(zip(its, testing_error)), \
                                   columns=['Clusters', 'Error'])
-        return df_new, df_train_error, df_test_error
+        return df_new, df_train_error, df_test_error, mdp_trans
 
-    return df_new, training_error, testing_error
+    return df_new, training_error, testing_error, mdp_trans
 
 
 # (MDP FUNCTION)
@@ -336,6 +347,7 @@ def fit_cv_fold(split_idx,
                 clustering,
                 n_clusters,
                 clustering_distance_threshold,
+                completion_algorithm,
                 pfeatures,
                 actions,
                 splitting_threshold,
@@ -355,6 +367,12 @@ def fit_cv_fold(split_idx,
         idx, (train_idx, test_idx) = split_idx  # train_idx, _ = split_idx  / _, train_idx = split_idx
         df_test = df.loc[train_idx].groupby("ID").tail(horizon).reset_index(drop=True).copy()
         df_train = df.loc[train_idx].groupby("ID").apply(lambda x: x.head(-horizon)).reset_index(drop=True).copy()
+
+    elif mode == "CV":
+
+        idx, (train_idx, test_idx) = split_idx
+        df_train = df.groupby("ID").apply(lambda x: x.head(-horizon)).reset_index(drop=True).copy()
+        df_test = df.loc[test_idx].groupby("ID").tail(horizon).reset_index(drop=True).copy()
 
     elif mode == "TIME_CV":
 
@@ -389,21 +407,22 @@ def fit_cv_fold(split_idx,
     #################################################################
     # Run Iterative Learning Algorithm
 
-    df_train, training_error, testing_error = splitter(df_train,
-                                                       actions=actions,
-                                                       pfeatures=pfeatures,
-                                                       th=splitting_threshold,
-                                                       df_test=df_test,
-                                                       testing=True,
-                                                       classification=classification,
-                                                       it=n_iter,
-                                                       h=horizon,
-                                                       OutputFlag=OutputFlag,
-                                                       n=n,
-                                                       random_state=random_state,
-                                                       plot=plot,
-                                                       save=save,
-                                                       savepath=os.path.join(savepath, "plot_{}.PNG".format(idx)))
+    df_train, training_error, testing_error, _ = splitter(df_train,
+                                                          actions=actions,
+                                                          pfeatures=pfeatures,
+                                                          th=splitting_threshold,
+                                                          df_test=df_test,
+                                                          testing=True,
+                                                          completion_algorithm=completion_algorithm,
+                                                          classification=classification,
+                                                          it=n_iter,
+                                                          h=horizon,
+                                                          OutputFlag=OutputFlag,
+                                                          n=n,
+                                                          random_state=random_state,
+                                                          plot=plot,
+                                                          save=save,
+                                                          savepath=os.path.join(savepath, "plot_{}.PNG".format(idx)))
 
     m = predict_cluster(df_train, pfeatures)
     try:

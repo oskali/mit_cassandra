@@ -282,70 +282,73 @@ class SIRModel():
                     dates):
             results = dict()
             for i in range(len(regions)):
-                region = regions[i]
-                region_params = self.trained_param[region]
-                params = region_params[0]
-                #print(params)
-                start_vals = region_params[1]
-                end_vals = region_params[2]
-                start_date = region_params[3]
-                end_date = region_params[4]
+                try:
+                    region = regions[i]
+                    region_params = self.trained_param[region]
+                    params = region_params[0]
+                    #print(params)
+                    start_vals = region_params[1]
+                    end_vals = region_params[2]
+                    start_date = region_params[3]
+                    end_date = region_params[4]
 
-                insample_dates = []
-                outsample_dates = []
-                for d in dates:
-                    if d >= start_date and d <= end_date:
-                        insample_dates.append(d)
-                    elif d >= end_date:
-                        outsample_dates.append(d)
+                    insample_dates = []
+                    outsample_dates = []
+                    for d in dates:
+                        if d >= start_date and d <= end_date:
+                            insample_dates.append(d)
+                        elif d >= end_date:
+                            outsample_dates.append(d)
 
-                # Calculate training preds
-                train_pred = pd.DataFrame()
-                train_dates = pd.DataFrame()
-                if len(insample_dates) > 0:
-                    tDelta = end_date - start_date
+                    # Calculate training preds
+                    train_pred = pd.DataFrame()
+                    train_dates = pd.DataFrame()
+                    if len(insample_dates) > 0:
+                        tDelta = end_date - start_date
 
-                    times = [k for k in range(tDelta.days)]
-                    ini = start_vals
-                    paramests = params
-                    res = ode(model, ini, times, args=(paramests,))
+                        times = [k for k in range(tDelta.days)]
+                        ini = start_vals
+                        paramests = params
+                        res = ode(model, ini, times, args=(paramests,))
+                        active, recovered, dead  = finfcn(res)
+                        if self.target == "cases":
+                            train_pred = active + recovered + dead
+                        elif self.target == "active":
+                            train_pred = active
+                        elif self.target == "deaths":
+                            train_pred = dead
+                        train_dates = [start_date + timedelta(days=x) for x in range(tDelta.days)]
+
+
+                    # Calculate testing preds
+                    test_pred = pd.DataFrame()
+                    test_dates = pd.DataFrame()
+
+                    last_date = max(dates)
+                    tDelta = last_date - end_date
+
+                    times = [k for k in range(tDelta.days + 1)]
+                    ini1 = end_vals
+                    # Simulate the model
+                    res = ode(model, ini1, times, args=(params,))
                     active, recovered, dead  = finfcn(res)
                     if self.target == "cases":
-                        train_pred = active + recovered + dead
+                        test_pred = active + recovered + dead
                     elif self.target == "active":
-                        train_pred = active
+                        test_pred = active
                     elif self.target == "deaths":
-                        train_pred = dead
-                    train_dates = [start_date + timedelta(days=x) for x in range(tDelta.days)]
+                        test_pred = dead
+                    test_dates = [end_date + timedelta(days=x) for x in range(tDelta.days + 1)]
 
+                    if len(outsample_dates) > 0 and len(insample_dates) > 0:
+                        df_fin = pd.DataFrame(np.concatenate((train_pred, test_pred)), index=np.concatenate((train_dates, test_dates)))
+                    elif len(insample_dates) > 0:
+                        df_fin = pd.DataFrame(train_pred, index=train_dates)
+                    else:
+                        df_fin = pd.DataFrame(test_pred, index=test_dates)
 
-                # Calculate testing preds
-                test_pred = pd.DataFrame()
-                test_dates = pd.DataFrame()
-
-                last_date = max(dates)
-                tDelta = last_date - end_date
-
-                times = [k for k in range(tDelta.days + 1)]
-                ini1 = end_vals
-                # Simulate the model
-                res = ode(model, ini1, times, args=(params,))
-                active, recovered, dead  = finfcn(res)
-                if self.target == "cases":
-                    test_pred = active + recovered + dead
-                elif self.target == "active":
-                    test_pred = active
-                elif self.target == "deaths":
-                    test_pred = dead
-                test_dates = [end_date + timedelta(days=x) for x in range(tDelta.days + 1)]
-
-                if len(outsample_dates) > 0 and len(insample_dates) > 0:
-                    df_fin = pd.DataFrame(np.concatenate((train_pred, test_pred)), index=np.concatenate((train_dates, test_dates)))
-                elif len(insample_dates) > 0:
-                    df_fin = pd.DataFrame(train_pred, index=train_dates)
-                else:
-                    df_fin = pd.DataFrame(test_pred, index=test_dates)
-
-                results[region] = df_fin.loc[list(np.array(dates)[[date >= start_date for date in dates]]), 0]
+                    results[region] = df_fin.loc[list(np.array(dates)[[date >= start_date for date in dates]]), 0]
+                except KeyError:
+                    pass
             return results
 
