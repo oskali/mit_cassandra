@@ -30,12 +30,13 @@ if USER == 'david':
     # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_14_2020_states_and_countries_combined_restricted_.csv'
     # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_14_2020_states_and_countries_combined_restricted_new.csv'
     df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_13_2020_counties_countries_combined_seird.csv'
+    df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\10_08_2020_counties_combined_seird.csv'
 
 if USER == 'asterios':
 
     # df_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\08_13_2020_counties_combined_seird.csv"
     default_path = "D:\\Personal Data\\Dropbox (MIT)\\COVID-19-Team2\Data\\"
-    df_path = r'D:\Personal Data\Dropbox (MIT)\COVID-19-Team2\Data\08_05_2020_states_combined.csv'
+    df_path = r'D:\Personal Data\Dropbox (MIT)\COVID-19-Team2\08_05_2020_states_combined.csv'
     # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\07_16_2020_states_combined.csv'
 
 
@@ -69,11 +70,11 @@ severe_infections = .15
 # %% Run Parameters
 
 random_state = 42
-retrain = False
+retrain = True
 
-training_agg_cutoff = '2020-07-05'
-training_cutoff = '2020-07-20'
-validation_cutoff = '2020-08-10'
+training_agg_cutoff = '2020-08-15'
+training_cutoff = '2020-09-01'
+validation_cutoff = '2020-10-01'
 
 regions_dict = {
     "fips": [25017, 34023],
@@ -85,9 +86,9 @@ use_zips = True
 
 regions = regions_dict[region_col]  # regions to predict  #
 
-# unformatted_dates = [datetime.strftime(_, "%Y-%m-%d") for _ in date_range('2020-08-02', '2020-12-15', freq="1D")]  # dates to predict  #
+unformatted_dates = [datetime.strftime(_, "%Y-%m-%d") for _ in date_range('2020-08-02', '2020-12-15', freq="1D")]  # dates to predict  #
 
-unformatted_dates = ['2020-08-23', '2020-08-24', '2020-08-25']  # dates to predict  #
+# unformatted_dates = ['2020-08-23', '2020-08-24', '2020-08-25']  # dates to predict  #
 
 
 restriction_dict = {
@@ -113,10 +114,10 @@ train_mdp = False
 train_sir = False
 train_bilstm = False
 
-train_knn_agg = False
-train_mdp_agg = False
-train_sir_agg = False
-train_bilstm_agg = False
+train_knn_agg = True
+train_mdp_agg = True
+train_sir_agg = True
+train_bilstm_agg = True
 
 train_agg = True
 train_ci = True

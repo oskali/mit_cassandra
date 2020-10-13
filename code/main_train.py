@@ -45,9 +45,13 @@ if __name__ == "__main__":
         sir = SIRModel(**sir_params_dict)
         sir.fit(df_train)
         save_model(sir, sir_file)
+
     if load_sir:
         sir = load_model(sir_file)
-        validation_predictions['sir'] = sir.predict(regions_val, dates_val)
+        try:
+            validation_predictions['sir'] = sir.predict(regions_val, dates_val)
+        except:
+            pass
         models.append('sir')
 
     if train_knn:
@@ -57,7 +61,10 @@ if __name__ == "__main__":
         save_model(knn, knn_file)
     if load_knn:
         knn = load_model(knn_file)
-        validation_predictions['knn'] = knn.predict(regions_val, dates_val)
+        try:
+            validation_predictions['knn'] = knn.predict(regions_val, dates_val)
+        except:
+            pass
         models.append('knn')
 
     if train_bilstm:
@@ -67,7 +74,10 @@ if __name__ == "__main__":
         save_model(bilstm, bilstm_file)
     if load_bilstm:
         bilstm = load_model(bilstm_file)
-        validation_predictions['bilstm'] = bilstm.predict(regions_val, dates_val)
+        try:
+            validation_predictions['bilstm'] = bilstm.predict(regions_val, dates_val)
+        except:
+            pass
         models.append('bilstm')
 
     if train_mdp:
@@ -77,7 +87,10 @@ if __name__ == "__main__":
         save_model(mdp, mdp_file)
     if load_mdp:
         mdp = load_model(mdp_file)
-        validation_predictions['mdp'] = mdp.predict(regions_val, dates_val)
+        try:
+            validation_predictions['mdp'] = mdp.predict(regions_val, dates_val)
+        except:
+            pass
         models.append('mdp')
 
     if train_agg:
