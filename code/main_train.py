@@ -15,7 +15,8 @@ if __name__ == "__main__":
                         per_region, ml_methods, ml_mapping, ml_hyperparams, ci_range,
                         knn_params_dict, sir_params_dict, mdp_params_dict, bilstm_params_dict,retrain,
                         train_mdp_agg, train_sir_agg, train_bilstm_agg, train_knn_agg,
-                        load_sir, load_knn, load_bilstm, load_mdp, train_preval, tests_col, population,
+                        load_sir, load_knn, load_bilstm, load_mdp, load_sir_agg, load_knn_agg, load_mdp_agg, load_bilstm_agg,
+                        train_preval, tests_col, population,
                         preval_file, bilstm_file, alpha)
 
     from sir_model import SIRModel
@@ -105,7 +106,7 @@ if __name__ == "__main__":
             sir_agg = SIRModel(**sir_params_dict)
             sir_agg.fit(df_train_agg)
             save_model(sir_agg, sir_file.replace(".pickle", "_agg.pickle"))
-        if load_sir:
+        if load_sir_agg:
             sir_agg = load_model(sir_file.replace(".pickle", "_agg.pickle"))
             validation_predictions_agg['sir'] = sir_agg.predict(regions_agg, dates_agg)
             models_agg.append('sir')
@@ -115,7 +116,7 @@ if __name__ == "__main__":
             knn_agg = KNNModel(**knn_params_dict)
             knn_agg.fit(df_train_agg)
             save_model(knn_agg, knn_file.replace(".pickle", "_agg.pickle"))
-        if load_knn:
+        if load_knn_agg:
             knn_agg = load_model(knn_file.replace(".pickle", "_agg.pickle"))
             validation_predictions_agg['knn'] = knn_agg.predict(regions_agg, dates_agg)
             models_agg.append('knn')
@@ -125,7 +126,7 @@ if __name__ == "__main__":
             bilstm_agg = BILSTMModel(**bilstm_params_dict)
             bilstm_agg.fit(df_train_agg)
             save_model(bilstm_agg, bilstm_file.replace(".pickle", "_agg.pickle"))
-        if load_bilstm:
+        if load_bilstm_agg:
             bilstm_agg = load_model(bilstm_file.replace(".pickle", "_agg.pickle"))
             validation_predictions_agg['bilstm'] = bilstm_agg.predict(regions_agg, dates_agg)
             models_agg.append('bilstm')
@@ -135,13 +136,16 @@ if __name__ == "__main__":
             mdp_agg = MDPModel(**mdp_params_dict)
             mdp_agg.fit(df_train_agg)
             save_model(mdp_agg, mdp_file.replace(".pickle", "_agg.pickle"))
-        if load_mdp:
+        if load_mdp_agg:
             mdp_agg = load_model(mdp_file.replace(".pickle", "_agg.pickle"))
             validation_predictions_agg['mdp'] = mdp_agg.predict(regions_agg, dates_agg)
             models_agg.append('mdp')
 
         df_agg = dict_to_df(validation_predictions_agg,
                             df_validation_agg)
+
+        # import pandas as pd
+        # df_agg = pd.read_csv("tmp_2.csv", index_col=0, parse_dates=["date"])
 
         agg = AGGModel(date=date_col,
                        region=region_col,
@@ -160,6 +164,7 @@ if __name__ == "__main__":
         models.append('agg')
 
     df_agg.to_csv("tmp.csv")
+    df_agg.dropna(subset=["agg"], inplace=True)
 
     if train_ci & train_agg:
         ci = CI(region_col=region_col,
