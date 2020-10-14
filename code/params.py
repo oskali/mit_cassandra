@@ -17,7 +17,7 @@ import os
 
 # %% User and path
 
-USER = 'david'
+USER = 'lpgt'
 
 if USER == 'omar':
     df_path = 'C:\\Users\\omars\\Desktop\\covid19_georgia\\covid19_team2\data\\input\\07_08_2020_states_combined.csv'
@@ -49,7 +49,7 @@ elif USER == 'lpgt':
     #df_path = r'../../../../../../Dropbox (MIT)/COVID-19-Team2/Data/09_02_2020_states_combined.csv'
 
     # [Long-term prediction county]
-    df_path = r'../../../../../../Dropbox (MIT)/COVID-19-Team2/Data/08_13_2020_counties_combined_seird.csv'
+    df_path =  r'../../../../../../Dropbox (MIT)/COVID-19-Team2/10_08_2020_counties_combined_seird.csv'
 
 elif USER == 'plb':
     df_path = "/Users/pierre-louisbourlon/Code/MIT/RA/restructuring_clone/covid19_team2/data/input/08_14_2020_states_combined.csv"
@@ -93,14 +93,15 @@ unformatted_dates = ['2020-08-23', '2020-08-24', '2020-08-25']  # dates to predi
 restriction_dict = {
     "fips":
         {
-            "state": [
-                      "Massachusetts",
-                      "New Jersey",
-                      "Connecticut", "New Hampshire",
-                      # "Alabama",
-                      "Florida", "California"
-                      ],
-            "county": ["Queens", "New York", "Bronx"]
+            # "state": [
+            #           "Massachusetts",
+            #           "New Jersey",
+            #           "Connecticut", "New Hampshire",
+            #           # "Alabama",
+            #           "Florida", "California"
+            #           ],
+            # "county": ["Queens", "New York", "Bronx"]
+            "county": ["Mendocino"]
         },
     "state": None
 }
@@ -110,7 +111,7 @@ n_samples = 3
 
 train_knn = False
 train_mdp = False
-train_sir = False
+train_sir = True
 train_bilstm = False
 
 train_knn_agg = False
@@ -118,16 +119,16 @@ train_mdp_agg = False
 train_sir_agg = False
 train_bilstm_agg = False
 
-train_agg = True
-train_ci = True
-train_preval = True
-load_knn = True
-load_mdp = True
+train_agg = False
+train_ci = False
+train_preval = False
+load_knn = False
+load_mdp = False
 load_sir = True
-load_bilstm = True
-load_agg = True
-load_ci = True
-load_preval = True
+load_bilstm = False
+load_agg = False
+load_ci = False
+load_preval = False
 
 sir_file = os.path.join('models', 'sir_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
 knn_file = os.path.join('models', 'knn_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))

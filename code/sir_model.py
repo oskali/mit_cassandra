@@ -150,9 +150,10 @@ class SIRModel():
                             list_1 = []
                             for i in range(len(train_full_set)):
                                 val_1 = train_full_set['active'].values[i]
-                                val_2 = ((train_full_set['cases'].values[i])*val_1)/train_full_set['cases_state_state'].values[i]
+                                val_2 = ((train_full_set['cases'].values[i])*val_1)/train_full_set['cases_state'].values[i]
                                 list_1.append(val_2)
                             train_full_set['active'] = list_1
+                            print("success")
                         except:
                             pass
                     
