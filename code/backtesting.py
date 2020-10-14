@@ -31,8 +31,7 @@ if load_sir:
     sir = load_model(sir_file)
     output['sir'] = sir.predict(regions, dates)
     models.append('sir')
-    print("Hi")
-
+    
 if load_knn:
     knn = load_model(knn_file)
     output['knn'] = knn.predict(regions, dates)
