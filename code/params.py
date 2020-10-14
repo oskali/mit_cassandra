@@ -93,15 +93,14 @@ unformatted_dates = ['2020-08-23', '2020-08-24', '2020-08-25']  # dates to predi
 restriction_dict = {
     "fips":
         {
-            # "state": [
-            #           "Massachusetts",
-            #           "New Jersey",
-            #           "Connecticut", "New Hampshire",
-            #           # "Alabama",
-            #           "Florida", "California"
-            #           ],
-            # "county": ["Queens", "New York", "Bronx"]
-            "county": ["Mendocino"]
+            "state": [
+                      "Massachusetts",
+                      "New Jersey",
+                      "Connecticut", "New Hampshire",
+                      # "Alabama",
+                      "Florida", "California"
+                      ],
+            "county": ["Queens", "New York", "Bronx"]
         },
     "state": None
 }
