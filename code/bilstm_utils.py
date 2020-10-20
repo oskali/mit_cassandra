@@ -20,7 +20,7 @@ from keras.layers import Bidirectional
 from keras.layers import TimeDistributed
 from keras.layers import Flatten
 from keras.layers import Dense, Dropout
-
+from tensorflow.keras.models import load_model
 #%% Helper Functions
 
 def wmape(y_true, y_pred):
@@ -113,7 +113,7 @@ def get_best_parameters(df, memory, split_date, forward_days, r, col_date='date'
     
     features = ['GrowthRate_t-'+ str(i+1) for i in range(memory)]
 
-    for mode in ['concat','ave']:
+    for mode in ['ave']:
         
         # once we determine first date for each state, we will modify the March 22 hard coding
         train = get_in_date_range(df, first_date = '2020-04-10', last_date = mod_date(split_date, -r), date_col=col_date)
@@ -142,11 +142,11 @@ def get_best_parameters(df, memory, split_date, forward_days, r, col_date='date'
 
         # model1
         model = Sequential()
-        model.add(Bidirectional(LSTM(250, activation=act, return_sequences = False), merge_mode=mode, input_shape=(memory, 1)))
+        model.add(Bidirectional(LSTM(300, activation=act, return_sequences = False), merge_mode=mode, input_shape=(memory, 1)))
         model.add(Dense(1))
         model.compile(optimizer='adam', loss='mse', metrics=['mse'])
         
-        es = EarlyStopping(monitor='mse', verbose=1, patience = patience)
+        es = EarlyStopping(monitor='val_loss', verbose=1, patience = patience)
         model.fit(X_train, y_train.to_numpy(), validation_data=(X_test, y_test.to_numpy()), epochs=epochs, verbose=1,callbacks=[es])  
         preds = model.predict(X_test)
         
@@ -158,12 +158,12 @@ def get_best_parameters(df, memory, split_date, forward_days, r, col_date='date'
             
         # model2
         model = Sequential()
-        model.add(Bidirectional(LSTM(250, activation=act, return_sequences = True), merge_mode=mode, input_shape=(memory, 1)))
-        model.add(Bidirectional(LSTM(150, activation=act, return_sequences = False), merge_mode=mode))
+        model.add(Bidirectional(LSTM(300, activation=act, return_sequences = True), merge_mode=mode, input_shape=(memory, 1)))
+        model.add(Bidirectional(LSTM(200, activation=act, return_sequences = False), merge_mode=mode))
         model.add(Dense(1))
         model.compile(optimizer='adam', loss='mse', metrics=['mse'])
         
-        es = EarlyStopping(monitor='mse', verbose=1, patience = patience)
+        es = EarlyStopping(monitor='val_loss', verbose=1, patience = patience)
         model.fit(X_train, y_train.to_numpy(), validation_data=(X_test, y_test.to_numpy()), epochs=epochs, verbose=1,callbacks=[es])  
         preds = model.predict(X_test)
         
@@ -175,13 +175,13 @@ def get_best_parameters(df, memory, split_date, forward_days, r, col_date='date'
             
         # model3
         model = Sequential()
-        model.add(Bidirectional(LSTM(250, activation=act, return_sequences = True), merge_mode=mode, input_shape=(memory, 1)))
-        model.add(Bidirectional(LSTM(150, activation=act, return_sequences = True), merge_mode=mode))
-        model.add(Bidirectional(LSTM(100, activation=act), merge_mode=mode))
+        model.add(Bidirectional(LSTM(750, activation=act, return_sequences = True), merge_mode=mode, input_shape=(memory, 1)))
+        model.add(Bidirectional(LSTM(500, activation=act, return_sequences = True), merge_mode=mode))
+        model.add(Bidirectional(LSTM(250, activation=act), merge_mode=mode))
         model.add(Dense(1))
         model.compile(optimizer='adam', loss='mse', metrics=['mse'])
         
-        es = EarlyStopping(monitor='mse', verbose=1, patience = patience)
+        es = EarlyStopping(monitor='val_loss', verbose=1, patience = patience)
         model.fit(X_train, y_train.to_numpy(), validation_data=(X_test, y_test.to_numpy()), epochs=epochs, verbose=1,callbacks=[es])  
         preds = model.predict(X_test)
         
@@ -193,7 +193,7 @@ def get_best_parameters(df, memory, split_date, forward_days, r, col_date='date'
            
     return (model_winner,mode_winner,epochs_winner)
 
-from tensorflow.keras.models import load_model
+
 def match_to_real_growth(df, start_date, model_winner,mode_winner,epochs_winner, memory, forward_days, day_0, split_date, deterministic, region_col='county', date_col='date'):
     # creates a list that we will use with a rolling window. e.g. to predict i=2 (2 days ahead) we have features 
     # [GrowthRate_t-5, GrowthRate_t-4,... GrowthRate_t-1, pred_forward_day_0, pred_forward_day_1]
@@ -226,7 +226,7 @@ def match_to_real_growth(df, start_date, model_winner,mode_winner,epochs_winner,
 
     if (model_winner=='model_1'):
         model = Sequential()
-        model.add(Bidirectional(LSTM(250, activation=act, return_sequences = False), merge_mode=mode, input_shape=(memory, 1)))
+        model.add(Bidirectional(LSTM(300, activation=act, return_sequences = False), merge_mode=mode, input_shape=(memory, 1)))
         model.add(Dense(1))
         model.compile(optimizer='adam', loss='mse', metrics=['mse'])        
         model.fit(X_train, y_train.to_numpy(), epochs=epochs, verbose=1)
@@ -234,17 +234,17 @@ def match_to_real_growth(df, start_date, model_winner,mode_winner,epochs_winner,
         
     elif (model_winner=='model_2'):
         model = Sequential()
-        model.add(Bidirectional(LSTM(250, activation=act, return_sequences = True), merge_mode=mode, input_shape=(memory, 1)))
-        model.add(Bidirectional(LSTM(150, activation=act, return_sequences = False), merge_mode=mode))
+        model.add(Bidirectional(LSTM(300, activation=act, return_sequences = True), merge_mode=mode, input_shape=(memory, 1)))
+        model.add(Bidirectional(LSTM(200, activation=act, return_sequences = False), merge_mode=mode))
         model.add(Dense(1))
         model.compile(optimizer='adam', loss='mse', metrics=['mse']) 
         model.fit(X_train, y_train.to_numpy(), epochs=epochs, verbose=1)
         model.save("./bidir_lstm")
     else:
         model = Sequential()
-        model.add(Bidirectional(LSTM(250, activation=act, return_sequences = True), merge_mode=mode, input_shape=(memory, 1)))
-        model.add(Bidirectional(LSTM(150, activation=act, return_sequences = True), merge_mode=mode))
-        model.add(Bidirectional(LSTM(100, activation=act), merge_mode=mode))
+        model.add(Bidirectional(LSTM(750, activation=act, return_sequences = True), merge_mode=mode, input_shape=(memory, 1)))
+        model.add(Bidirectional(LSTM(500, activation=act, return_sequences = True), merge_mode=mode))
+        model.add(Bidirectional(LSTM(250, activation=act), merge_mode=mode))
         model.add(Dense(1))
         model.compile(optimizer='adam', loss='mse', metrics=['mse'])
         model.fit(X_train, y_train.to_numpy(), epochs=epochs, verbose=1)
@@ -271,7 +271,11 @@ def match_to_real_growth(df, start_date, model_winner,mode_winner,epochs_winner,
             X_test = np.reshape(x_test.to_numpy(), (x_test.to_numpy().shape[0], x_test.to_numpy().shape[1],1))
             preds = model.predict(X_test)
 
-            test0['pred_forward_day_'+str(i)] = preds.flatten() # add the new prediction as a new column
+            if(preds.flatten()[0]<0):
+                test0['pred_forward_day_'+str(i)] = abs(np.random.normal(0,1))/300 # add the new prediction as a new column
+            else:
+                test0['pred_forward_day_'+str(i)] = preds.flatten()[0]
+                     # add the new prediction as a new column
                 #pred_high_day_i and pred_low_day_i
     #             x_test = x_test.rename(columns = undo_rename(features)) # make sure that original column names are not changed when they are changed in the copy
 
@@ -319,7 +323,7 @@ def predict_covid(df, start_date, memory = 10, forward_days = 14, split_date = '
     p: either L1 norm (manhattan) or L2 norm
     func: get_weights or get_weights_sq, whether the distance norm will be squared or not
     '''
-    df0=df0.fillna(0)
+    df0 = df0[~df0.isin([np.nan, np.inf, -np.inf]).any(1)].copy(deep=True)
     
     (model_winner,mode_winner,epochs_winner) = get_best_parameters(df0, memory, split_date,forward_days, r, date_col)
     

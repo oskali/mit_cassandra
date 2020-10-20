@@ -80,7 +80,7 @@ class AGGModel():
                     except:
                         pass
 
-                models_to_keep = [key for key, values in self.mape_regions[region_name].items() if values / np.sqrt(length) < 1e-2]
+                models_to_keep = [key for key, values in self.mape_regions[region_name].items() if values / np.sqrt(length) <= 1e-3]
                 if not models_to_keep:
                     models_to_keep = [min(self.mape_regions[region_name].items(), key=operator.itemgetter(1))[0]]
 

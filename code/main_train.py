@@ -75,10 +75,7 @@ if __name__ == "__main__":
         save_model(bilstm, bilstm_file)
     if load_bilstm:
         bilstm = load_model(bilstm_file)
-        try:
-            validation_predictions['bilstm'] = bilstm.predict(regions_val, dates_val)
-        except:
-            pass
+        validation_predictions['bilstm'] = bilstm.predict(regions_val, dates_val)
         models.append('bilstm')
 
     if train_mdp:
@@ -163,7 +160,7 @@ if __name__ == "__main__":
                             df_validation)
         models.append('agg')
 
-    df_agg.to_csv("tmp.csv")
+    df_agg.to_csv("tmp1015.csv")
     df_agg.dropna(subset=["agg"], inplace=True)
 
     if train_ci & train_agg:

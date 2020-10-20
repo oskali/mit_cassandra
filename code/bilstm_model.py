@@ -61,11 +61,30 @@ class BILSTMModel():
         startdates = dict()
         for state2 in final_df[self.region].unique():
             for i in range(len(m)-1):
-                startdates[state2] = numdat[m[i]+15]
+                startdates[state2] = numdat[m[i]+8]
         deterministic = self.deterministic
 
+        state_df=final_df.copy(deep=True)
+        state_df.reset_index(drop=True, inplace=True)
+
+        # fix dataset
+        for index, _ in state_df.iterrows():
+
+            if (index < state_df.shape[0]-1):
+                
+                if (state_df.loc[index,self.region] == state_df.loc[index+1, self.region] ):
+
+                    if (state_df.loc[index,self.target] > state_df.loc[index+1,self.target]):
+                        
+                        state_df.loc[index+1,self.target] = state_df.loc[index,self.target]
         # print("Split Date and Day_0 for the given code is", split_date, day_0)
-        df_simple, df_with_growth_rates = predict_covid(df = state_df, start_date = startdates, memory = 10, forward_days = forward_days, split_date = split_date, day_0 = day_0, real_GR = True, deterministic = deterministic, r = 30,  date_col=self.date, region_col=self.region, target_col=self.target)
+        df_simple, df_with_growth_rates = predict_covid(df = state_df, start_date = startdates, 
+                                                        memory = 10, forward_days = forward_days, 
+                                                        split_date = split_date, day_0 = day_0, 
+                                                        real_GR = True, deterministic = deterministic,
+                                                        r = forward_days,  date_col=self.date,
+                                                        region_col=self.region,
+                                                        target_col=self.target)
         df_simple[self.date] = df_simple[self.date].apply(lambda x: datetime.strptime(x[:10], '%Y-%m-%d'))
 
         out = dict()
