@@ -128,7 +128,7 @@ class BILSTMModel():
 
     def predict(self, regions, dates):
 
-        self.model = load_model("./bidir_lstm.h5")
+        self.model = load_model("./bidir_lstm")
         # print("PREDICT")
         split_date = max(self.state_df[self.date])
         day_0 = split_date
