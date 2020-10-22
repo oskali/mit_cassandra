@@ -40,8 +40,15 @@ class KNNModel():
         day_0 = split_date
         forward_days = (max(dates)-split_date).days + 1
 
-        state_df = self.state_df[[self.region, self.date,self.target]].groupby([self.region, self.date]).sum().reset_index()
-        state_df = state_df.loc[~state_df[self.region].isin(['West Virginia', 'District of Columbia', 'Puerto Rico','American Samoa', 'Diamond Princess','Grand Princess','Guam','Northern Mariana Islands','Virgin Islands'])]
+        state_df = self.state_df.copy()
+
+        try:
+            state_df = state_df.loc[~state_df["state"].isin(['West Virginia', 'District of Columbia', 'Puerto Rico','American Samoa', 'Diamond Princess','Grand Princess','Guam','Northern Mariana Islands','Virgin Islands'])]
+        except:
+            pass
+
+        state_df = state_df[[self.region, self.date,self.target]].groupby([self.region, self.date]).sum().reset_index()
+
         state_df = state_df.sort_values(by = [self.region, self.date])
         is_100 = state_df[self.target] >= 100
         state_df1 = state_df[is_100]
@@ -66,12 +73,12 @@ class KNNModel():
 
         # print("Split Date and Day_0 for the given code is", split_date, day_0)
 
-
         df_simple, df_with_growth_rates = predict_covid(df = state_df, start_date = startdates, memory = 7, forward_days = forward_days, split_date = split_date, day_0 = day_0, real_GR = True, deterministic = deterministic, r = 1, date_col=self.date, region_col=self.region, target_col=self.target)
         df_simple[self.date] = df_simple[self.date].apply(lambda x: datetime.strptime(x[:10], '%Y-%m-%d'))
 
         out = dict()
         for state1 in regions:
+            print(state1)
             out[state1] = dict()
             for date1 in dates:
                 df = df_simple[[a and b for a, b in zip(df_simple[self.region]==state1, df_simple[self.date] == date1)]]

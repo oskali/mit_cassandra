@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
 from params import (target_col, date_col, region_col, training_cutoff,
-                         df_path, nmin, restriction_dict, region_exceptions)
+                         df_path, default_path, nmin, restriction_dict, region_exceptions_dict)
 import os
 import warnings
 warnings.filterwarnings("ignore")
@@ -36,9 +36,12 @@ def load_data(file=df_path,
               validation_cutoff=None,
               nmin=nmin,
               restriction_dict=restriction_dict[region_col],
-              region_exceptions=region_exceptions[region_col]):
-    df = pd.read_csv(file)
-    #df = get_public_data(file)
+              region_exceptions=region_exceptions_dict[region_col],
+              default_path=default_path):
+    if file is None:
+        df = get_public_data(default_path)
+    else:
+        df = pd.read_csv(file)
     df.columns = map(str.lower, df.columns)
 
     # restrict to a subset of obervations
@@ -60,7 +63,19 @@ def load_data(file=df_path,
         df = df[~df[region].isin(region_exceptions)].copy()
 
     df = df[df[target] >= nmin[region]]
-    df[date] = df[date].apply(lambda x: datetime.strptime(x, '%Y-%m-%d'))
+
+    df.sort_values(by=[region, date], inplace=True)
+    try:
+        df["cases_nom"] = df["cases"] / df["population"]
+        df["deaths_nom"] = df["deaths"] / df["population"]
+    except KeyError:
+        pass
+    df["cases_pct3"] = df.groupby(region)["cases"].pct_change(3).values
+    df["cases_pct5"] = df.groupby(region)["cases"].pct_change(5).values
+    try:
+        df[date] = df[date].apply(lambda x: datetime.strptime(x, '%Y-%m-%d'))
+    except:
+        df[date] = df[date].apply(lambda x: datetime.strptime(x, '%m/%d/%Y'))
     df = df.sort_values(by=[region, date])
     df_train = df[df[date] <= training_cutoff]
     print("Training set contains {} {}.".format(df[region].nunique(), region))
@@ -85,13 +100,16 @@ def dict_to_df(output,
             prediction = [region, date]
             for model in models:
                 if region in output[model].keys():
-                    prediction.append(output[model][region].loc[date])
+                    try:
+                        prediction.append(output[model][region].loc[date])
+                    except:
+                        prediction.append(np.nan)
                 else:
                     prediction.append(np.nan)
             predictions_rows.append(prediction)
-    df_predictions = pd.DataFrame(predictions_rows, columns=[region_col,date_col] + models)
+    df_predictions = pd.DataFrame(predictions_rows, columns=[region_col, date_col] + models)
     df_agg = df_predictions.merge(df_validation.loc[:, [region_col, date_col, target_col]], how='left', on=[region_col, date_col])
-    return df_agg.dropna()
+    return df_agg
 
 def mape(y_true, y_pred):
     y_true, y_pred = np.array(y_true), np.array(y_pred)

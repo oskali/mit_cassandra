@@ -1,7 +1,7 @@
+
 # -*- coding: utf-8 -*-
 """
 Created on Wed Jun 28 20:15:47 2020
-
 @authors: Yiannis, Bibha, omars
 """
 
@@ -99,7 +99,7 @@ def transpose_case_df(simple_output, forward_days, day_0,
     df = pd.DataFrame({date_col:dates, region_col: states, 'pred_'+ target_col:cases})#, 'pred_cases_low':low_cases, 'pred_cases_high': high_cases})
     return df
 
-def get_best_parameters(df, memory, split_date, forward_days, r, col_date='date'):
+def get_best_parameters(df, memory, split_date, forward_days, r,day1, col_date='date'):
     output = []
     features = ['GrowthRate_t-'+ str(i+1) for i in range(memory)]
     for threshold in [1.1, 1.5, 2, 5, 10, 20, 50, 100]:
@@ -108,10 +108,15 @@ def get_best_parameters(df, memory, split_date, forward_days, r, col_date='date'
                 # once we determine first date for each state, we will modify the March 22 hard coding
                     train = get_in_date_range(df, first_date = '2020-04-10', last_date = mod_date(split_date, -r), date_col=col_date)
                     test = get_in_date_range(df, first_date = mod_date(split_date, -r), last_date = split_date, date_col=col_date)
-                    x_train = train[features].dropna()
+
+                    train = train[~train.isin([np.nan, np.inf, -np.inf]).any(1)]
+                    test = test[~test.isin([np.nan, np.inf, -np.inf]).any(1)]
+
+                    test0 = test.copy()
+                    x_train = x_train = train[features]
                     #np.isnan(x_train.values.any())
                     y_train = train[~train[features].isna().any(axis=1)].GrowthRate
-                    np.isnan(y_train)
+
                     x_test = test[features]
                     y_test = test.GrowthRate
                     if (test.shape[0] != 0 and train.shape[0] != 0):
@@ -128,7 +133,7 @@ def get_best_parameters(df, memory, split_date, forward_days, r, col_date='date'
                             output.append([[threshold,n,p,get_weights_sq], wmape(y_test, pred_sq)])
     return output[np.argmin([x[1] for x in output])][0]
 
-def match_to_real_growth(df, start_date, threshold, n, p, func, memory, forward_days, day_0, split_date, deterministic, region_col='state', date_col='date'):
+def match_to_real_growth(df, start_date, threshold, n, p, func, memory, forward_days, day_0, split_date, deterministic, day1, region_col='state', date_col='date'):
     #creates a list that we will use with a rolling window. e.g. to predict i=2 (2 days ahead) we have features [GrowthRate_t-5, GrowthRate_t-4,... GrowthRate_t-1, pred_forward_day_0, pred_forward_day_1]
 
     feature_choices = ['GrowthRate_t-' + str(i) for i in [memory-i for i in range(memory)]] + ['pred_forward_day_' + str(i) for i in range(forward_days)]
@@ -136,6 +141,7 @@ def match_to_real_growth(df, start_date, threshold, n, p, func, memory, forward_
     # on first iteration (i=0) previous_final_test is the original df, on future iterations (i>0) it contains the predictions for t+0 through t+i-1
     previous_final_test = df
     for i in range(forward_days):
+        print(i)
         features = feature_choices[i:i+memory]
         real_features = ['GrowthRate_t-' + str(j+1) for j in range(memory)]
 
@@ -146,11 +152,12 @@ def match_to_real_growth(df, start_date, threshold, n, p, func, memory, forward_
             #d1 = df.Date[0]
             # the distinction between in state and out of state only has an effect when the day_0 is before the split_date
             #for in state train data, we can use anything before the day_0
-            train_data_in_state = get_in_date_range(df.loc[df[region_col] == state1], first_date=start_date[state1], last_date = day_0, date_col = date_col)
+            train_data_in_state = get_in_date_range(df.loc[df[region_col] == state1], first_date=start_date[state1], last_date=day_0, date_col=date_col)
             # for out of state train data, we can use anything before the split_date'
-            train_data_out_of_state = (get_in_date_range(df.loc[df[region_col] != state1], first_date=start_date[state1], last_date = split_date, date_col=date_col))
+            train_data_out_of_state = (get_in_date_range(df.loc[df[region_col] != state1], first_date=day1, last_date = split_date, date_col=date_col))
             train = pd.concat([train_data_in_state, train_data_out_of_state], sort = False)
             #print(len(train))
+            train = train[~train.isin([np.nan, np.inf, -np.inf]).any(1)]
 
             # in the train rows, we use the growthrates of t-1 to t-memory to match nearest neighbors to the test row
             x_train = train[real_features]
@@ -162,6 +169,7 @@ def match_to_real_growth(df, start_date, threshold, n, p, func, memory, forward_
 
             #we create a copy in which we will modify feature names (which include some 'pred_forward_day_x' features) to match the real_features from the train rows (all 'GrowthRate_t-x')
             test = test0.copy(deep = True)
+            test = test[~test.isin([np.nan, np.inf, -np.inf]).any(1)]
 
             x_test = test[features]
             #rename_features maps 7 days before the current iteration day to GrowthRate_t-7, 7 days before to GrowthRate_t-6, etc.
@@ -169,7 +177,10 @@ def match_to_real_growth(df, start_date, threshold, n, p, func, memory, forward_
             x_train = x_train.fillna(x_train.mean())
             nn = KNeighborsRegressor(n_neighbors=n, weights = lambda x: func(x, threshold), p=p)
             nn.fit(x_train, y_train)
-            distances, indexes = nn.kneighbors(x_test)
+            try:
+                distances, indexes = nn.kneighbors(x_test)
+            except:
+                pass
             weights = func(distances)[0]
             # values is the GrowthRate of the n nearest neighbors
             values = np.array(y_train.iloc[indexes[0]])
@@ -195,10 +206,9 @@ def match_to_real_growth(df, start_date, threshold, n, p, func, memory, forward_
     # after the final iteration, previous_final_test contains predictions for the next forward_days starting from day_0
     return previous_final_test
 
-def predict_covid(df, start_date, memory = 10, forward_days = 14, split_date = '2020-05-01', day_0 = '2020-05-01', real_GR = False, deterministic = True, r = 1, date_col='date', region_col='state', target_col='cases'):
+def predict_covid(df, start_date, memory = 10, forward_days = 14, split_date = '2020-05-01', day_0 = '2020-05-01', real_GR = False, deterministic = True, r = 1, date_col='date', region_col='state', target_col='cases', day1='2020-05-10'):
     '''
     everything before split_date is train
-
     '''
 
     #This section of code creates the forward and back features
@@ -232,8 +242,9 @@ def predict_covid(df, start_date, memory = 10, forward_days = 14, split_date = '
     p: either L1 norm (manhattan) or L2 norm
     func: get_weights or get_weights_sq, whether the distance norm will be squared or not
     '''
+    df0=df0.fillna(0)
 
-    threshold, n, p, func = get_best_parameters(df0, memory, split_date, forward_days, r, col_date=date_col)
+    threshold, n, p, func = get_best_parameters(df0, memory, split_date, forward_days, r, day1, col_date=date_col)
     #this is to choose which method to use. If only using real growth matching, we do not need
 #     if method == 'match_to_predictions':
 #         predictions = match_to_predictions(df0, threshold, n, p, func, memory, forward_days, split_date, last_test_date)
@@ -241,7 +252,7 @@ def predict_covid(df, start_date, memory = 10, forward_days = 14, split_date = '
 #         predictions = match_to_real_growth(df0, threshold, n, p, func, memory, forward_days, split_date, last_test_date)
 
     #we run the method using the best parameters according to the split date
-    predictions = match_to_real_growth(df0, start_date, threshold, n, p, func, memory, forward_days, day_0, split_date, deterministic, region_col=region_col)
+    predictions = match_to_real_growth(df0, start_date, threshold, n, p, func, memory, forward_days, day_0, split_date, deterministic, day1, region_col=region_col)
 
     #we have finished producing predictions, and move on to converting predicted growth rates into predicted cases
 
