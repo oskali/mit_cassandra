@@ -15,7 +15,7 @@ Created on Sun Apr 26 23:13:09 2020
 """
 Created on Sun Apr 26 23:13:09 2020
 
-@author: Amine, omars
+@author: Amine, omars, david
 """
 
 #%% Libraries
@@ -26,13 +26,15 @@ import numpy as np
 from datetime import datetime
 from datetime import timedelta
 import math
+from sklearn.isotonic import IsotonicRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import GridSearchCV
 from itertools import product
 from collections import Counter
 from itertools import combinations, permutations
-
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
 
 #%% New Exception for MDP learning
 class MDPPredictionError(Exception):
@@ -108,16 +110,17 @@ def complete_P_df(df, P_df, R_df, actions, pfeatures, OutputFlag=0, relative=Fal
     return P_df
 
 
-def compute_relative_R_df(df, actions, OutputFlag=0, lag=2):
+def compute_relative_R_df(df, actions, OutputFlag=0, lag=5):
 
-    action_risk = df[["ID", "RISK", "ACTION"]]
+    action_risk = df[["ID", "RISK", "ACTION"]].copy()
     action_risk["RISK_RATIO"] = action_risk.groupby("ID")["RISK"].rolling(window=lag, min_period=lag).mean().values
     action_risk["RISK_RATIO"] = action_risk.groupby("ID")["RISK_RATIO"].shift(-lag).values / action_risk["RISK"]
+    action_risk["RISK_RATIO"] = action_risk["RISK_RATIO"].replace([np.inf, -np.inf], np.nan)
     action_risk.dropna(subset=["RISK_RATIO"], inplace=True)
 
-    action_ratio_up = action_risk.groupby(by=["ACTION", "ID"])["RISK_RATIO"].quantile(0.5).reset_index()
+    action_ratio_up = action_risk.groupby(by=["ACTION", "ID"])["RISK_RATIO"].quantile(0.6).reset_index()
     action_ratio_up = action_ratio_up.pivot(index="ID", columns=["ACTION"], values=["RISK_RATIO"])
-    action_ratio_down = action_risk.groupby(by=["ACTION", "ID"])["RISK_RATIO"].quantile(0.5).reset_index()
+    action_ratio_down = action_risk.groupby(by=["ACTION", "ID"])["RISK_RATIO"].quantile(0.4).reset_index()
     action_ratio_down = action_ratio_down.pivot(index="ID", columns=["ACTION"], values=["RISK_RATIO"])
 
     action_ratio = pd.DataFrame()
@@ -127,13 +130,30 @@ def compute_relative_R_df(df, actions, OutputFlag=0, lag=2):
     # Print the obtained combinations
     for a1, a2 in list(comb):
         try:
-            sample = (action_ratio_up[("RISK_RATIO", a1)] / action_ratio_down[("RISK_RATIO", a2)]).dropna().values
-            sample = sample[(a1 - a2) * (sample - 1.) > 0]
-            action_ratio.at[a1, a2] = sample.mean()
+            sample = pd.DataFrame()
+            sample["Y"] = action_ratio_up[("RISK_RATIO", a1)]
+            sample["X"] = action_ratio_down[("RISK_RATIO", a2)]
+            sample.dropna(inplace=True)
+            sample = sample[(a1 - a2) * (sample.Y / sample.X - 1.) > 0]
+            mod = smf.quantreg('Y ~ X -1', sample).fit(q=0.5)
+            action_ratio.at[a1, a2] = mod.params[0]
             # R(s, a1) = default_R(a1, a2) * R(s, a2)
         except:
             action_ratio.at[a1, a2] = 1.
             continue
+
+    action_ratio.sort_index(inplace=True)
+    action_ratio = action_ratio.loc[:, actions]
+
+    # Isotonic Regression
+    for action in actions:
+        est_ratio = action_ratio[action].reset_index().dropna()
+        mod = IsotonicRegression()
+        mod.fit(est_ratio["index"], est_ratio[action])
+        est_ratio_iso = mod.predict(est_ratio["index"])
+        for idx, action_bis in enumerate(est_ratio["index"]):
+            action_ratio.at[action_bis, action] = est_ratio_iso[idx]
+
     return action_ratio
 
 #%% MDP Transition functions and class
@@ -155,7 +175,9 @@ def RelativeTransition(mdp_trans, s, a=None):
             r_next = mdp_trans.R_df.loc[s_next].values[0]
             return s_next, r_next
         except(KeyError, IndexError):
-            for action in mdp_trans.actions:
+            a_actions = [_ for _ in mdp_trans.actions if _ != a]
+            a_actions = sorted(a_actions, key=lambda x: (np.abs(x - a), a - x))
+            for action in a_actions:
                 try:
                     s_next_alt = mdp_trans.P_df.loc[(s, action)].values[0]
                     r_next_alt = mdp_trans.R_df.loc[s_next_alt].values[0]
@@ -193,22 +215,49 @@ class MDPTransition:
         # return current reward if action == None
         return self.completion_function(self, s, a)
 
-    def update(self, df_new, n_cluster, adjust=True):
+    def update(self, df_new, n_cluster, adjust=True, pre_complete=True):
         P_df, R_df = get_MDP(df_new, actions=self.actions, n_cluster=n_cluster,  OutputFlag=self.verbose)
+        if pre_complete:
+            P_df = precomplete_transition(P_df, self.actions, n_cluster, window=2).copy()
         if adjust:
             for cluster in range(n_cluster):
-                for a1, a2 in list(combinations(self.actions, 2)):
+
+                # find a default action
+                actions_list = [_ for _ in self.actions]
+                a_0 = 0
+                while True:
+                    try:
+                        r1 = R_df.loc[P_df.loc[(cluster, a_0)]].values[0, 0]
+                        nc1 = P_df.loc[(cluster, 0)].copy()
+                        break
+                    except:
+                        actions_list.remove(a_0)
+                        a_0 = actions_list[0]
+
+                # complete actions that are above the default action
+                a_0up = a_0
+                for a_up in range(a_0+1, self.actions[-1]+1):
                     # a1 < a2 anyway
                     try:
-                        if R_df.loc[P_df.loc[(cluster, a1)]].values[0, 0] > R_df.loc[P_df.loc[(cluster, a2)]].values[0, 0]:
-                            if a1 == 0:
-                                P_df.loc[(cluster, a2)] = P_df.loc[(cluster, 0)].copy()
-                            elif a2 == 0:
-                                P_df.loc[(cluster, a1)] = P_df.loc[(cluster, 0)].copy()
-                            else:
-                                P_df.loc[(cluster, a1)] = P_df.loc[(cluster, a2)].copy()
+                        if R_df.loc[P_df.loc[(cluster, a_up)]].values[0, 0] < R_df.loc[P_df.loc[(cluster, a_0up)]].values[0, 0]:
+                                P_df.loc[(cluster, a_up)] = P_df.loc[(cluster, a_0up)].copy()
+                        else:
+                            a_0up = a_up
                     except:
                         continue
+
+                # complete actions that are below the default action
+                a_0down = a_0
+                for a_down in range(a_0-1, self.actions[0]-1, -1):
+                    # a1 < a2 anyway
+                    try:
+                        if R_df.loc[P_df.loc[(cluster, a_0down)]].values[0, 0] < R_df.loc[P_df.loc[(cluster, a_down)]].values[0, 0]:
+                                P_df.loc[(cluster, a_down)] = P_df.loc[(cluster, a_0down)].copy()
+                        else:
+                            a_0down = a_down
+                    except:
+                        continue
+
         self.P_df = P_df
         self.R_df = R_df
 
@@ -312,6 +361,23 @@ def get_MDP(df_new, actions, n_cluster, OutputFlag=0):
 
     return P_df, R_df
 
+
+def precomplete_transition(P_df, actions, nc, window=2):
+    for cluster in range(nc):
+        for action in actions:
+            if action != 0:
+                if np.isnan(P_df.loc[(cluster, action)][0]):
+                    cur_cluster = cluster
+                    it = 0
+                    while it < window:
+                        it += 1
+                        cur_cluster = P_df.loc[(cur_cluster, 0)][0]
+                        if np.isnan(cur_cluster):
+                            break
+                        elif not np.isnan(P_df.loc[(cur_cluster, action)][0]):
+                            P_df.loc[(cluster, action)] = P_df.loc[(cur_cluster, action)][0]
+                            break
+    return P_df
 
 # Auxiliary function for deployment
 # predict_region_date() takes a given state and a date and returns the predicted target_colname
@@ -1018,8 +1084,7 @@ def plot_pred_action(model, state, df_true, n_days, action_day=0, from_first=Fal
     fig, ax = plt.subplots(figsize=(22, 11))
 
     # prediction 0
-    for a in actions[:-1]:
-        print(a)
+    for a in actions:
         s = s_init
         dates = [date]
         targets_pred = [target]

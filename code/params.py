@@ -28,9 +28,9 @@ if USER == 'david':
     # df_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\08_13_2020_counties_combined_seird.csv"
     default_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\"
     # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_14_2020_states_and_countries_combined_restricted_.csv'
-    # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_15_2020_states_countries_combined_with_GooPCADavid.csv'
+    df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_15_2020_states_countries_combined_with_GooPCADavid.csv'
     # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_13_2020_counties_countries_combined_seird.csv'
-    df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\10_08_2020_states_combined.csv'
+    # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\10_08_2020_states_combined.csv'
 
 if USER == 'asterios':
 
@@ -61,7 +61,7 @@ elif USER == 'plb':
 
 target_col = 'cases'
 date_col = 'date'
-region_col = 'fips'
+region_col = 'state'
 population = 'population'
 tests_col = 'people_tested'
 new_cases = True
@@ -73,7 +73,7 @@ random_state = 42
 retrain = False
 
 training_agg_cutoff = '2020-09-08'
-training_cutoff = '2020-10-08'
+training_cutoff = '2020-07-21'
 validation_cutoff = None
 
 regions_dict = {
@@ -221,7 +221,7 @@ mdp_params_dict = \
         "features_list": mdp_features_dict[region_col][target_col],
         "completion_algorithm": "unbias_completion",
         "verbose": 1,
-        "n_jobs": -1,
+        "n_jobs": 1,
         "date_colname": date_col,
         "target_colname": target_col,
         "region_colname": region_col,
