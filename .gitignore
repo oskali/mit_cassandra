@@ -19,3 +19,5 @@ data/input/07_08_2020_states_combined_w_pct.csv
 /code/tmp_2.csv
 /code/tmp_3.csv
 /code/case predictions.csv
+/code/region_list.txt
+/code/tmp_sir.csv
