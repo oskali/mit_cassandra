@@ -183,6 +183,7 @@ bilstm_params_dict = \
         'date': date_col,
         'region': region_col,
         'target': target_col,
+        'dates': dates
     }
 
 # %% Parameters MDP

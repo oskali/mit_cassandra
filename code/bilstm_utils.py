@@ -10,6 +10,9 @@ import pandas as pd
 import numpy as np
 from random import choices
 import tensorflow as tf
+
+
+
 from keras.layers import Layer
 from keras.models import Sequential, load_model
 
@@ -22,6 +25,7 @@ from keras.layers import Flatten
 from keras.layers import Dense, Dropout
 from tensorflow.keras.models import load_model
 #%% Helper Functions
+
 
 def wmape(y_true, y_pred):
     y_true, y_pred = np.array(y_true), np.array(y_pred).astype('float')
@@ -120,9 +124,11 @@ def get_best_parameters(df, memory, split_date, forward_days, r, col_date='date'
         test = get_in_date_range(df, first_date = mod_date(split_date, -r), last_date = split_date, date_col=col_date)
         test0 = test.copy() # maybe this is not needed
         
-        # remove nans and infs from each line of dataframes
-        train = train[~train.isin([np.nan, np.inf, -np.inf]).any(1)]
-        test = test[~test.isin([np.nan, np.inf, -np.inf]).any(1)]
+        # print(train.shape)
+        # print(test.shape)
+
+        train = train[~train[features].isin([np.nan, np.inf, -np.inf]).any(1)]
+        test = test[~test[features].isin([np.nan, np.inf, -np.inf]).any(1)] 
         
         # create dataset
         x_train = train[features]
@@ -131,9 +137,13 @@ def get_best_parameters(df, memory, split_date, forward_days, r, col_date='date'
         x_test = test[features]
         y_test = test.GrowthRate
         
+        # remove nans and infs from each line of dataframes
+
+
         # transform for lstm
         X_train = np.reshape(x_train.to_numpy(), (x_train.to_numpy().shape[0], x_train.to_numpy().shape[1], 1))
         X_test = np.reshape(x_test.to_numpy(), (x_test.to_numpy().shape[0], x_test.to_numpy().shape[1], 1))
+
 
         # set hyperparams
         act = 'relu'
@@ -193,8 +203,11 @@ def get_best_parameters(df, memory, split_date, forward_days, r, col_date='date'
            
     return (model_winner,mode_winner,epochs_winner)
 
+def find_best_model_covid(df, start_date, memory = 10, forward_days = 14, split_date = '2020-04-10', day_0 = '2020-04-10', real_GR = False, deterministic = True, r = 1,date_col='date', region_col='state', target_col='cases'):
+    
+    return get_best_parameters(df, memory, split_date,forward_days, r, date_col)
 
-def match_to_real_growth(df, start_date, model_winner,mode_winner,epochs_winner, memory, forward_days, day_0, split_date, deterministic, region_col='county', date_col='date'):
+def fit_covid(df, start_date, model_winner,mode_winner,epochs_winner, memory, forward_days, day_0, split_date, deterministic, region_col='county', date_col='date'):
     # creates a list that we will use with a rolling window. e.g. to predict i=2 (2 days ahead) we have features 
     # [GrowthRate_t-5, GrowthRate_t-4,... GrowthRate_t-1, pred_forward_day_0, pred_forward_day_1]
     feature_choices = ['GrowthRate_t-' + str(i) for i in [memory-i for i in range(memory)]] + ['pred_forward_day_' + str(i) for i in range(forward_days)]
@@ -230,7 +243,7 @@ def match_to_real_growth(df, start_date, model_winner,mode_winner,epochs_winner,
         model.add(Dense(1))
         model.compile(optimizer='adam', loss='mse', metrics=['mse'])        
         model.fit(X_train, y_train.to_numpy(), epochs=epochs, verbose=1)
-        model.save("./bidir_lstm")
+        model.save("./bidir_lstm.h5")
         
     elif (model_winner=='model_2'):
         model = Sequential()
@@ -239,7 +252,7 @@ def match_to_real_growth(df, start_date, model_winner,mode_winner,epochs_winner,
         model.add(Dense(1))
         model.compile(optimizer='adam', loss='mse', metrics=['mse']) 
         model.fit(X_train, y_train.to_numpy(), epochs=epochs, verbose=1)
-        model.save("./bidir_lstm")
+        model.save("./bidir_lstm.h5")
     else:
         model = Sequential()
         model.add(Bidirectional(LSTM(750, activation=act, return_sequences = True), merge_mode=mode, input_shape=(memory, 1)))
@@ -248,9 +261,38 @@ def match_to_real_growth(df, start_date, model_winner,mode_winner,epochs_winner,
         model.add(Dense(1))
         model.compile(optimizer='adam', loss='mse', metrics=['mse'])
         model.fit(X_train, y_train.to_numpy(), epochs=epochs, verbose=1)
-        model.save("./bidir_lstm")
+        model.save("./bidir_lstm.h5")
+
+    return model
+
+
+def predict_covid(df, start_date, model, memory = 10, forward_days = 14, split_date = '2020-05-01', day_0 = '2020-05-01', real_GR = False, deterministic = True, r = 30,date_col='date', region_col='state', target_col='cases'):
+
+    feature_choices = ['GrowthRate_t-' + str(i) for i in [memory-i for i in range(memory)]] + ['pred_forward_day_' + str(i) for i in range(forward_days)]
+
+    # on first iteration (i=0) previous_final_test is the original df, on future iterations (i>0) it contains the predictions for t+0 through t+i-1
+    previous_final_test = df
+    
+    i=0
+    features = feature_choices[i:i+memory]
+    real_features = ['GrowthRate_t-' + str(j+1) for j in range(memory)] 
         
+    # current_final_test is the df where we add all the state predictions for the current iteration (day)
+    current_final_test = pd.DataFrame()
+        
+    train = get_in_date_range(df, first_date = '2020-04-10', last_date = day_0, date_col = date_col)
+    # remove nans and infs from each line of dataframes
+    train = train[~train.isin([np.nan, np.inf, -np.inf]).any(1)]
+    
+    
+    x_train = train[real_features]
+   
+    y_train = train['GrowthRate']
+        
+    X_train = np.reshape(x_train.to_numpy(), (x_train.to_numpy().shape[0], x_train.to_numpy().shape[1], 1))
+
     for i in range(forward_days):
+        # print(i)
         features = feature_choices[i:i+memory]
         real_features = ['GrowthRate_t-' + str(j+1) for j in range(memory)]
        
@@ -263,7 +305,7 @@ def match_to_real_growth(df, start_date, model_winner,mode_winner,epochs_winner,
 
                 #we create a copy in which we will modify feature names (which include some 'pred_forward_day_x' features) to match the real_features from the train rows (all 'GrowthRate_t-x')
             test = test0.copy(deep = True)
-            test = test[~test.isin([np.nan, np.inf, -np.inf]).any(1)]
+            # test = test[~test.isin([np.nan, np.inf, -np.inf]).any(1)]
             x_test = test[features]
                  #rename_features maps 7 days before the current iteration day to GrowthRate_t-7, 7 days before to GrowthRate_t-6, etc.
             x_test = x_test.rename(columns = rename_features(i, features, memory))
@@ -281,60 +323,10 @@ def match_to_real_growth(df, start_date, model_winner,mode_winner,epochs_winner,
 
             current_final_test = pd.concat([current_final_test, test0], sort = False)
         previous_final_test = current_final_test
-        
-    # after the final iteration, previous_final_test contains predictions for the next forward_days starting from day_0
-    return previous_final_test
+     
 
-def predict_covid(df, start_date, memory = 10, forward_days = 14, split_date = '2020-05-01', day_0 = '2020-05-01', real_GR = False, deterministic = True, r = 1,date_col='date', region_col='state', target_col='cases'):
-    '''
-    everything before split_date is train 
-    
-    '''
-    
-    #This section of code creates the forward and back features
-    
-    df0 = df.copy(deep=True) # deep copy might not be needed, just for security
-    
-    #remove some states/territories with late or small number of cases
-    #CHANGE TO KEEPING STATES - hard copy in this code maybe global variable
-    df0 = df0.loc[~df0[region_col].isin(['West Virginia','District of Columbia','Puerto Rico','American Samoa', 'Diamond Princess','Grand Princess','Guam','Northern Mariana Islands','Virgin Islands'])]
-    
-    df0 = df0.sort_values(by=[region_col, date_col])#has to be sorted by days to create growth rates
-    #is_100 = df0['cases']>=100
-    #df0 = df0[is_100]
-    df0['GrowthRate'] = (df0.groupby(region_col)[target_col].shift(0) / df0[target_col].shift(1) - 1) #group by state so that consecutive rows are consecutive days in a single state
+    predictions = previous_final_test
 
-    #create the t-1 to t-memory growth rates
-    for i in range(memory):
-        df0['GrowthRate_t-' + str(i+1)] = df0.groupby(region_col)['GrowthRate'].shift(i+1)
-        
-    df0[target_col+'_t-1'] = df0[target_col].shift(1)
-
-    #this is used only if we are using the alternate method where we run nearest neighbors on predictions in the train set
-    if real_GR:
-        for i in range(forward_days):
-            df0['GrowthRate_t+' + str(i)] = df0.groupby(region_col)['GrowthRate'].shift(-i)
-
-        for i in range(forward_days):
-            df0['actual_growth_for_next_{}days'.format(i+1)] = (df0[target_col].shift(-i)/df0[target_col].shift(1)) - 1
-    '''
-    threshold: multiplier on the nearest distance that we cut off at when assigning weights, e.g. a point outside the threshold gets a weight of 0
-    n: maximum number of nearest neighbors
-    p: either L1 norm (manhattan) or L2 norm
-    func: get_weights or get_weights_sq, whether the distance norm will be squared or not
-    '''
-    df0 = df0[~df0.isin([np.nan, np.inf, -np.inf]).any(1)].copy(deep=True)
-    
-    (model_winner,mode_winner,epochs_winner) = get_best_parameters(df0, memory, split_date,forward_days, r, date_col)
-    
-    # (model_winner,mode_winner,epochs_winner) = ('model_3','concat',20)
-    #we run the method using the best parameters according to the split date
-    predictions = match_to_real_growth(df0, start_date,model_winner,mode_winner,epochs_winner, memory, forward_days, day_0, split_date, deterministic,region_col, date_col)
-    
-    #we have finished producing predictions, and move on to converting predicted growth rates into predicted cases
-    
-    #convert growth rates to cumulative growth rates -- here we need to add 1 to each predicted growth rate so that when multiplied they represent growth rate over multiple days
-    #the cumulative growth rate over n days starting today = (1+ GR_0) * (1+GR_1) * ... * (1+ GR_n-1)
     predictions['pred_growth_for_next_1days'] = predictions['pred_forward_day_0'] + 1
     for i in range(1,forward_days): 
         predictions['pred_growth_for_next_{}days'.format(i+1)] = predictions['pred_growth_for_next_{}days'.format(i)]*(predictions['pred_forward_day_'+ str(i)] + 1)
@@ -351,4 +343,4 @@ def predict_covid(df, start_date, memory = 10, forward_days = 14, split_date = '
     simple_output = predictions[columns_to_keep]
     transposed_simple_output = transpose_case_df(simple_output, forward_days, day_0, date_col, region_col, target_col)
 
-    return transposed_simple_output, predictions
+    return transposed_simple_output, predictions   
