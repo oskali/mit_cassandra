@@ -17,7 +17,7 @@ import os
 
 # %% User and path
 
-USER = 'asterios'
+USER = 'david'
 
 if USER == 'omar':
     df_path = 'C:\\Users\\omars\\Desktop\\covid19_georgia\\covid19_team2\data\\input\\07_08_2020_states_combined.csv'
@@ -111,7 +111,7 @@ n_samples = 3
 train_knn = False
 train_mdp = False
 train_sir = False
-train_bilstm = True
+train_bilstm = False
 
 train_knn_agg = False
 train_mdp_agg = False
@@ -119,19 +119,19 @@ train_sir_agg = False
 train_bilstm_agg = False
 
 train_agg = False
-train_ci = False
-train_preval = False
-load_knn = False
-load_mdp = False
-load_sir = False
+train_ci = True
+train_preval = True
+load_knn = True
+load_mdp = True
+load_sir = True
 load_bilstm = True
 load_knn_agg = False
 load_mdp_agg = False
 load_sir_agg = False
 load_bilstm_agg = False
-load_agg = False
-load_ci = False
-load_preval = False
+load_agg = True
+load_ci = True
+load_preval = True
 
 sir_file = os.path.join('models', 'sir_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
 knn_file = os.path.join('models', 'knn_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
@@ -223,7 +223,7 @@ mdp_params_dict = \
         "keep_first": True,
         "save": False,
         "plot": False,
-        "savepath": None,  # os.path.dirname(mdp_file),
+        "savepath": "",  # os.path.dirname(mdp_file),
         "region_exceptions": None
     }
 # %% Parameters AGG

@@ -15,7 +15,7 @@ if __name__ == "__main__":
                         per_region, ml_methods, ml_mapping, ml_hyperparams, ci_range,
                         knn_params_dict, sir_params_dict, mdp_params_dict, bilstm_params_dict,retrain,
                         train_mdp_agg, train_sir_agg, train_bilstm_agg, train_knn_agg,
-                        load_sir, load_knn, load_bilstm, load_mdp, load_sir_agg, load_knn_agg, load_mdp_agg, load_bilstm_agg,
+                        load_sir, load_knn, load_bilstm, load_mdp, load_sir_agg, load_knn_agg, load_mdp_agg, load_bilstm_agg, load_agg,
                         train_preval, tests_col, population,
                         preval_file, bilstm_file, alpha)
 
@@ -92,7 +92,6 @@ if __name__ == "__main__":
         models.append('mdp')
 
     if train_agg:
-
         models_agg = []
         validation_predictions_agg = {}
         regions_agg = list(set(df_validation_agg[region_col]))
@@ -141,6 +140,7 @@ if __name__ == "__main__":
         df_agg = dict_to_df(validation_predictions_agg,
                             df_validation_agg)
 
+        df_agg.to_csv("tmp_agg_.csv")
         # import pandas as pd
         # df_agg = pd.read_csv("tmp_2.csv", index_col=0, parse_dates=["date"])
 
@@ -155,11 +155,13 @@ if __name__ == "__main__":
         agg.fit(df_agg)
         save_model(agg, agg_file)
 
+    if load_agg:
+        agg = load_model(agg_file)
         validation_predictions['agg'] = agg.predict(regions_val, dates_val, validation_predictions)
-        df_agg = dict_to_df(validation_predictions,
-                            df_validation)
         models.append('agg')
 
+    df_agg = dict_to_df(validation_predictions,
+                        df_validation)
     df_agg.to_csv("tmp1015.csv")
     df_agg.dropna(subset=["agg"], inplace=True)
 

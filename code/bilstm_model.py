@@ -127,7 +127,6 @@ class BILSTMModel():
         return None
 
     def predict(self, regions, dates):
-
         self.model = load_model("./bidir_lstm")
         # print("PREDICT")
         split_date = max(self.state_df[self.date])
