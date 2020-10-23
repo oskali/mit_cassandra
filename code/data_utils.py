@@ -100,13 +100,16 @@ def dict_to_df(output,
             prediction = [region, date]
             for model in models:
                 if region in output[model].keys():
-                    prediction.append(output[model][region].loc[date])
+                    try:
+                        prediction.append(output[model][region].loc[date])
+                    except:
+                        prediction.append(np.nan)
                 else:
                     prediction.append(np.nan)
             predictions_rows.append(prediction)
-    df_predictions = pd.DataFrame(predictions_rows, columns=[region_col,date_col] + models)
+    df_predictions = pd.DataFrame(predictions_rows, columns=[region_col, date_col] + models)
     df_agg = df_predictions.merge(df_validation.loc[:, [region_col, date_col, target_col]], how='left', on=[region_col, date_col])
-    return df_agg.dropna()
+    return df_agg
 
 def mape(y_true, y_pred):
     y_true, y_pred = np.array(y_true), np.array(y_pred)

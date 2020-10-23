@@ -29,7 +29,7 @@ if USER == 'david':
     default_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\"
     # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_14_2020_states_and_countries_combined_restricted_.csv'
     # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_14_2020_states_and_countries_combined_restricted_new.csv'
-    df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_13_2020_counties_countries_combined_seird.csv'
+    df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\10_08_2020_counties_combined_seird.csv'
 
 if USER == 'asterios':
 
@@ -71,9 +71,9 @@ severe_infections = .15
 random_state = 42
 retrain = False
 
-training_agg_cutoff = '2020-07-05'
-training_cutoff = '2020-07-20'
-validation_cutoff = '2020-08-10'
+training_agg_cutoff = '2020-08-15'
+training_cutoff = '2020-09-01'
+validation_cutoff = '2020-10-01'
 
 regions_dict = {
     "fips": [25017, 34023],
@@ -111,23 +111,27 @@ n_samples = 3
 train_knn = False
 train_mdp = False
 train_sir = False
-train_bilstm = False
+train_bilstm = True
 
 train_knn_agg = False
 train_mdp_agg = False
 train_sir_agg = False
 train_bilstm_agg = False
 
-train_agg = True
-train_ci = True
-train_preval = True
-load_knn = True
-load_mdp = True
-load_sir = True
+train_agg = False
+train_ci = False
+train_preval = False
+load_knn = False
+load_mdp = False
+load_sir = False
 load_bilstm = True
-load_agg = True
-load_ci = True
-load_preval = True
+load_knn_agg = False
+load_mdp_agg = False
+load_sir_agg = False
+load_bilstm_agg = False
+load_agg = False
+load_ci = False
+load_preval = False
 
 sir_file = os.path.join('models', 'sir_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
 knn_file = os.path.join('models', 'knn_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
@@ -179,6 +183,7 @@ bilstm_params_dict = \
         'date': date_col,
         'region': region_col,
         'target': target_col,
+        'dates': dates
     }
 
 # %% Parameters MDP
@@ -209,7 +214,7 @@ mdp_params_dict = \
     {
         "days_avg": 3,
         "horizon": 8,
-        "n_iter":100,
+        "n_iter": 100,
         "n_folds_cv": 4,
         "clustering_distance_threshold": 0.1,
         "splitting_threshold": 0.,
@@ -227,7 +232,7 @@ mdp_params_dict = \
         "keep_first": True,
         "save": False,
         "plot": False,
-        "savepath": "",  # os.path.dirname(mdp_file),
+        "savepath": None,  # os.path.dirname(mdp_file),
         "region_exceptions": None
     }
 # %% Parameters AGG

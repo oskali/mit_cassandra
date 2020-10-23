@@ -17,6 +17,8 @@ from sklearn.ensemble import RandomForestRegressor
 # from xgboost import XGBRegressor
 from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVR, LinearSVR
+import operator
+from copy import deepcopy
 
 #%% Model
 
@@ -40,6 +42,8 @@ class AGGModel():
         self.ml_mapping = ml_mapping
         self.ml_hyperparams = ml_hyperparams
         self.regressor = {}
+        self.mape_regions = {}
+        self.model_regions = {}
 
     def fit(self,
             df):
@@ -52,9 +56,9 @@ class AGGModel():
             for model_name in self.ml_mapping.keys():
                 if model_name in self.ml_methods:
                     if self.ml_mapping[model_name][1]:
-                        model = GridSearchCV((self.ml_mapping)[model_name][0], self.ml_hyperparams[model_name])
+                        model = GridSearchCV((self.ml_mapping)[model_name][0](), self.ml_hyperparams[model_name])
                     else:
-                        model = self.ml_mapping[model_name][0]
+                        model = self.ml_mapping[model_name][0]()
 
                     model.fit(X_train, y_train)
                     current_mape = mape(y_train, model.predict(X_train))
@@ -68,16 +72,31 @@ class AGGModel():
             regions_ = set(df[self.region])
             for region_name in regions_:
                 df_sub = df[df[self.region] == region_name]
-                X_train = df_sub.loc[:, self.models]
+                length = df_sub.shape[0]
+                self.mape_regions[region_name] = {}
+                for model in self.models:
+                    try:
+                        self.mape_regions[region_name][model] = mape(y_true=df_sub[self.target], y_pred=df_sub[model])
+                    except:
+                        pass
+
+                models_to_keep = [key for key, values in self.mape_regions[region_name].items() if values / np.sqrt(length) <= 1e-3]
+                if not models_to_keep:
+                    models_to_keep = [min(self.mape_regions[region_name].items(), key=operator.itemgetter(1))[0]]
+
+                self.model_regions[region_name] = models_to_keep
+
+                X_train = df_sub.loc[:, self.model_regions[region_name]]
                 y_train = df_sub.loc[:, self.target]
                 best_mape = np.infty
                 best_model = None
                 for model_name in self.ml_mapping.keys():
                     if model_name in self.ml_methods:
                         if self.ml_mapping[model_name][1]:
-                            model = GridSearchCV(self.ml_mapping[model_name][0], self.ml_hyperparams[model_name])
+                            model_instance = deepcopy(self.ml_mapping[model_name][0])
+                            model = GridSearchCV(model_instance, self.ml_hyperparams[model_name])
                         else:
-                            model = (self.ml_mapping)[model_name][0]
+                            model = deepcopy(self.ml_mapping[model_name][0])
 
                         model.fit(X_train, y_train)
                         current_mape = mape(y_train, model.predict(X_train))
@@ -91,7 +110,7 @@ class AGGModel():
         for region in regions:
             try:
                 l_prov = []
-                for model in self.models:
+                for model in self.model_regions[region]:
                     l_prov.append(list(output[model][region]))
 
                 X = np.array(l_prov).transpose()
