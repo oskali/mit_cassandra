@@ -18,9 +18,9 @@ We incorporated an additional feature that is thought to affect the distribution
 #### Completeness of the MDP
 One additional extension of the model consisted assuming that the Discrete Markov Process is complete, i.e. for any given `state` and `action`, we can make a prediction.
 This evolves either:
-- providing an algorithm to complete the transition matrix
+- providing an algorithm that completes the transition matrix
 or :
-- providing an algorithm to locally estimates a next cluster and a adjusted growth rate
+- providing an algorithm that locally estimates a next cluster and a adjusted expected growth rate
 
 ### Application : Case Predictions using the MDP, model specifications
 In order to learn the growth rates through the MDP, we preprocessed the data and specified the following (context-specific parameters): 
