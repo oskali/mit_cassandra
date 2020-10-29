@@ -12,7 +12,6 @@ import pandas as pd
 from knn_utils import cassandra_fit, cassandra_predict , mod_date , days_between
 from copy import deepcopy
 from sklearn.preprocessing import normalize
-
 #%% Model
 
 class KNNModel():
