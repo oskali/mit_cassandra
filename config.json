@@ -1,0 +1,29 @@
+{
+    "model_type": "prevalence",
+    "model_name": "county_prevalance_agg_model",
+    "model_id": "V0.2",
+    "model_pyfile": "inference_model",
+    "model_pyclass": "InferenceModel",
+    "input_models": [],
+    "model_parameters": {
+        "random_seed": 632,
+        "training_cutoff": "2020-09-01",
+        "validation_cutoff": "2020-10-01",
+        "infection_period": 3,
+        "severe_infections": 0.15,
+        "fips_path": "ZIP-COUNTY-FIPS_2018-03.csv",
+        "use_zips": "True",
+        "load_sir": "True",
+        "load_knn": "True",
+        "load_mdp": "True",
+        "load_agg": "True",
+        "load_ci": "True",
+        "sir_file": "models/sir_20200901_cases_fips.pickle",
+        "knn_file": "models/knn_20200901_cases_fips.pickle",
+        "mdp_file": "models/mdp_20200901_cases_fips.pickle",
+        "ci_file": "models/ci_20200901_cases_fips.pickle",
+        "agg_file": "models/agg_20200901_cases_fips.pickle",
+        "preval_file": "models/preval_20200901_cases_fips.pickle",
+        "bilstm_file": "models/bilstm_20200901_cases_fips.pickle"
+    }
+}
