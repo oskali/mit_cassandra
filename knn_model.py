@@ -144,5 +144,5 @@ class KNNModel():
         for region in filter_regions:
             if len(output[region]) == 0:
                 del output[region]
-        return output , df_simple
+        return output
         # return df_simple
