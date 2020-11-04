@@ -206,10 +206,11 @@ class SIRModel():
                         beta = sum(i_t[max(0, wave_start-1):(t-1)])/sum(full_cases[wave_start:(t)]*S_t[wave_start:(t)]/region_pop)
                         i_t_pred = beta*S_t[(t-1)]*full_cases[(t-1)]/region_pop
                         strangeness = abs(i_t[(t-1)] - i_t_pred)
+                        print(strangeness)
                         strange_list.append(strangeness)
-                        p = sum(strange_list >= strangeness)/t
+                        p = sum(strange_list >= strangeness)/(t-wave_start)
                         p_list.append(p)
-                        #print(p)
+                        print(p)
                         M_t_prev = M_t
                         M_t = M_t * e*pow(p, (e-1))
                         M_t_list.append(M_t)
@@ -220,89 +221,63 @@ class SIRModel():
                             strange_list = []
                         #foo = pd.DataFrame({'date':train_full_set['date'].values[4:], 'M_t':M_t_list})
                         
+                    pop_est = region_pop
+                    prev_xest = None
+                    for w in range(len(wave_list)):
+                        begin_wave = wave_list[w]
+                        if w == len(wave_list)-1:
+                            end_wave = len(full_cases)
+                        else:
+                            end_wave = wave_list[w+1] - 1
+                        
+                        wave_cases = full_cases[begin_wave:end_wave]
+                        wave_cum_cases = full_cum_cases[begin_wave:end_wave]
+                        wave_recover = full_recover[begin_wave:end_wave]
+                        wave_dead = full_dead[begin_wave:end_wave]
+                        wave_times = full_times[begin_wave:end_wave]
                         
                         
+                        i_t = wave_cum_cases[1:(len(wave_cum_cases)-1)] - wave_cum_cases[0:(len(wave_cum_cases)-2)]
+                        r_t = wave_recover[1:(len(wave_recover)-1)] - wave_recover[0:(len(wave_recover)-2)]
+                        d_t = wave_dead[1:(len(wave_dead)-1)] - wave_dead[0:(len(wave_dead)-2)]
+                        S_t = np.array(pop_est) - wave_cum_cases
                         
-                    #ONLY FOR 2-WAVE VER
-                    if(len(wave_list) == 1):
-                        beta = sum(i_t)/sum(full_cases*S_t/region_pop)
-                        gamma = sum(r_t)/sum(full_cases)
-                        mu = sum(d_t)/sum(full_cases)
-                        a = self.avals[0]
+                        beta = sum(i_t)/sum(wave_cases*S_t/pop_est)
+                        gamma = sum(r_t)/sum(wave_cases)
+                        mu = sum(d_t)/sum(wave_cases)
+                        #a = self.avals[0]
                         
-                        params = [beta, gamma, region_pop, a, mu]
+                        params = [beta, gamma, pop_est, a, mu]
                         paramnames = ['beta', 'gamma', 'pop', 'a', 'mu']
-                        warmstart[region] = params
                         
-                        iniests = inifcn(params, full_cases, full_dead)
-                        optimizer = optimize.minimize(NLL, params, args=(full_cases, full_dead, full_recover, self.death_lm, self.recover_lm, weight_dead, weight_recover, full_times, iniests), method=self.optimizer)
+                        if w == 0:
+                            iniests = inifcn(params, wave_cases, wave_dead)
+                        else:
+                            iniests = prev_xest[len(prev_xest)-1]
+                        
+                        #optimizer = optimize.minimize(NLL, params, args=(wave_cases, wave_dead, wave_recover, self.death_lm, self.recover_lm, weight_dead, weight_recover, wave_times, iniests), method=self.optimizer)
+                        optimizer = optimize.minimize(NLL, params, args=(wave_cases, wave_dead, wave_recover, 2,2, weight_dead, weight_recover, wave_times, iniests), method= 'Nelder-Mead')
+                        
                         paramests = np.abs(optimizer.x)
-                        iniests = inifcn(paramests, full_cases, full_dead)
-                        xest = ode(model, iniests, full_times, args=(paramests,))
+                        if w == 0:
+                            iniests = inifcn(paramests, wave_cases, wave_dead)
 
-                        output[region] = [paramests, xest[0,:], xest[len(xest)-1,:], train_full_set.date.iloc[0], train_full_set.date.iloc[len(train_full_set) - 1], xest]
+                        xest = ode(model, iniests, wave_times, args=(paramests,))
+                        
+                        if w == 0:
+                            full_xest = xest
+                        else:
+                            full_xest = np.concatenate((full_xest, xest))
 
-                        self.trained_param = output
-                    else:
-                        new_wave = wave_list[1]
-                        first_cases = full_cases[:new_wave]
-                        first_cum_cases = full_cum_cases[:new_wave]
-                        first_recover = full_recover[:new_wave]
-                        first_dead = full_dead[:new_wave]
-                        first_times = full_times[:new_wave]
+         
+                        pop_est = paramests[2]
+                        prev_xest = xest
                         
-                        second_cases = full_cases[new_wave:]
-                        second_cum_cases = full_cum_cases[new_wave:]
-                        second_recover = full_recover[new_wave:]
-                        second_dead = full_dead[new_wave:]
-                        second_times = [j for j in range((len(full_times)-new_wave))]
-                        
-                        #first wave
-                        i_t = first_cum_cases[1:(len(first_cum_cases)-1)] - first_cum_cases[0:(len(first_cum_cases)-2)]
-                        r_t = first_recover[1:(len(first_recover)-1)] - first_recover[0:(len(first_recover)-2)]
-                        d_t = first_dead[1:(len(first_dead)-1)] - first_dead[0:(len(first_dead)-2)]
-                        S_t = np.array(region_pop) - first_cum_cases
+                        if w == len(wave_list)-1:
+                            output[region] = [paramests, xest[0,:], xest[len(xest)-1,:], train_full_set.date.iloc[0], train_full_set.date.iloc[len(train_full_set) - 1], xest]
+                            #self.trained_param = output
+                       
                     
-                        beta = sum(i_t)/sum(first_cases*S_t/region_pop)
-                        gamma = sum(r_t)/sum(first_cases)
-                        mu = sum(d_t)/sum(first_cases)
-                        a = self.avals[0]
-                        
-                        params = [beta, gamma, region_pop, a, mu]
-                        paramnames = ['beta', 'gamma', 'pop', 'a', 'mu']
-                        warmstart[region] = params
-                        
-                        iniests = inifcn(params, first_cases, first_dead)
-                        optimizer = optimize.minimize(NLL, params, args=(first_cases, first_dead, first_recover, self.death_lm, self.recover_lm, weight_dead, weight_recover, first_times, iniests), method=self.optimizer)
-                        paramests = np.abs(optimizer.x)
-                        iniests = inifcn(paramests, first_cases, first_dead)
-                        first_xest = ode(model, iniests, first_times, args=(paramests,))
-                        
-                        #second wave
-                        i_t = second_cum_cases[1:(len(second_cum_cases)-1)] - second_cum_cases[0:(len(second_cum_cases)-2)]
-                        r_t = second_recover[1:(len(second_recover)-1)] - second_recover[0:(len(second_recover)-2)]
-                        d_t = second_dead[1:(len(second_dead)-1)] - second_dead[0:(len(second_dead)-2)]
-                        S_t = np.array(paramests[2]) - second_cum_cases
-                        
-                        beta = sum(i_t)/sum(second_cases*S_t/region_pop)
-                        gamma = sum(r_t)/sum(second_cases)
-                        mu = sum(d_t)/sum(second_cases)
-                        a = self.avals[0]
-                        
-                        params = [beta, gamma, paramests[2], a, mu]
-                        paramnames = ['beta', 'gamma', 'pop', 'a', 'mu']
-
-                        iniests = first_xest[len(first_xest)-1]
-                        optimizer = optimize.minimize(NLL, params, args=(second_cases, second_dead, second_recover, self.death_lm, self.recover_lm, weight_dead, weight_recover, second_times, iniests), method=self.optimizer)
-                        paramests = np.abs(optimizer.x)
-                        iniests = first_xest[len(first_xest)-1]
-                        second_xest = ode(model, iniests, second_times, args=(paramests,))
-                        
-                        xest = np.concatenate((first_xest, second_xest))
-
-                        output[region] = [paramests, xest[0,:], xest[len(xest)-1,:], train_full_set.date.iloc[0], train_full_set.date.iloc[len(train_full_set) - 1], xest]
-
-                        self.trained_param = output
     
             self.trained_warmstart = warmstart
                         
