@@ -17,7 +17,12 @@ import os
 
 # %% User and path
 
-USER = 'boyan'
+USER = 'Yiannis'
+
+if USER == 'Yiannis':
+    default_path = os.getcwd()
+    df_path = 'C:/Users/SPANT/Dropbox (MIT)/COVID-19-Team2/10_08_2020_counties_combined_seird.csv'
+    fips_path = '/home/ubuntu/my_pc/Documents/Research/covid19/git_repository/covid19_team2/ZIP-COUNTY-FIPS_2018-03.csv'
 
 if USER == 'boyan':
     default_path = os.getcwd()
@@ -127,10 +132,10 @@ train_bilstm_agg = False
 train_agg = False
 train_ci = False
 train_preval = False
-load_knn = False
+load_knn = True
 load_mdp = False
 load_sir = False
-load_bilstm = True
+load_bilstm = False
 load_knn_agg = False
 load_mdp_agg = False
 load_sir_agg = False

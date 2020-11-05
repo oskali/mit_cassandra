@@ -130,7 +130,6 @@ class KNNModel():
             clusters_map= self.clusters_map)
         
         
-        the rest is just modification of the ouput
         df_simple[self.date] = df_simple[self.date].apply(lambda x: datetime.strptime(x[:10], '%Y-%m-%d'))
         out = dict()
         for state1 in regions:

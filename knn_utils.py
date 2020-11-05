@@ -27,9 +27,9 @@ def mod_date(date, interval):
     return str(np.datetime64(date) + np.timedelta64(interval, 'D'))
 
 def days_between(d1, d2):
-    d1 = datetime.strptime(d1, "%Y-%m-%d")
-    d2 = datetime.strptime(d2, "%Y-%m-%d")
-    return abs((d1 - d2).days)
+    d1=np.array(d1,dtype='datetime64[D]') 
+    d2=np.array(d2,dtype='datetime64[D]') 
+    return abs((d2-d1).item().days)
 
 def get_weights(arr, threshold = 100):
     def weight_func(row, threshold = 100):

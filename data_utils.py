@@ -12,9 +12,10 @@ import pickle
 from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
-from models.prevalence.perakis_prevalence import params
-#import params
-sys.modules['params'] = params
+#for the unit test uncomment the line bellow and comment 2 lines bellow
+# from models.prevalence.perakis_prevalence import params #unit test
+import params
+# sys.modules['params'] = params # unit test
 
 import os
 import warnings
