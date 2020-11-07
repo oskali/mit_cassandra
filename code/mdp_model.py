@@ -18,7 +18,7 @@ import operator
 from mdp_states_functions import createSamples, fit_cv, fit_eval
 from mdp_utils import initializeClusters, splitter
 from mdp_testing import predict_cluster, predict_region_date, \
-        MDPPredictionError, MDPTrainingError
+        MDPPredictionError, MDPTrainingError, get_MDP
 
 #%% Model
 
@@ -245,6 +245,7 @@ class MDPModel:
 
         # find the best cluster
         try:
+            # DEBUG n clusters
             cv_testing_error_skip = cv_testing_error.iloc[30:]
             k = cv_testing_error_skip.idxmin()
             self.cv_testing_error = cv_testing_error
@@ -286,7 +287,7 @@ class MDPModel:
         self.df_trained = df_trained
         self.classifier = predict_cluster(self.df_trained, self.pfeatures)
 
-        # store P_df and R_df values
+        # store the trained transition object
         self.mdp_transition = mdp_transition
 
         # store the initial clusters
@@ -294,6 +295,7 @@ class MDPModel:
             if self.verbose >= 2:
                 print("Saving the initial clusters per region...")
             self.df_trained_first = self.df_trained.groupby(self.region_colname).first().copy()
+
         # store only the last states for prediction
         self.df_trained = self.df_trained.groupby(self.region_colname).last()
 
@@ -333,8 +335,8 @@ class MDPModel:
         clusters_seq = [s]
         # run for horizon h, multiply out the ratios
         for i in range(h):
-            r *= np.exp(self.mdp_transition(s))
             s, _ = self.mdp_transition(s, actions_list[i])
+            r *= np.exp(self.mdp_transition(s))
             clusters_seq.append(s)
 
         if self.verbose >= 2:
@@ -350,7 +352,7 @@ class MDPModel:
     def predict_allregions_ndays(self,
                                  n_days,
                                  actions_df=None,
-                                 verbose=0): # time horizon for prediction, preferably a multiple of days_avg (default 3)
+                                 verbose=0):  # time horizon for prediction, preferably a multiple of days_avg (default 3)
         df = self.df_trained.copy()
         df = df[['TIME', self.target_colname]]
         df['TIME'] = df['TIME'] + timedelta(n_days)

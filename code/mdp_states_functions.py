@@ -30,7 +30,8 @@ from mdp_utils import fit_cv_fold
 # days_avg the number of days used to compress datapoints, and returns a data frame with
 # desired features and history, ratio values and history, and 'RISK' and 'ACTION'
 # returns new dataframe with only the desired columns, number of features considered
-def createSamples(df,#, # dataframe: original full dataframe
+def createSamples(df,
+                  # dataframe: original full dataframe
                   # new_cols, # str list: names of columns to be considered
                   target_colname,  # str: col name of target_colname (i.e. 'deaths')
                   region_colname,  # str, col name of region (i.e. 'state')
@@ -139,14 +140,12 @@ def createSamples(df,#, # dataframe: original full dataframe
     # create action
     if len(action_thresh) == 0:
         df_new['ACTION'] = 0
-        pfeatures = len(df_new.columns)-5
     else:
         action_thresh = [-1e20] + action_thresh + [1e20]
         actions = list(range(-no_action_id, len(action_thresh)-1-no_action_id)) #[0, 1] #[0, 5000, 100000]
         df_new['ACTION'] = pd.cut(df_new[features_list[0] + "_delay"], bins=action_thresh, right=False, labels=actions)
 
-        # set the no action to 0
-        pfeatures = len(df_new.columns)-6
+    pfeatures = len(df_new.columns)-6
 
     # df_new = df_new[df_new['r_t'] != 0]
     df_new = df_new.reset_index()

@@ -118,6 +118,10 @@ train_knn_agg = False
 train_mdp_agg = False
 train_sir_agg = False
 train_bilstm_agg = False
+load_sir_agg = False
+load_knn_agg = False
+load_mdp_agg = False
+load_bilstm_agg = False
 
 train_agg = False
 train_ci = False
@@ -130,9 +134,10 @@ load_agg = False
 load_ci = False
 load_preval = False
 
+
 sir_file = os.path.join('models', 'sir_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
 knn_file = os.path.join('models', 'knn_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
-mdp_file = os.path.join('models', 'mdp_{}_{}_{}_workplace2.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
+mdp_file = os.path.join('models', 'mdp_{}_{}_{}_workplace6.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
 agg_file = os.path.join('models', 'agg_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
 bilstm_file = os.path.join('models', 'bilstm_{}_{}_{}.pickle'.format(training_cutoff.replace("-", ""), target_col, region_col))
 
@@ -191,7 +196,7 @@ region_exceptions_dict = {
          'Grand Princess', 'American Samoa', 'Virgin Islands',
          'Hawaii', "Benin", "Ecuador",
          "Jordan", "Lithuania", "Uganda",
-         "Georgia", "International",
+         "Georgia", "International", "Mongolia"
          ],
     "fips":
         []}
@@ -200,7 +205,7 @@ mdp_features_dict = \
     {
         'state':
             {"deaths": ["cases_pct3", "cases_pct5"],
-             "cases": ["mobility_pca", "cases_pct3", "cases_pct5"]},  # ["cases_nom", "cases_pct3", "cases_pct5"]},
+             "cases": ["workplaces_percent_change_from_baseline_med_diff7", "cases_pct3", "cases_pct5"]},  # ["cases_nom", "cases_pct3", "cases_pct5"]},
         'fips':
             {"deaths": [],
              "cases": []}
@@ -210,16 +215,19 @@ mdp_params_dict = \
     {
         "days_avg": 3,
         "horizon": 8,
-        "n_iter": 120,
+        "d_delay": 7,
+        "n_iter": 80,
         "n_folds_cv": 4,
         "clustering_distance_threshold": 0.1,
         "splitting_threshold": 0.,
-        "classification_algorithm": 'RandomForestClassifier',
+        "classification_algorithm": 'DecisionTreeClassifier',
         "clustering_algorithm": 'Agglomerative',
         "n_clusters": None,
-        "action_thresh": ([-65, -30, 30, 70], 2),  # ([-250, 200], 1),
+        # "action_thresh": ([-65, -30, 30, 70], 2),  # ([-250, 200], 1),
+        # "action_thresh": ([-21, -6, 7, 17], 2),  # ([-250, 200], 1),
+        "action_thresh": ([-19, 15], 1),  # ([-250, 200], 1),
         "features_list": mdp_features_dict[region_col][target_col],
-        "completion_algorithm": "unbias_completion",
+        "completion_algorithm": "relative_completion",
         "verbose": 1,
         "n_jobs": 1,
         "date_colname": date_col,
