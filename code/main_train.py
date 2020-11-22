@@ -16,9 +16,9 @@ if __name__ == "__main__":
                         knn_params_dict, sir_params_dict, mdp_params_dict, retrain,
                         train_mdp_agg, train_sir_agg, train_knn_agg,
                         load_sir, load_knn, load_mdp, train_preval, tests_col, population,
-                        preval_file, alpha)
+                        preval_file, alpha, df_path)
 
-    from sir_model import SIRModel
+    from new_ws_seird_model import SIRModel
     from knn_model import KNNModel
     from mdp_model import MDPModel
     from agg_model import AGGModel
@@ -29,8 +29,8 @@ if __name__ == "__main__":
 
     #%% Load Data
 
-    df, df_train, df_validation = load_data(validation_cutoff=validation_cutoff)
-    _, df_train_agg, df_validation_agg = load_data(training_cutoff=training_agg_cutoff,
+    df, df_train, df_validation = load_data(file = df_path, validation_cutoff=validation_cutoff)
+    _, df_train_agg, df_validation_agg = load_data(file = df_path, training_cutoff=training_agg_cutoff,
                                                    validation_cutoff=training_cutoff)
 
     #%% Train and Save Models

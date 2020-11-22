@@ -43,7 +43,7 @@ def load_data(file=df_path,
     else:
         df = pd.read_csv(file)
     df.columns = map(str.lower, df.columns)
-
+    print(restriction_dict)
     # restrict to a subset of obervations
     if not (restriction_dict is None):
         masks = []
@@ -75,7 +75,10 @@ def load_data(file=df_path,
     try:
         df[date] = df[date].apply(lambda x: datetime.strptime(x, '%Y-%m-%d'))
     except:
-        df[date] = df[date].apply(lambda x: datetime.strptime(x, '%m/%d/%Y'))
+        try:
+            df[date] = df[date].apply(lambda x: datetime.strptime(x, '%m/%d/%Y'))
+        except:
+            df[date] = df[date].apply(lambda x: datetime.strptime(x, '%m/%d/%y'))
     df = df.sort_values(by=[region, date])
     df_train = df[df[date] <= training_cutoff]
     print("Training set contains {} {}.".format(df[region].nunique(), region))

@@ -16,6 +16,7 @@ from sklearn.metrics import mean_squared_error
 from math import sqrt
 from tqdm import tqdm
 import random as rd
+import matplotlib.pyplot as plt
 
 
 
@@ -75,7 +76,7 @@ def NLL(params, cases, deaths, recover, death_lm, recover_lm, weight_dead, weigh
 
 #%% Model
 
-class good_SIRModel():
+class SIRModel():
         def __init__(self,
                      nmin=100,
                      date='date',
@@ -87,7 +88,7 @@ class good_SIRModel():
                      gammavals = [0.01],
                      avals = [0.0714],#0.142
                      muvals = [0.001],
-                     beta1vals = [ 1, 1.3, 1.6, 3, 3.5, 4, 5, 7, 8, 9, 10],
+                     beta1vals = [ 0.01, 0.2, 1, 1.3, 1.6, 3, 3.5, 4, 5, 7],
                      #beta1vals = [],
                      #beta2vals = [],
                      beta2vals = [0.05, 2.25, 4.5, 5, 7, 10],
@@ -133,26 +134,32 @@ class good_SIRModel():
             warmstart = dict()
             population_df = dataset.loc[:, [self.region, self.population]]
             population = {population_df.iloc[i, 0] : population_df.iloc[i, 1] for i in range(population_df.shape[0])}
-
+            
+            
             for i in range(len(regions)):
                 region = regions[i]
-                train_full_set = dataset[[a and b for a, b in zip(dataset[self.region] == region, dataset["active"] > self.nmin)]]
-
+                train_full_set = dataset[[a for a in dataset[self.region] == region]]
+                train_full_set = train_full_set.sort_values(self.date)
+                train_full_set['active'] = train_full_set['cases'] - train_full_set['cases'].shift(14)
+                train_full_set = train_full_set.dropna(subset=['active'])
+                train_full_set = train_full_set[[a for a in train_full_set["active"] > self.nmin]]
+                
+                
                 #for counties
                 region_pop = population[region]
                 if train_full_set.shape[0] > self.nmin_train_set and region_pop > 0:
                     train_full_set = train_full_set.sort_values(self.date)
 
-                    if self.region == 'fips':
-                        try:
-                            list_1 = []
-                            for i in range(len(train_full_set)):
-                                val_1 = train_full_set['active'].values[i]
-                                val_2 = ((train_full_set['cases'].values[i])*val_1)/train_full_set['cases_state_state'].values[i]
-                                list_1.append(val_2)
-                            train_full_set['active'] = list_1
-                        except:
-                            pass
+                    # if self.region == 'fips':
+                    #     try:
+                    #         list_1 = []
+                    #         for i in range(len(train_full_set)):
+                    #             val_1 = train_full_set['active'].values[i]
+                    #             val_2 = ((train_full_set['cases'].values[i])*val_1)/train_full_set['cases_state_state'].values[i]
+                    #             list_1.append(val_2)
+                    #         train_full_set['active'] = list_1
+                    #     except:
+                    #         pass
 
                     full_times = [j for j in range(len(train_full_set))]
                     full_cum_cases = train_full_set.loc[:, "cases"].values
@@ -215,18 +222,18 @@ class good_SIRModel():
                         M_t_prev = M_t
                         M_t = M_t * e*pow(p, (e-1))
                         M_t_list.append(M_t)
-                        if M_t > l or abs(M_t - M_t_prev) > tau:
+                        if M_t > l: #or abs(M_t - M_t_prev) > tau:
                             wave_start = t
                             wave_list.append(t)
                             M_t = 1
                             strange_list = []
-                        print(wave_list)
+                        #print(wave_list)
                         #foo = pd.DataFrame({'date':train_full_set['date'].values[4:], 'M_t':M_t_list})
-
+                    print(wave_list)
                     pop_est = region_pop
                     prev_xest = None
                     for w in range(len(wave_list)):
-                        print("Wave nb {} for {}".format(w+1, region))
+                        #print("Wave nb {} for {}".format(w+1, region))
                         begin_wave = wave_list[w]
                         if w == len(wave_list)-1:
                             end_wave = len(full_cases)
@@ -313,6 +320,10 @@ class good_SIRModel():
                                         #print("len wave cases = {}, len active = {}".format(len(wave_cases), len(active)))
                                         mse = sqrt(mean_squared_error(wave_cases,active)) + self.death_lm*sqrt(mean_squared_error(wave_dead,dead)) + self.recover_lm*sqrt(mean_squared_error(wave_recover,recovered))
                                         mse_list.append(mse)
+                                        
+                                        # plt.figure()
+                                        # plt.plot(wave_times, wave_cases, label = "cases")
+                                        # plt.plot(wave_times, active, label = "sir")
 
 
                         #print(mse_list)
@@ -337,7 +348,7 @@ class good_SIRModel():
                         optimizer = optimize.minimize(NLL, params, args=(wave_cases, wave_dead, wave_recover, 2,2, weight_dead, weight_recover, wave_times, iniests), method= 'Nelder-Mead')
                         paramests = np.abs(optimizer.x)
                         print("optimizer's beta = {}".format(paramests[0]))
-
+                        
                         if w == 0:
                             iniests = inifcn(paramests, wave_cases, wave_dead)
 
@@ -357,8 +368,7 @@ class good_SIRModel():
                             output[region] = [paramests, full_xest[0,:], full_xest[len(full_xest)-1,:], train_full_set.date.iloc[0], train_full_set.date.iloc[len(train_full_set) - 1], full_xest]
                             self.trained_param = output
 
-
-
+                        
             self.trained_warmstart = warmstart
 
 
