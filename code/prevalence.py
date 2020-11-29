@@ -5,10 +5,11 @@ Created on Thu Jul 23 15:45:50 2020
 @author: omars
 """
 
-#%% Libraries
+# %% Libraries
 from copy import deepcopy
 
-#%% Model
+# %% Model
+
 
 class PrevalenceModel():
 
@@ -29,7 +30,8 @@ class PrevalenceModel():
     def fit(self,
             df):
 
-        self.dict_prob_test = dict((df.groupby(self.region_col)[self.tests_col].last() / df.groupby(self.region_col)[self.population_col].last()).dropna())
+        self.dict_prob_test = dict((df.groupby(self.region_col)[self.tests_col].last(
+        ) / df.groupby(self.region_col)[self.population_col].last()).dropna())
 
         self.dict_population = dict(df.groupby(self.region_col)[self.population_col].last().dropna())
 
@@ -42,8 +44,6 @@ class PrevalenceModel():
         for i in range(n_samples):
             for j in range(n_dates):
                 for state in states:
-                    conv_samples['samples'][i][j][state] = 100*(samples['samples'][i][j][state]*(self.alpha + (1-self.alpha)*self.dict_prob_test[state])/(self.dict_prob_test[state]))/(self.dict_population[state])
+                    conv_samples['samples'][i][j][state] = 100*(samples['samples'][i][j][state]*(self.alpha + (
+                        1-self.alpha)*self.dict_prob_test[state])/(self.dict_prob_test[state]))/(self.dict_population[state])
         return conv_samples
-
-
-

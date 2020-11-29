@@ -7,12 +7,15 @@ Created on Sun Jun 28 21:24:44 2020
 
 #%% Libraries
 
+import sys
 import pickle
 from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
-from params import (target_col, date_col, region_col, training_cutoff,
-                         df_path, nmin, restriction_dict, region_exceptions)
+from models.prevalence.perakis_prevalence import params
+#import params
+sys.modules['params'] = params
+
 import os
 import warnings
 warnings.filterwarnings("ignore")
@@ -28,17 +31,20 @@ def load_model(filename):
     filehandler = open(filename, 'rb')
     return(pickle.load(filehandler))
 
-def load_data(file=df_path,
-              target=target_col,
-              date=date_col,
-              region=region_col,
-              training_cutoff=training_cutoff,
+def load_data(file=params.df_path,
+              target=params.target_col,
+              date=params.date_col,
+              region=params.region_col,
+              training_cutoff=params.training_cutoff,
               validation_cutoff=None,
-              nmin=nmin,
-              restriction_dict=restriction_dict[region_col],
-              region_exceptions=region_exceptions[region_col]):
-    df = pd.read_csv(file)
-    #df = get_public_data(file)
+              nmin=params.nmin,
+              restriction_dict=params.restriction_dict[params.region_col],
+              region_exceptions=params.region_exceptions_dict[params.region_col],
+              default_path=params.default_path):
+    if file is None:
+        df = get_public_data(default_path)
+    else:
+        df = pd.read_csv(file)
     df.columns = map(str.lower, df.columns)
 
     # restrict to a subset of obervations
@@ -60,7 +66,19 @@ def load_data(file=df_path,
         df = df[~df[region].isin(region_exceptions)].copy()
 
     df = df[df[target] >= nmin[region]]
-    df[date] = df[date].apply(lambda x: datetime.strptime(x, '%Y-%m-%d'))
+
+    df.sort_values(by=[region, date], inplace=True)
+    try:
+        df["cases_nom"] = df["cases"] / df["population"]
+        df["deaths_nom"] = df["deaths"] / df["population"]
+    except KeyError:
+        pass
+    df["cases_pct3"] = df.groupby(region)["cases"].pct_change(3).values
+    df["cases_pct5"] = df.groupby(region)["cases"].pct_change(5).values
+    try:
+        df[date] = df[date].apply(lambda x: datetime.strptime(x, '%Y-%m-%d'))
+    except:
+        df[date] = df[date].apply(lambda x: datetime.strptime(x, '%m/%d/%Y'))
     df = df.sort_values(by=[region, date])
     df_train = df[df[date] <= training_cutoff]
     print("Training set contains {} {}.".format(df[region].nunique(), region))
@@ -73,9 +91,9 @@ def load_data(file=df_path,
 
 def dict_to_df(output,
                df_validation,
-               region_col=region_col,
-               date_col=date_col,
-               target_col=target_col):
+               region_col=params.region_col,
+               date_col=params.date_col,
+               target_col=params.target_col):
     models = list(output.keys())
     regions = list(set(df_validation[region_col]))
     dates = list(set(df_validation[date_col]))
@@ -109,7 +127,7 @@ def get_mapes(df,
     results.append(['Average'] + [mape(df[target_col], df[model]) for model in models])
     return(pd.DataFrame(results, columns=[region_col] + ['MAPE_' + model for model in models]))
 
-def get_public_data(path=df_path):
+def get_public_data(path=params.df_path):
     # Import the latest data using the raw data urls
     meas_url = 'https://raw.githubusercontent.com/COVID19StatePolicy/SocialDistancing/master/data/USstatesCov19distancingpolicy.csv'
     case_url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv'

@@ -5,7 +5,7 @@ Created on Wed Jun 24 16:21:17 2020
 @author: janiceyang, omars
 """
 
-#%% Libraries
+# %% Libraries
 
 import os
 import pandas as pd
@@ -18,9 +18,9 @@ import operator
 from mdp_states_functions import createSamples, fit_cv, fit_eval
 from mdp_utils import initializeClusters, splitter
 from mdp_testing import predict_cluster, get_MDP, predict_region_date, \
-        MDPPredictionError, MDPTrainingError
+    MDPPredictionError, MDPTrainingError
 
-#%% Model
+# %% Model
 
 
 class MDPModel:
@@ -44,7 +44,7 @@ class MDPModel:
                  verbose=0,
                  plot=True,
                  save=False,
-                 savepath="",
+                 savepath='',
                  keep_first=False,
                  region_exceptions=None):
 
@@ -58,7 +58,8 @@ class MDPModel:
         self.classification_algorithm = classification_algorithm  # classification algorithm used for learning the state
         self.clustering_algorithm = clustering_algorithm  # clustering method from Agglomerative, KMeans, and Birch
         self.n_clusters = n_clusters  # number of clusters for KMeans
-        self.action_thresh = action_thresh  # ([list of action threshold], default action)  # ex : ([-0.5, 0.5], 1) --> ACTION=[-1, 0, 1]
+        # ([list of action threshold], default action)  # ex : ([-0.5, 0.5], 1) --> ACTION=[-1, 0, 1]
+        self.action_thresh = action_thresh
         self.date_colname = date_colname  # column name of the date, i.e. 'date'
         self.region_colname = region_colname  # column name of the region, i.e. 'state'
         self.features_list = features_list  # list of the features that are considered to be trained
@@ -87,6 +88,7 @@ class MDPModel:
         self.df_trained = None  # dataframe after optimal training
         self.df_trained_first = None  # dataframe containing the initial clusters (updated if keep_first = True)
         self.pfeatures = None  # number of features
+        self.actions = None
 
     # create an independent copy of the MDP object
     def __copy__(self):
@@ -132,19 +134,20 @@ class MDPModel:
             other.df_trained_first = None
 
         other.pfeatures = self.pfeatures
+        other.actions = self.actions
 
         return other
 
     # provide a representation of the (cleaned) MDP for printing
     def __repr__(self):
-        return "MDPModel(target={}, " \
-               "horizon={}, " \
-               "days_avg={}," \
-               "distance_threshold={}pct, " \
-               "n_iter={}, " \
-               "classification_algorithm={}, " \
-               "features_list={}," \
-               "action_thresh={})".format(self.target_colname,
+        return 'MDPModel(target={}, ' \
+               'horizon={}, ' \
+               'days_avg={},' \
+               'distance_threshold={}pct, ' \
+               'n_iter={}, ' \
+               'classification_algorithm={}, ' \
+               'features_list={},' \
+               'action_thresh={})'.format(self.target_colname,
                                           self.horizon,
                                           self.days_avg,
                                           int(self.clustering_distance_threshold * 100),
@@ -155,7 +158,7 @@ class MDPModel:
 
     # provide a condensed representation of the MDP as a string
     def __str__(self):
-        return "mdp__target_{}__h{}__davg{}__cdt_{}pct__n_iter{}__ClAlg_{}".format(self.target_colname,
+        return 'mdp__target_{}__h{}__davg{}__cdt_{}pct__n_iter{}__ClAlg_{}'.format(self.target_colname,
                                                                                    self.horizon,
                                                                                    self.days_avg,
                                                                                    int(self.clustering_distance_threshold * 100),
@@ -176,7 +179,7 @@ class MDPModel:
     #          The validation set compounds every ID during the horizon of last observations
     def fit(self,
             data,  # csv file with data OR data frame
-            mode="TIME_CV"):
+            mode='TIME_CV'):
 
         # create paths for training results if not existing
         if self.save:
@@ -187,7 +190,7 @@ class MDPModel:
 
         # assert if the training mode is available
         try:
-            assert mode in {"ALL", "ID", "TIME_CV"}
+            assert mode in {'ALL', 'ID', 'TIME_CV'}
             if self.verbose >= 2:
                 print("The split mode is by '{}'".format(mode))
         except AssertionError:
@@ -200,16 +203,17 @@ class MDPModel:
             data = pd.read_csv(data)
 
         # creates samples from DataFrame
-        df, pfeatures = createSamples(data.copy(),
-                                      target_colname=self.target_colname,
-                                      region_colname=self.region_colname,
-                                      date_colname=self.date_colname,
-                                      features_list=self.features_list,
-                                      action_thresh_base=self.action_thresh,
-                                      days_avg=self.days_avg,
-                                      region_exceptions=self.region_exceptions)
+        df, pfeatures, actions = createSamples(data.copy(),
+                                               target_colname=self.target_colname,
+                                               region_colname=self.region_colname,
+                                               date_colname=self.date_colname,
+                                               features_list=self.features_list,
+                                               action_thresh_base=self.action_thresh,
+                                               days_avg=self.days_avg,
+                                               region_exceptions=self.region_exceptions)
 
         self.pfeatures = pfeatures
+        self.actions = actions
 
         # run cross validation on the data to find best clusters
         cv_training_error, cv_testing_error = fit_cv(df.copy(),
@@ -218,6 +222,7 @@ class MDPModel:
                                                      clustering=self.clustering_algorithm,
                                                      clustering_distance_threshold=self.clustering_distance_threshold,
                                                      classification=self.classification_algorithm,
+                                                     actions=self.actions,
                                                      n_iter=self.n_iter,
                                                      n_clusters=self.n_clusters,
                                                      horizon=self.horizon,
@@ -233,8 +238,9 @@ class MDPModel:
 
         # find the best cluster
         try:
-            k = cv_testing_error.idxmin()
-            self.CV_error = cv_testing_error.loc[k]
+            cv_testing_error_skip = cv_testing_error.iloc[30:]
+            k = cv_testing_error_skip.idxmin()
+            self.CV_error = cv_testing_error_skip.loc[k]
         except:
             k = self.n_iter
 
@@ -253,6 +259,7 @@ class MDPModel:
                                         random_state=self.random_state)
 
         df_trained, training_error, testing_error = splitter(df_trained.copy(),
+                                                             actions=self.actions,
                                                              pfeatures=self.pfeatures,
                                                              th=self.splitting_threshold,
                                                              df_test=None,
@@ -263,7 +270,8 @@ class MDPModel:
                                                              OutputFlag=self.verbose,
                                                              plot=self.plot,
                                                              save=self.save,
-                                                             savepath=os.path.join(self.savepath, mode, str(self),  "plot_final.PNG")
+                                                             savepath=os.path.join(
+                                                                 self.savepath, mode, str(self),  'plot_final.PNG')
                                                              )
 
         # storing trained dataset and predict_cluster function
@@ -271,14 +279,14 @@ class MDPModel:
         self.classifier = predict_cluster(self.df_trained, self.pfeatures)
 
         # store P_df and R_df values
-        P_df,R_df = get_MDP(self.df_trained)
+        P_df, R_df = get_MDP(self.df_trained, n_cluster=k, actions=self.actions, pfeatures=pfeatures, complete=True)
         self.P_df = P_df
         self.R_df = R_df
 
         # store the initial clusters
         if self.keep_first:
             if self.verbose >= 2:
-                print("Saving the initial clusters per region...")
+                print('Saving the initial clusters per region...')
             self.df_trained_first = self.df_trained.groupby(self.region_colname).first().copy()
         # store only the last states for prediction
         self.df_trained = self.df_trained.groupby(self.region_colname).last()
@@ -286,44 +294,44 @@ class MDPModel:
     # predict() takes a state name and a time horizon, and returns the predicted
     # number of cases after h steps from the most recent datapoint
     def predict_region_ndays(self,
-                region,  # str: i.e. US state for prediction to be made
-                n_days):  # int: time horizon (number of days) for prediction
+                             region,  # str: i.e. US state for prediction to be made
+                             n_days):  # int: time horizon (number of days) for prediction
         # preferably a multiple of days_avg (default 3)
-        h = int(np.round(n_days/self.days_avg))
+        h = int(np.floor(n_days/self.days_avg))
         delta = n_days - self.days_avg*h
 
         # get initial cases for the state at the latest datapoint
         target = self.df_trained.loc[region, self.target_colname]
-        date = self.df_trained.loc[region, "TIME"]
+        date = self.df_trained.loc[region, 'TIME']
 
         if self.verbose >= 2:
-            print('current date:', date,'| current %s:'%self.target_colname, target)
+            print('current date:', date, '| current %s:' % self.target_colname, target)
 
         # cluster the this last point
-        s = self.df_trained.loc[region, "CLUSTER"]
+        s = self.df_trained.loc[region, 'CLUSTER']
         if self.verbose >= 2:
             print('predicted initial cluster', s)
 
         r = 1
-        clusters_seq =[s]
+        clusters_seq = [s]
         # run for horizon h, multiply out the ratios
         for i in range(h):
-            r = r*np.exp(self.R_df.loc[s])
-            s = self.P_df.loc[s,0].values[0]
+            r = r*np.exp(self.R_df.loc[s].values[0])
+            s = self.P_df.loc[s, 0].values[0]
             clusters_seq.append(s)
 
         if self.verbose >= 2:
             print('Sequence of clusters:', clusters_seq)
-        pred = target*r*(np.exp(self.R_df.loc[s])**(delta/3))
+        pred = target*r*(np.exp(self.R_df.loc[s].values[0])**(delta/self.days_avg))
 
         if self.verbose >= 2:
-            print('Prediction for date:', date + timedelta(n_days),'| target:', pred)
+            print('Prediction for date:', date + timedelta(n_days), '| target:', pred)
         return pred
 
     # predict_all() takes a time horizon, and returns the predicted number of
     # cases after h steps from the most recent datapoint for all states
     def predict_allregions_ndays(self,
-                                 n_days): # time horizon for prediction, preferably a multiple of days_avg (default 3)
+                                 n_days):  # time horizon for prediction, preferably a multiple of days_avg (default 3)
         df = self.df_trained.copy()
         df = df[['TIME', self.target_colname]]
         df['TIME'] = df['TIME'] + timedelta(n_days)
@@ -351,18 +359,20 @@ class MDPModel:
 
             # the state doesn't appear not in the region set
             except AssertionError:
-                if self.verbose >=1:
+                if self.verbose >= 1:
                     print("The region '{}' is not in the trained region set".format(region))
                 continue  # skip skip to the next region
 
-            last_date = self.df_trained.loc[region, "TIME"]
+            last_date = self.df_trained.loc[region, 'TIME']
             for date in dates:
                 try:
                     pred = predict_region_date(self, (region, last_date), date, verbose=self.verbose)
-                    pred_df = pred_df.append({self.region_colname: region, "TIME": date, self.target_colname: pred}, ignore_index=True)
+                    pred_df = pred_df.append({self.region_colname: region, 'TIME': date,
+                                              self.target_colname: pred}, ignore_index=True)
                 except MDPPredictionError:
                     pass
         pred_df.rename(columns={'TIME': self.date_colname}, inplace=True)
-        pred_dic = {state: pred_df[pred_df[self.region_colname] == state].set_index([self.date_colname])[self.target_colname] for state in pred_df[self.region_colname].unique()}
+        pred_dic = {state: pred_df[pred_df[self.region_colname] == state].set_index(
+            [self.date_colname])[self.target_colname] for state in pred_df[self.region_colname].unique()}
 
         return pred_dic
