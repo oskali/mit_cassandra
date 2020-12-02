@@ -70,9 +70,40 @@ def load_data(file=df_path,
         df["deaths_nom"] = df["deaths"] / df["population"]
     except KeyError:
         pass
+
+    # percentaage change in cases
     df["cases_pct3"] = df.groupby(region)["cases"].pct_change(3).values
     df["cases_pct5"] = df.groupby(region)["cases"].pct_change(5).values
     df["cases_pct10"] = df.groupby(region)["cases"].pct_change(10).values
+    df["cases_pct20"] = df.groupby(region)["cases"].pct_change(20).values
+
+    # relative change in cases
+    df["cases_r1W_2W"] = df.groupby(region)["cases"].diff(7).values / df.groupby(region)["cases"].diff(14).values
+    df["cases_r1W_1M"] = df.groupby(region)["cases"].diff(7).values / df.groupby(region)["cases"].diff(28).values
+    df["cases_r3D_2W"] = df.groupby(region)["cases"].diff(3).values / df.groupby(region)["cases"].diff(12).values
+    df["death2cases_2W"] = df.groupby(region)["deaths"].diff(14).values / df.groupby(region)["cases"].diff(14).values
+
+    # relative mobility values
+    try:
+        df["parks_2W"] = df.groupby(region)["parks"].diff(14).fillna(method="ffill").values
+        df["parks_1M"] = df.groupby(region)["parks"].diff(28).fillna(method="ffill").values
+        df["grocery_and_pharmacy_2W"] = df.groupby(region)["grocery_and_pharmacy"].diff(14).fillna(method="ffill").values
+        df["grocery_and_pharmacy_1M"] = df.groupby(region)["grocery_and_pharmacy"].diff(28).fillna(method="ffill").values
+
+        df["workplaces_2W"] = df.groupby(region)["workplaces"].diff(14).fillna(method="ffill").values
+        df["workplaces_1M"] = df.groupby(region)["workplaces"].diff(28).fillna(method="ffill").values
+        df["transit_stations_2W"] = df.groupby(region)["transit_stations"].diff(14).fillna(method="ffill").values
+        df["transit_stations_1M"] = df.groupby(region)["transit_stations"].diff(28).fillna(method="ffill").values
+    except:
+        pass
+
+    try:
+        df["mobility_score_med7"] = df.groupby(region)["mobility_score"].rolling(min_periods=7, window=7).median().values
+        # df["mobility_score_ma7"] = df.groupby(region)["mobility_score"].rolling(min_periods=7, window=7).mean().values
+        # df["mobility_score_ma7_pct1"] = df.groupby(region)["mobility_score_ma7"].pct_change().values
+        df["mobility_score_med7_pct"] = df.groupby(region)["mobility_score_med7"].pct_change().values
+    except:
+        pass
     try:
         df[date] = df[date].apply(lambda x: datetime.strptime(x, '%Y-%m-%d'))
     except:
@@ -85,7 +116,7 @@ def load_data(file=df_path,
     else:
         df_test = df[[a and b for a, b in zip(df[date] > training_cutoff, df[date] <= validation_cutoff)]]
         df = df[df[date] <= validation_cutoff]
-    return(df, df_train, df_test)
+    return df, df_train, df_test
 
 def dict_to_df(output,
                df_validation,
@@ -101,13 +132,16 @@ def dict_to_df(output,
             prediction = [region, date]
             for model in models:
                 if region in output[model].keys():
-                    prediction.append(output[model][region].loc[date])
+                    try:
+                        prediction.append(output[model][region].loc[date])
+                    except:
+                        prediction.append(np.nan)
                 else:
                     prediction.append(np.nan)
             predictions_rows.append(prediction)
-    df_predictions = pd.DataFrame(predictions_rows, columns=[region_col,date_col] + models)
+    df_predictions = pd.DataFrame(predictions_rows, columns=[region_col, date_col] + models)
     df_agg = df_predictions.merge(df_validation.loc[:, [region_col, date_col, target_col]], how='left', on=[region_col, date_col])
-    return df_agg.dropna()
+    return df_agg
 
 def mape(y_true, y_pred):
     y_true, y_pred = np.array(y_true), np.array(y_pred)

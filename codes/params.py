@@ -15,11 +15,14 @@ from pandas import date_range
 # df_path = r'C:\Users\david\Desktop\MIT\Courses\Research internship\master_branch\covid19_team2\data\input\05_27_states_combined_v2.csv'
 # df_path = r'C:\Users\david\Desktop\MIT\Courses\Research internship\covid19_team2\data\input\06_15_2020_states_combined_nom_n_pct.csv'
 # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\07_16_2020_states_combined_w_pct.csv'
-df_path = r'C:\Users\david\Desktop\MIT\Courses\Research internship\covid19_team2\data\input\05_27_states_combined_v2_w_trend.csv'
+# df_path = r'C:\Users\david\Desktop\MIT\Courses\Research internship\covid19_team2\data\input\05_27_states_combined_v2_w_trend.csv'
 # df_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\07_11_2020_counties_combined_NYNJMA.csv"
-# df_path = "C:\\Users\\david\\Dropbox (MIT)\\COVID-19-Team2\Data\\07_16_2020_states_combined_w_pct.csv"
+# df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_11_2020_states_combined.csv'
 # df_path = None
+# df_path = r"C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_14_2020_states_and_countries_combined_restricted_new.csv"
 # df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_14_2020_states_and_countries_combined_restricted_.csv'
+# df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\08_15_2020_states_countries_combined_with_GooPCADavid.csv'
+df_path = r'C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data\11_09_2020_states_combined.csv'
 
 #%% Target and column names
 
@@ -33,23 +36,28 @@ tests_col = 'people_tested'
 #%% Run Parameters
 
 random_state = 42
-training_agg_cutoff = '2020-05-15'
-training_cutoff = '2020-06-01'
-validation_cutoff = None
+
+training_cutoff_agg = '2020-08-15'
+training_cutoff = '2020-09-09'
+validation_cutoff = '2020-09-22'
 
 regions_dict = {
     "fips": [25017, 34023],
-    "state": ['Massachusetts'],
+    "state": ['Massachusetts', "California", "Florida", "New York"],
 }
 regions = regions_dict[region_col]  # regions to predict  #
-unformatted_dates = [datetime.strftime(_, "%Y-%m-%d") for _ in date_range('2020-08-02', '2020-12-15', freq="1D")]  # dates to predict  #
+unformatted_dates = [datetime.strftime(_, "%Y-%m-%d") for _ in date_range(validation_cutoff, '2020-12-01', freq="1D")]  # dates to predict  #
 
 restriction_dict = {
     "fips":
         {
-            "state": ["Massachusetts", "New Jersey", "Connecticut", "New Hampshire",
+            "state": [
+                      "Massachusetts",
+                      "New Jersey",
+                      "Connecticut", "New Hampshire",
                       # "Alabama",
-                      "Florida", "California"],
+                      "Florida", "California",
+                      ],
             "county": ["Queens", "New York", "Bronx"]
         },
     "state": None
@@ -57,14 +65,16 @@ restriction_dict = {
 
 #%% Load and Save Parameters
 
+train_mdp_cal = True
 train_mdp = True
 train_mdp_gs = False
+calibrate_mdp = True
 load_mdp = True
 
-EXPERIMENT_NAME = '23 - 20200823 - Testing and comparison'
+EXPERIMENT_NAME = '38 - 20201201 - testing risk without actions'
 default_path = r"C:\Users\david\Dropbox (MIT)\COVID-19-Team2\Data"
 
-mdp_file = lambda mode, folder : os.path.join(r"C:\Users\david\Desktop\MIT\Courses\Research internship\results",
+mdp_file = lambda mode, folder: os.path.join(r"C:\Users\david\Desktop\MIT\Courses\Research internship\results",
                         EXPERIMENT_NAME,
                         "MDPs_with_actions",
                         mode,
@@ -85,7 +95,7 @@ region_exceptions_dict = {
          'Grand Princess', 'American Samoa', 'Virgin Islands',
          'Hawaii', "Benin", "Ecuador",
          "Jordan", "Lithuania", "Uganda",
-         "Georgia"
+         "Georgia", "International",
          ],
     "fips":
         []}
@@ -93,39 +103,77 @@ region_exceptions_dict = {
 mdp_features_dict = \
     {
         'state':
-            {"deaths": ["cases_pct3", "cases_pct5", "cases_pct10"],
-             "cases": ["mobility_score_trend", "cases_pct3", "cases_pct5", "cases_pct10"]},
+            {"deaths": ["cases_pct3", "cases_pct5"],
+             "cases": [
+                 # growth rate variables
+                 "cases_pct3", "cases_pct5", "cases_pct10", "cases_pct20",
+
+                 # relative growth rates
+                 "cases_r1W_2W", "cases_r1W_1M", "cases_r3D_2W", "death2cases_2W",
+
+                 # baseline mobility
+                 'grocery_and_pharmacy', "parks", "workplaces", 'stayathome',
+
+                 # change in mobility
+                 "parks_2W", "parks_1M", "grocery_and_pharmacy_2W", "grocery_and_pharmacy_1M",
+                 "workplaces_2W", "workplaces_1M", "transit_stations_2W", "transit_stations_1M"]
+             },
         'fips':
             {"deaths": [],
              "cases": []}
     }
 
+# mdp_features_dict = \
+#     {
+#         'state':
+#             {"deaths": ["cases_pct3", "cases_pct5"],
+#              "cases": [
+#                  # growth rate variables
+#                  "cases_pct3", "cases_pct5", "cases_pct10", "cases_pct20",
+#
+#                  # relative growth rates
+#                  "cases_r1W_2W", "cases_r1W_1M", "cases_r3D_2W",
+#
+#                  # baseline mobility
+#                  'grocery_and_pharmacy',
+#
+#                  # change in mobility
+#                  "grocery_and_pharmacy_1M", "transit_stations_2W", "transit_stations_1M"]
+#              },
+#         'fips':
+#             {"deaths": [],
+#              "cases": []}
+#     }
+
 mdp_params_dict = \
     {
-        "days_avg": 3,
-        "horizon": 5,
-        "test_horizon": 5,
+        "days_avg": 7,
+        "horizon": 8,
+        "test_horizon": 8,
         "error_computing": "horizon",
         "error_function_name": "exp_relative",
         "alpha": 2e-3,
-        "n_iter": 250,
+        "n_iter": 130,
         "n_folds_cv": 5,
-        "clustering_distance_threshold": 0.1,
+        "randomized": True,
+        "randomized_split_pct": 0.8,
+        "reward_name": "RISK",
+        "clustering_distance_threshold": 0.30,
         "splitting_threshold": 0.,
-        "classification_algorithm": "RandomForestClassifier",
-        "clustering_algorithm": 'Agglomerative',
+        "classification_algorithm": "DecisionTreeClassifier",
+        "clustering_algorithm": 'Agglomerative',  # 'Agglomerative'
         "n_clusters": None,
-        "action_thresh": ([-250, 200], 1),  # ([], 0)
+        "action_thresh":  ([], None),  # ([-0.2, 0.05], 1, 10),  # ([-250, 200], 1, None),  # ([], 0, None), # ([-0.2, 0.05], 1, 10)
         "features_list": mdp_features_dict[region_col][target_col],
         "verbose": 2,
-        "n_jobs": 3,
+        "n_jobs": -1,
         "date_colname": date_col,
         "target_colname": target_col,
         "region_colname": region_col,
         "random_state": random_state,
         "keep_first": True,  # True,
         "save": True,
-        "plot": True,
+        "plot": False,
         "savepath": os.path.dirname(mdp_file("", ""))
     }
 

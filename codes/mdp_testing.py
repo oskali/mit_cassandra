@@ -28,7 +28,7 @@ import math
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from itertools import product
 from collections import Counter
 
@@ -58,19 +58,20 @@ def get_predictions(df_new):
 # features pfeatures, and returns a prediction model m that predicts the most
 # likely cluster from a datapoint's
 def predict_cluster(df_new,  # dataframe: trained clusters
-                    pfeatures,
-                    cv=5):  # int: # of features
-    X = df_new.iloc[:, 2:2 + pfeatures]
-    y = df_new['CLUSTER']
+                    features,
+                    cv=4):  # int: # of features
+    X = df_new.loc[~df_new.NEXT_CLUSTER.isnull(), features]
+    y = df_new.loc[~df_new.NEXT_CLUSTER.isnull(), 'CLUSTER']
 
     params = {
-        'max_depth': [3, 4, 6, 10, 20, None]
+        'max_depth': [3, 4, 6, 10, 20, 30, None],
+        'ccp_alpha': np.logspace(-5, 1, 100)
     }
 
     m = DecisionTreeClassifier()
     # m = RandomForestClassifier()
 
-    m = GridSearchCV(m, params, cv=cv, iid=True)  # will return warning if 'idd' param not set to true
+    m = RandomizedSearchCV(m, params, cv=cv, iid=True)  # will return warning if 'idd' param not set to true
 
     try:
         m.fit(X, y)
@@ -92,12 +93,13 @@ def predict_cluster(df_new,  # dataframe: trained clusters
             # m.fit(X, y)
     return m
 
-def compute_state_target(test_init_state,
-                         current_state_target,
-                         transitions,
-                         rewards,
-                         all_data,
-                         days_avg):
+
+def compute_state_target_risk(test_init_state,
+                              current_state_target,
+                              transitions,
+                              rewards,
+                              all_data,
+                              days_avg):
     test_init_state = test_init_state.to_frame()
     for region_id in test_init_state.index:
         last_date = test_init_state.loc[region_id, "TIME"]
@@ -105,21 +107,52 @@ def compute_state_target(test_init_state,
             current_cluster = current_state_target.loc[region_id, "CLUSTER"]
             current_target = current_state_target.loc[region_id, "TARGET"]
             current_date = current_state_target.loc[region_id, "TIME"]
+
+            for date in pd.date_range(start=current_date, end=last_date, freq='%sD' %days_avg)[1:]:
+                action = all_data.loc[(region_id, date), "ACTION"]
+                current_cluster = transitions.loc[(current_cluster, action), "TRANSITION_CLUSTER"]
+                current_target *= np.exp(rewards.loc[current_cluster, "EST_RISK"])
+
+            test_init_state.loc[region_id, "INIT_TARGET"] = current_target
+            test_init_state.loc[region_id, "EST_H_NEXT_CLUSTER"] = current_cluster
+
         except KeyError:
             continue  # to update
-        previous_cluster = current_cluster
-        previous_target = current_target
-        for date in pd.date_range(start=current_date, end=last_date, freq='%sD' %days_avg):
-            previous_cluster = current_cluster
-            previous_target = current_target
-            action = all_data.loc[(region_id, date), "ACTION"]
-            current_cluster = transitions.loc[(current_cluster, action), "TRANSITION_CLUSTER"]
-            current_target *= np.exp(rewards.loc[current_cluster, "EST_RISK"])
-
-        test_init_state.loc[region_id, "INIT_TARGET"] = previous_target
-        test_init_state.loc[region_id, "EST_H_NEXT_CLUSTER"] = previous_cluster
 
     return test_init_state
+
+
+def compute_state_target_alpha(test_init_state,
+                               current_state_target,
+                               transitions,
+                               rewards,
+                               all_data,
+                               days_avg):
+    test_init_state = test_init_state.to_frame()
+    for region_id in test_init_state.index:
+        last_date = test_init_state.loc[region_id, "TIME"]
+        try:
+            current_cluster = current_state_target.loc[region_id, "CLUSTER"]
+            current_target = current_state_target.loc[region_id, "TARGET"]
+            current_risk = current_state_target.loc[region_id, "RISK"]
+            current_date = current_state_target.loc[region_id, "TIME"]
+        except KeyError:
+            continue  # to update
+        for date in pd.date_range(start=current_date, end=last_date, freq='%sD' %days_avg)[1:]:
+            try:
+                action = all_data.loc[(region_id, date), "ACTION"]
+            except:
+                break
+            current_cluster = transitions.loc[(current_cluster, action), "TRANSITION_CLUSTER"]
+            current_risk *= np.exp(rewards.loc[current_cluster, "EST_AlphaRISK"])
+            current_target *= np.exp(current_risk)
+
+        test_init_state.loc[region_id, "INIT_TARGET"] = current_target
+        test_init_state.loc[region_id, "INIT_RISK"] = current_risk
+        test_init_state.loc[region_id, "EST_H_NEXT_CLUSTER"] = current_cluster
+
+    return test_init_state
+
 
 # predict_value_of_cluster() takes in MDP parameters, a cluster label, and
 # and a list of actions, and returns the predicted value of the given cluster
@@ -134,7 +167,7 @@ def predict_value_of_cluster(P_df, R_df,  # df: MDP parameters
     return v
 
 
-def complete_P_df(df, P_df, actions, pfeatures, OutputFlag=0):
+def complete_P_df(df, P_df, actions, features, OutputFlag=0):
 
     risk_model_dict = dict()
     n_nan_actions = P_df["TRANSITION_CLUSTER"].isnull().groupby("ACTION").sum()
@@ -142,7 +175,7 @@ def complete_P_df(df, P_df, actions, pfeatures, OutputFlag=0):
     for action in actions:
         if n_nan_actions[action] == 0:
             continue
-        X = df[(df.ACTION == action) & (df.NEXT_CLUSTER.notnull())].iloc[:, 2: pfeatures + 2].values
+        X = df[(df.ACTION == action) & (df.NEXT_CLUSTER.notnull())].loc[:, features].values
         y = df[(df.ACTION == action) & (df.NEXT_CLUSTER.notnull())]["NEXT_CLUSTER"].values
 
         params = {
@@ -172,7 +205,7 @@ def complete_P_df(df, P_df, actions, pfeatures, OutputFlag=0):
         missing_clusters = P_df[(P_df.ACTION == action) & (P_df.TRANSITION_CLUSTER.isna())].CLUSTER
         for idx, cluster in missing_clusters.items():
             try:
-                nc = df[(df.ACTION == action) & (df.CLUSTER == cluster)].iloc[:, 2: pfeatures + 2].values
+                nc = df[(df.ACTION == action) & (df.CLUSTER == cluster)].loc[:, features].values
                 nc = np.argmax(risk_model_dict[action][0].predict(nc))
             except:
                 nc = risk_model_dict[action][1]
@@ -183,45 +216,52 @@ def complete_P_df(df, P_df, actions, pfeatures, OutputFlag=0):
 
 # get_MDP() takes in a clustered dataframe df_new, and returns dataframes
 # P_df and R_df that represent the parameters of the estimated MDP
-def get_MDP(df_new, actions, pfeatures, n_cluster, complete=True, OutputFlag=0):
+def get_MDP(df_new, actions, features, n_cluster, complete=False, reward='AlphaRISK', OutputFlag=0):
     # removing None values when counting where clusters go
     # df0 = df_new[df_new['NEXT_CLUSTER'] != 'None']
-    try:
-        # Robust transition cluster : best worst case error (existing cluster)
-        transition_df = df_new[~(df_new["CLUSTER"] == (n_cluster-1))].dropna(subset=['NEXT_CLUSTER']).groupby(['CLUSTER', 'ACTION', 'NEXT_CLUSTER'])[
-        'EST_H_ERROR'].max().groupby(['CLUSTER', 'ACTION']).idxmin()
 
-        # Max next cluster appearance (new cluster)
-        transition_df_ = df_new[(df_new["CLUSTER"] == (n_cluster-1))].dropna(subset=['NEXT_CLUSTER']).groupby(['CLUSTER', 'ACTION', 'NEXT_CLUSTER'])[
-            'RISK'].count().groupby(['CLUSTER', 'ACTION']).idxmax()
+    # try:
+    #     # Robust transition cluster : best worst case error (existing cluster)
+    #     transition_df = df_new[~(df_new["CLUSTER"] == (n_cluster-1))].dropna(subset=['NEXT_CLUSTER']).groupby(['CLUSTER', 'ACTION', 'NEXT_CLUSTER'])[
+    #     'EST_H_ERROR'].max().groupby(['CLUSTER', 'ACTION']).idxmin()
+    #
+    #     # Max next cluster appearance (new cluster)
+    #     transition_df_ = df_new[(df_new["CLUSTER"] == (n_cluster-1))].dropna(subset=['NEXT_CLUSTER']).groupby(['CLUSTER', 'ACTION', 'NEXT_CLUSTER'])[
+    #         reward].count().groupby(['CLUSTER', 'ACTION']).idxmax()
+    #
+    #     transition_df = pd.concat([transition_df, transition_df_]).copy()
+    #     transition_df.name = reward
+    #
+    # except KeyError:
+    #     # next cluster given how most datapoints transition for the given action
+    #     transition_df = df_new.dropna(subset=['NEXT_CLUSTER']).groupby(['CLUSTER', 'ACTION', 'NEXT_CLUSTER'])[
+    #         'RISK'].count()
+    #     transition_df = transition_df.groupby(['CLUSTER', 'ACTION']).idxmax()
 
-        transition_df = pd.concat([transition_df, transition_df_]).copy()
-        transition_df.name = "RISK"
-
-    except KeyError:
-        # next cluster given how most datapoints transition for the given action
-        transition_df = df_new.dropna(subset=['NEXT_CLUSTER']).groupby(['CLUSTER', 'ACTION', 'NEXT_CLUSTER'])[
-            'RISK'].count()
-        transition_df = transition_df.groupby(['CLUSTER', 'ACTION']).idxmax()
-
+    transition_df = df_new.dropna(subset=['NEXT_CLUSTER']).groupby(['CLUSTER', 'ACTION', 'NEXT_CLUSTER']).size()
+    transition_df = transition_df.groupby(['CLUSTER', 'ACTION']).idxmax()
     transition_df = transition_df.dropna()
+    transition_df.name = "TRANSITION"
 
     # P_df = pd.DataFrame()
     P_df = pd.DataFrame(index=pd.MultiIndex.from_tuples(product(range(n_cluster), actions),
                                                         names=['CLUSTER', 'ACTION']))
     # DEBUG 07132020 : NaN in P_df
-    P_df['NEXT_CLUSTER'] = P_df.join(transition_df.apply(lambda x: np.nan if pd.isna(x) else x[2]),
+    P_df['TRANSITION_CLUSTER'] = P_df.join(transition_df.apply(lambda x: np.nan if pd.isna(x) else x[2]),
                                      how="left").values
-    P_df.columns = ['TRANSITION_CLUSTER']
+
     # P_df['NEXT_CLUSTER'] = P_df.apply(lambda x: complete_p_df(x, P_df), axis=1,)
     R_df = pd.DataFrame(index=pd.Index(range(n_cluster), name="CLUSTER"))
 
-    # DEBUD mean --> min (conservative predictions)
-    R_df = R_df.join(df_new.groupby('CLUSTER')['RISK'].mean())
-    R_df.columns = ['EST_RISK']
+    # DEBUG mean --> min (conservative predictions)
+    # df_new[reward] = np.exp(df_new[reward])
+    # R_df = R_df.join(np.log(df_new.groupby('CLUSTER')[reward].mean()))
+    # df_new[reward] = np.log(df_new[reward])
+    R_df = R_df.join(df_new.groupby('CLUSTER')[reward].mean())
+    R_df.columns = ['EST_{}'.format(reward)]
 
     if complete:
-        P_df = complete_P_df(df_new, P_df, actions, pfeatures, OutputFlag).copy()
+        P_df = complete_P_df(df_new, P_df, actions, features, OutputFlag).copy()
     return P_df, R_df
 
 
@@ -266,7 +306,12 @@ def predict_region_date(mdp,  # MDP_model object
     try:
         assert date >= last_date
         n_days = (date - last_date).days
-        return mdp.predict_region_ndays(region, n_days, from_first=from_first, model_key=model_key)
+        if mdp.reward_name == "RISK":
+            return mdp.predict_region_ndays(region, n_days, from_first=from_first, model_key=model_key)
+        elif mdp.reward_name == "AlphaRISK":
+            return mdp.predict_region_ndays_alpha(region, n_days, from_first=from_first, model_key=model_key)
+        else:
+            raise MDPPredictionError("Unknown reward name : {}".format(mdp.reward_name))
     except AssertionError:
         if verbose >= 1:
             print(
@@ -822,6 +867,32 @@ def mape(df_pred, df_true, target_colname):
 
 def mape_(y_pred, y_true):
     return abs(y_pred - y_true) / y_true
+
+
+def compute_exp_mean_alpha(v, alphas):
+   v = np.array([_[1] for _ in v])
+   v = v[~np.isnan(v)]
+   std_v = np.std(v)
+   mean_v = np.mean(v)
+   aux = lambda alpha: np.average(v, weights=np.maximum(np.exp(- alpha * (v - mean_v) / std_v), 1e-6))
+   aux = np.vectorize(aux)
+   try:
+       return aux(alphas)
+   except:
+       _ = np.empty_like(alphas)
+       _[:] = np.nan
+       return _
+
+
+def compute_exp_sigmoid_alpha(v, alphas):
+   v = np.array([_[1] for _ in v])
+   v = v[~np.isnan(v)]
+   std_v = np.std(v)
+   mean_v = np.mean(v)
+   aux = lambda alpha: np.average(v, weights=np.maximum(np.exp(- alpha * (v - mean_v) / std_v) / (1. + np.exp(- alpha * (v - mean_v) / std_v)), 1e-6))
+   aux = np.vectorize(aux)
+   return aux(alphas)
+
 #############################################################################
 
 

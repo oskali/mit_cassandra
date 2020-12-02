@@ -14,10 +14,13 @@ from datetime import timedelta
 from itertools import product
 import operator
 
-from codes.mdp_states_functions import createSamples, fit_cv, fit_eval
-from codes.mdp_utils import MDP_Splitter, splitter, MDPPredictorError
+import multiprocessing as mp
+from functools import partial
+
+from codes.mdp_states_functions import createSamples, createSamplesRelative, fit_cv, fit_eval
+from codes.mdp_utils import MDP_Splitter, splitter, MDPPredictorError, process_prediction_region
 from codes.mdp_testing import predict_region_date, \
-        MDPPredictionError, MDPTrainingError
+        MDPPredictionError, MDPTrainingError, compute_exp_mean_alpha, compute_exp_sigmoid_alpha
 
 #%% Model
 
@@ -34,6 +37,7 @@ class MDPModel:
                  clustering_algorithm='Agglomerative',
                  error_computing="horizon",
                  error_function_name="relative",
+                 reward_name="RISK",
                  alpha=1e-5,
                  n_clusters=None,
                  action_thresh=([], 0),
@@ -44,6 +48,9 @@ class MDPModel:
                  random_state=42,
                  n_jobs=2,
                  verbose=0,
+                 randomized=False,
+                 randomized_split_pct=0.6,
+                 nfeatures=20,
                  plot=False,
                  save=False,
                  savepath="",
@@ -56,6 +63,8 @@ class MDPModel:
         self.test_horizon = test_horizon  # size of the test set by region in terms of the number of forward observations
         self.n_iter = n_iter  # number of iterations in the training set
         self.n_folds_cv = n_folds_cv  # number of folds for the cross validation
+        self.randomized = randomized  # boolean, if True, ID and features are randomly selected
+        self.randomized_split_pct = randomized_split_pct  #
         self.clustering_distance_threshold = clustering_distance_threshold  # clustering diameter for Agglomerative clustering
         self.splitting_threshold = splitting_threshold  # threshold to which one cluster is selected for a split
         self.classification_algorithm = classification_algorithm  # classification algorithm used for learning the state
@@ -74,11 +83,13 @@ class MDPModel:
         #                                     PS: feature[0] --> Action feature
         self.target_colname = target_colname  # column name of the target, i.e. 'cases'
         self.region_exceptions = region_exceptions  # exception region to be removed
+        self.reward_name = reward_name  # the reward we estimate through the MDP
 
         # Experiment attributes
         self.random_state = random_state  # random seed using the random generators
         self.verbose = verbose  # define the precision OutputFlag
         # 0 : no print, 1: print global steps of the algorithm, 2: print up to the warnings and secondary information
+
         self.plot = plot  # plot out the training error curves (without interrupting the run)
         self.save = save  # save the results (plots)
         self.savepath = savepath  # path to the save folder
@@ -95,9 +106,15 @@ class MDPModel:
         # Training data attributes
         self.df_trained = None  # dataframe after optimal training
         self.df_trained_first = None  # dataframe containing the initial clusters (updated if keep_first = True)
+        self.features = None
         self.pfeatures = None  # number of features
+        self.nfeatures = nfeatures
         self.actions = None
         self.splitter_dict = {}
+
+        # Calibration after the training
+        self.calibrated = False
+        self.calibration_dict = {}
 
     # create an independent copy of the MDP object
     def __copy__(self):
@@ -125,6 +142,8 @@ class MDPModel:
             random_state=self.random_state,
             n_jobs=self.n_jobs,
             verbose=self.verbose,
+            randomized=self.randomized,
+            randomized_split_pct=self.randomized_split_pct,
             plot=self.plot,
             save=self.save,
             savepath=self.savepath,
@@ -148,13 +167,14 @@ class MDPModel:
             other.df_trained_first = None
 
         other.pfeatures = self.pfeatures
+        other.nfeatures = self.nfeatures
         other.actions = self.actions
 
         return other
 
     # provide a representation of the (cleaned) MDP for printing
     def __repr__(self):
-        return "MDPModel(target={}, " \
+        return "MDPModel(risk={},target={}, " \
                "horizon={}, " \
                "days_avg={}," \
                "distance_threshold={}pct, " \
@@ -162,7 +182,8 @@ class MDPModel:
                "error_c={}, " \
                "classification_algorithm={}, " \
                "features_list={}," \
-               "action_thresh={})".format(self.target_colname,
+               "action_thresh={})".format(self.reward_name,
+                                          self.target_colname,
                                           self.horizon,
                                           self.days_avg,
                                           int(self.clustering_distance_threshold * 100),
@@ -174,7 +195,8 @@ class MDPModel:
 
     # provide a condensed representation of the MDP as a string
     def __str__(self):
-        return "mdp__target_{}__h{}__davg{}__cdt_{}pct__n_iter{}__ClAlg_{}__err{}_cv{}_nbfs{}".format(self.target_colname,
+        return "mdp{}__target_{}__h{}__davg{}__cdt_{}pct__n_iter{}__ClAlg_{}__err{}_cv{}_nbfs{}".format(self.reward_name[0],
+                                                                                                      self.target_colname,
                                                                                                       self.horizon,
                                                                                                       self.days_avg,
                                                                                                       int(self.clustering_distance_threshold * 100),
@@ -221,21 +243,24 @@ class MDPModel:
             data = pd.read_csv(data)
 
         # creates samples from DataFrame
-        df, pfeatures, actions = createSamples(data.copy(),
-                                               target_colname=self.target_colname,
-                                               region_colname=self.region_colname,
-                                               date_colname=self.date_colname,
-                                               features_list=self.features_list,
-                                               action_thresh_base=self.action_thresh,
-                                               days_avg=self.days_avg,
-                                               region_exceptions=self.region_exceptions)
+        df, pfeatures, actions = createSamplesRelative(data.copy(),
+                                                       target_colname=self.target_colname,
+                                                       region_colname=self.region_colname,
+                                                       date_colname=self.date_colname,
+                                                       features_list=self.features_list,
+                                                       action_thresh_base=self.action_thresh,
+                                                       days_avg=self.days_avg,
+                                                       region_exceptions=self.region_exceptions)
 
         self.pfeatures = pfeatures
+        self.features = df.columns[2: 2+pfeatures].tolist()
         self.actions = actions
 
         # run cross validation on the data to find best clusters
         cv_training_error, cv_testing_error, trained_splitter_list = fit_cv(df.copy(),
                                                                             pfeatures=self.pfeatures,
+                                                                            nfeatures=self.nfeatures,
+                                                                            reward_name=self.reward_name,
                                                                             splitting_threshold=self.splitting_threshold,
                                                                             clustering=self.clustering_algorithm,
                                                                             clustering_distance_threshold=self.clustering_distance_threshold,
@@ -251,6 +276,8 @@ class MDPModel:
                                                                             alpha=self.alpha,
                                                                             OutputFlag=self.verbose,
                                                                             cv=self.n_folds_cv,
+                                                                            randomized=self.randomized,
+                                                                            randomized_split_pct=self.randomized_split_pct,
                                                                             random_state=self.random_state,
                                                                             n_jobs=self.n_jobs,
                                                                             mode=mode,
@@ -265,7 +292,7 @@ class MDPModel:
 
         # find the best cluster
         try:
-            k = cv_testing_error.idxmin()
+            k = cv_testing_error.idxmin()  # DEBUG skip first errors
             self.CV_error = cv_testing_error.loc[k]
         except:
             k = self.n_iter
@@ -281,7 +308,8 @@ class MDPModel:
 
         splitter_df = MDP_Splitter(df.copy(),
                                    all_data=df.copy(),
-                                   pfeatures=self.pfeatures,
+                                   features=self.features,
+                                   reward_name=self.reward_name,
                                    days_avg=self.days_avg,
                                    clustering=self.clustering_algorithm,
                                    init_n_clusters=self.n_clusters,
@@ -293,7 +321,7 @@ class MDPModel:
                                    random_state=self.random_state,
                                    verbose=self.verbose)
 
-        splitter_df.initializeClusters()
+        splitter_df.initializeClusters(reward=["{}_SCALE".format(self.reward_name)])
 
         # k = df_train['CLUSTER'].nunique()
         #################################################################
@@ -302,7 +330,6 @@ class MDPModel:
         # Run Iterative Learning Algorithm
 
         trained_splitter_df = splitter(splitter_df,
-                                       pfeatures=pfeatures,
                                        th=self.splitting_threshold,
                                        test_splitter_dataframe=None,
                                        testing=False,
@@ -332,14 +359,77 @@ class MDPModel:
             self.df_trained_first = self.df_trained.groupby(self.region_colname).first().copy()
         # store only the last states for prediction
         self.df_trained = self.df_trained.groupby(self.region_colname).last()
+        # self.df_trained_calibrate = self.df_trained.groupby(self.region_colname).tail( np.ceil(20 / self.horizon)).copy()
+
+    # calibrate MDP
+    def calibrate(self, df_calibrate):
+
+        self.calibration_dict = {}
+
+        regions = list(set(df_calibrate[self.region_colname]))
+        dates = list(set(df_calibrate[self.date_colname]))
+        dates = sorted(dates)
+
+        output = self.predict(regions, dates, model_key="all", n_jobs=-1)
+        alphas = np.linspace(-4., 4., 200)
+        for region in regions:
+            output_region = output[region]
+            res_agg = output_region.apply(lambda v: compute_exp_mean_alpha(v, alphas))
+            #
+            output_alpha = pd.DataFrame(index=res_agg.index, columns=alphas)
+            for date in res_agg.index:
+                output_alpha.loc[date] = res_agg[date].reshape(1, -1)
+            for date in res_agg.index:
+                output_alpha.at[date, "True"] = df_calibrate[(df_calibrate[self.region_colname] == region)
+                                                                          & (df_calibrate[self.date_colname] == date)][self.target_colname].values[0]
+
+            for alpha in alphas:
+                output_alpha[alpha] = np.abs(output_alpha[alpha] - output_alpha["True"]) / output_alpha["True"]
+
+            self.calibration_dict[region] = output_alpha.tail(7).mean()[:-1].idxmin()
+        self.calibrated = True
+
+    # calibrate MDP
+    def calibrate_(self, df_calibrate):
+
+        self.calibration_dict = {}
+
+        regions = list(set(df_calibrate[self.region_colname]))
+        dates = list(set(df_calibrate[self.date_colname]))
+        dates = sorted(dates)
+
+        output = self.predict(regions, dates, model_key="all", n_jobs=-1)
+        alphas = np.linspace(-4., 4., 200)
+        for region in regions:
+            output_region = output[region]
+            output_region_diff = output[region].copy()
+            for date_idx in range(len(dates) - 1):
+                output_region_diff.iloc[date_idx+1] = [tuple([_,__]) for _, __ in enumerate(list([_[1] for _ in output_region.iloc[date_idx+1]]) - np.array([_[1] for _ in output_region.iloc[date_idx]]))]
+            output_region_diff = output_region_diff.iloc[1:]
+            res_agg = output_region_diff.apply(lambda v: compute_exp_mean_alpha(v, alphas))
+            #
+            output_alpha = pd.DataFrame(index=res_agg.index, columns=alphas)
+            for date in res_agg.index:
+                output_alpha.loc[date] = res_agg[date].reshape(1, -1)
+            for date in res_agg.index:
+                output_alpha.at[date, "True"] = df_calibrate[(df_calibrate[self.region_colname] == region)
+                                                                          & (df_calibrate[self.date_colname] == date)][self.target_colname].values[0]
+
+            output_alpha["True_diff"] = output_alpha["True"].diff().values
+            for alpha in alphas:
+                output_alpha[alpha] = (output_alpha[alpha] - output_alpha["True_diff"])**2
+
+            self.calibration_dict[region] = output_alpha.tail(7).mean()[:-2].idxmin()
+        self.calibrated = True
 
     # predict() takes a state name and a time horizon, and returns the predicted
     # number of cases after h steps from the most recent datapoint
-    def predict_region_ndays(self,
+    def predict_region_ndays_alpha(self,
                              region,  # str: i.e. US state for prediction to be made
                              n_days,
                              model_key="k_opt",
-                             from_first=False
+                             from_first=False,
+                             actions_df=None,
                              ):  # int: time horizon (number of days) for prediction
         # preferably a multiple of days_avg (default 3)
         try:
@@ -362,7 +452,18 @@ class MDPModel:
                 # get initial cases for the state at the latest datapoint
                 region_id = df_clusters.loc[region, "ID"]
                 target = mdp_predictor.current_state_date.loc[region_id, "TARGET"]
+                risk = mdp_predictor.current_state_date.loc[region_id, "RISK"]
                 date = mdp_predictor.current_state_date.loc[region_id, "TIME"]
+
+                if not (actions_df is None):
+                    actions_list = actions_df.loc[actions_df[self.region_colname] == region]
+                    actions_list = list(actions_list[actions_list["TIME"] >= date]["ACTION"].values)
+                    actions_list = actions_list + [0] * (max(h+1 -len(actions_list), 0))
+
+                else:
+                    actions_list = [0] * (h+1)
+                if self.verbose > 0:
+                    print(region, actions_list)
 
                 if self.verbose >= 2:
                     print('current date:', date, '| current %s:'%self.target_colname, target)
@@ -376,20 +477,243 @@ class MDPModel:
                 clusters_seq = [s]
                 # run for horizon h, multiply out the ratios
                 for i in range(h):
-                    s = mdp_predictor.P_df.loc[s, 0].values[0]
-                    r = r*np.exp(mdp_predictor.R_df.loc[s])
+                    s = mdp_predictor.P_df.loc[s, actions_list[i]].values[0]
+                    risk *= np.exp(mdp_predictor.R_df.loc[s][0])
+                    r *= np.exp(risk)
                     clusters_seq.append(s)
 
                 # last next cluster
-                s = mdp_predictor.P_df.loc[s, 0].values[0]
+                s = mdp_predictor.P_df.loc[s, actions_list[h]].values[0]
                 clusters_seq.append(s)
                 if self.verbose >= 2:
                     print('Sequence of clusters:', clusters_seq)
-                pred = target*r*(np.exp(mdp_predictor.R_df.loc[s])**(float(delta/self.days_avg)))
+                pred = target * r * np.exp(risk * np.exp(mdp_predictor.R_df.loc[s][0]))**(float(delta/self.days_avg))
 
                 if self.verbose >= 2:
                     print('Prediction for date:', date + timedelta(n_days), '| target:', pred)
                 return pred
+
+            # averaged prediction
+            elif model_key == "median":
+                preds = []
+                for model_key_ in self.splitter_dict.keys():
+                    if model_key_ != "k_opt":
+                        preds.append(self.predict_region_ndays_alpha(
+                            region,
+                            n_days,
+                            model_key=model_key_,
+                            from_first=from_first
+                        ))
+                return np.median(preds)
+
+            # best r2 score
+            elif model_key == "best_r2":
+                r2_model_dict = {key: (mdp_pred.R2_test[-1]+mdp_pred.R2_train[-1])/2 for key, mdp_pred in self.splitter_dict.items() if key != "k_opt"}
+                best_key = max(r2_model_dict.items(), key=operator.itemgetter(1))[0]
+
+                return self.predict_region_ndays_alpha(region, n_days, model_key=best_key, from_first=from_first)
+
+            # best r2 score
+            elif model_key == "best_err":
+                r2_model_dict = {key: mdp_pred.testing_error.last() for key, mdp_pred in self.splitter_dict.items()}
+                best_key = min(r2_model_dict.items(), key=operator.itemgetter(1))[0]
+
+                return self.predict_region_ndays_alpha(region, n_days, model_key=best_key, from_first=from_first)
+        except:
+            return np.nan
+
+# predict() takes a state name and a time horizon, and returns the predicted
+# number of cases after h steps from the most recent datapoint
+    def predict_region_ndays(self,
+                             region,  # str: i.e. US state for prediction to be made
+                             n_days,
+                             model_key="k_opt",
+                             from_first=False,
+                             actions_df=None
+                             ):  # int: time horizon (number of days) for prediction
+        # preferably a multiple of days_avg (default 3)
+        try:
+            if not (model_key in {"median", "best_r2", "best_err", "mean", "std", "std_diff", 'all',
+                                  'q75', 'exp_mean', "log_mean", 'exp_mean_diff', "sigmoid"}):
+                h = int(np.floor(n_days/self.days_avg))
+                delta = n_days - self.days_avg*h
+                try:
+                    mdp_predictor = self.splitter_dict[model_key]
+                except KeyError:
+                    print("MDPPredictionError: the model key doesn't exist")
+                    raise MDPPredictionError
+
+                # start from the initial dates
+                if from_first:
+                    df_clusters = self.df_trained_first
+                # start from the last available dates
+                else:
+                    df_clusters = self.df_trained
+
+                # get initial cases for the state at the latest datapoint
+                region_id = df_clusters.loc[region, "ID"]
+                target = mdp_predictor.current_state_date.loc[region_id, "TARGET"]
+                date = mdp_predictor.current_state_date.loc[region_id, "TIME"]
+
+                if not (actions_df is None):
+                    actions_list = actions_df.loc[actions_df[self.region_colname] == region]
+                    actions_list = list(actions_list[actions_list["TIME"] >= date]["ACTION"].values)
+                    actions_list = actions_list + [0] * (max(h+1 - len(actions_list), 0))
+
+                else:
+                    actions_list = [0] * (h+1)
+                if self.verbose >= 2:
+                    print(region, actions_list)
+
+                if self.verbose >= 2:
+                    print('current date:', date, '| current %s:'%self.target_colname, target)
+
+                # cluster the this last point
+                s = mdp_predictor.current_state_date.loc[region_id, "CLUSTER"]
+                if self.verbose >= 2:
+                    print('predicted initial cluster', s)
+
+                r = 1.
+                clusters_seq = [s]
+                # run for horizon h, multiply out the ratios
+                for i in range(h):
+                    s = mdp_predictor.P_df.loc[s, actions_list[i]].values[0]
+                    risk = mdp_predictor.R_df.loc[s][0]
+                    r *= np.exp(risk)
+                    clusters_seq.append(s)
+
+                # last next cluster
+                s = mdp_predictor.P_df.loc[s, actions_list[h]].values[0]
+                clusters_seq.append(s)
+                if self.verbose >= 2:
+                    print('Sequence of clusters:', clusters_seq)
+                pred = target * r * np.exp(mdp_predictor.R_df.loc[s][0])**(float(delta/self.days_avg))
+
+                if self.verbose >= 2:
+                    print('Prediction for date:', date + timedelta(n_days), '| target:', pred)
+                return pred
+
+            # averaged prediction
+            elif model_key == "all":
+                preds = []
+                for model_key_ in self.splitter_dict.keys():
+                    if model_key_ != "k_opt":
+                        preds.append((model_key_, self.predict_region_ndays(
+                            region,
+                            n_days,
+                            model_key=model_key_,
+                            from_first=from_first
+                        )))
+
+                return preds
+
+            # averaged prediction
+            elif model_key == "mean":
+                preds = []
+                for model_key_ in self.splitter_dict.keys():
+                    if model_key_ != "k_opt":
+                        preds.append(self.predict_region_ndays(
+                            region,
+                            n_days,
+                            model_key=model_key_,
+                            from_first=from_first
+                        ))
+
+                preds = np.array(preds)
+                preds = preds[~np.isnan(preds)]
+                return np.mean(preds)
+
+            # averaged prediction
+            elif model_key == "log_mean":
+                preds = []
+                for model_key_ in self.splitter_dict.keys():
+                    if model_key_ != "k_opt":
+                        preds.append(self.predict_region_ndays(
+                            region,
+                            n_days,
+                            model_key=model_key_,
+                            from_first=from_first
+                        ))
+
+                preds = np.array(preds)
+                preds = preds[~np.isnan(preds)]
+                return np.exp(np.mean(np.log(preds)))
+
+            # exponentially weighted prediction
+            elif model_key == "exp_mean":
+                preds = []
+                for model_key_ in self.splitter_dict.keys():
+                    preds.append(self.predict_region_ndays(
+                        region,
+                        n_days,
+                        model_key=model_key_,
+                        from_first=from_first
+                    ))
+
+                preds = np.array(preds)
+                preds = preds[~np.isnan(preds)]
+                if self.calibrated:
+                    return np.average(preds, weights=np.exp(- self.calibration_dict[region] * (preds - np.mean(preds)) / np.std(preds)))
+                else:
+                    return np.average(preds, weights=np.exp(- 1. * (preds - np.mean(preds)) / np.std(preds)))
+
+            # exponentially weighted prediction
+            elif model_key == "sigmoid":
+                preds = []
+                for model_key_ in self.splitter_dict.keys():
+                    preds.append(self.predict_region_ndays(
+                        region,
+                        n_days,
+                        model_key=model_key_,
+                        from_first=from_first
+                    ))
+
+                preds = np.array(preds)
+                preds = preds[~np.isnan(preds)]
+                if self.calibrated:
+                    weights = np.exp(- self.calibration_dict[region] * (preds - np.mean(preds)) / np.std(preds)) / (1. + np.exp(- self.calibration_dict[region] * (preds - np.mean(preds)) / np.std(preds)))
+                    return np.average(preds, weights=weights)
+                else:
+                    return np.average(preds, weights=np.exp(- (preds - np.mean(preds)) / np.std(preds)) / (1 + np.exp(- (preds - np.mean(preds)) / np.std(preds))))
+
+            # exponentially weighted prediction
+            elif model_key == "exp_mean_diff":
+                preds = []
+                for model_key_ in self.splitter_dict.keys():
+                    preds.append(self.predict_region_ndays(
+                        region,
+                        n_days,
+                        model_key=model_key_,
+                        from_first=from_first
+                    )-self.predict_region_ndays(
+                        region,
+                        n_days-1,
+                        model_key=model_key_,
+                        from_first=from_first
+                    ))
+
+                preds = np.array(preds)
+                preds = preds[~np.isnan(preds)]
+                if self.calibrated:
+                    return np.average(preds, weights=np.exp(- self.calibration_dict[region] * preds / np.std(preds)))
+                else:
+                    return np.average(preds, weights=np.exp(- 0.5 * preds / np.std(preds)))
+
+            # quantile 75 mean
+            elif model_key == "q75":
+                preds = []
+                for model_key_ in self.splitter_dict.keys():
+                    if model_key_ != "k_opt":
+                        preds.append(self.predict_region_ndays(
+                            region,
+                            n_days,
+                            model_key=model_key_,
+                            from_first=from_first
+                        ))
+
+                preds = np.array(preds)
+                preds = preds[~np.isnan(preds)]
+                return preds[np.where(preds < np.quantile(preds, 0.9))].mean()
 
             # averaged prediction
             elif model_key == "median":
@@ -401,8 +725,32 @@ class MDPModel:
                             n_days,
                             model_key=model_key_,
                             from_first=from_first
-                        )[0])
-                return [np.median(preds)]
+                        ))
+
+                preds = np.array(preds)
+                preds = preds[~np.isnan(preds)]
+                return np.median(preds)
+
+            # averaged prediction
+            elif model_key == "std_diff":
+                preds = []
+                for model_key_ in self.splitter_dict.keys():
+                    if model_key_ != "k_opt":
+                        preds.append(self.predict_region_ndays(
+                            region,
+                            n_days,
+                            model_key=model_key_,
+                            from_first=from_first
+                        )-self.predict_region_ndays(
+                            region,
+                            n_days-1,
+                            model_key=model_key_,
+                            from_first=from_first
+                        ))
+
+                preds = np.array(preds)
+                preds = preds[~np.isnan(preds)]
+                return np.std(preds)
 
             # best r2 score
             elif model_key == "best_r2":
@@ -411,14 +759,38 @@ class MDPModel:
 
                 return self.predict_region_ndays(region, n_days, model_key=best_key, from_first=from_first)
 
+            # averaged prediction
+            elif model_key == "std":
+                preds = []
+                for model_key_ in self.splitter_dict.keys():
+                    if model_key_ != "k_opt":
+                        preds.append(self.predict_region_ndays(
+                            region,
+                            n_days,
+                            model_key=model_key_,
+                            from_first=from_first
+                        ))
+
+                preds = np.array(preds)
+                preds = preds[~np.isnan(preds)]
+                return np.std(preds)
+
             # best r2 score
+            elif model_key == "best_r2":
+                r2_model_dict = {key: (mdp_pred.R2_test[-1]+mdp_pred.R2_train[-1])/2 for key, mdp_pred in self.splitter_dict.items() if key != "k_opt"}
+                best_key = max(r2_model_dict.items(), key=operator.itemgetter(1))[0]
+
+                return self.predict_region_ndays(region, n_days, model_key=best_key, from_first=from_first)
+
+            # best err score
             elif model_key == "best_err":
                 r2_model_dict = {key: mdp_pred.testing_error.last() for key, mdp_pred in self.splitter_dict.items()}
                 best_key = min(r2_model_dict.items(), key=operator.itemgetter(1))[0]
 
                 return self.predict_region_ndays(region, n_days, model_key=best_key, from_first=from_first)
         except:
-            return [np.nan]
+            return np.nan
+
     # predict_all() takes a time horizon, and returns the predicted number of
     # cases after h steps from the most recent datapoint for all states
     def predict_allregions_ndays(self,
@@ -428,8 +800,12 @@ class MDPModel:
         df = self.df_trained.copy()
         df = df[['TIME', "TARGET"]]
         df['TIME'] = df['TIME'] + timedelta(n_days)
-        df["TARGET"] = df.index.map(
-            lambda region: np.ceil(self.predict_region_ndays(region, n_days, from_first=from_first, model_key=model_key)[0]))
+        if self.reward_name == "RISK":
+            df["TARGET"] = df.index.map(
+                lambda region: np.ceil(self.predict_region_ndays(region, n_days, from_first=from_first, model_key=model_key)))
+        elif self.reward_name == "AlphaRISK":
+            df["TARGET"] = df.index.map(
+                lambda region: np.ceil(self.predict_region_ndays_alpha(region, n_days, from_first=from_first, model_key=model_key)))
         return df
 
     # predict_class() takes a dictionary of states and time horizon and returns their predicted number of cases
@@ -437,7 +813,8 @@ class MDPModel:
                 regions,  # list of states to predict the target
                 dates,  # list of dates to predict the target
                 model_key="k_opt",
-                from_first=False):
+                from_first=False,
+                n_jobs=1):
 
         # instantiate the prediction dataframe
         pred_df = pd.DataFrame(columns=[self.region_colname, 'TIME', self.target_colname])
@@ -445,30 +822,32 @@ class MDPModel:
         # get the last dates for each states
         region_set = set(self.df_trained.index)
 
-        for region in regions:
-            try:
-                assert region in region_set
+        if n_jobs in {0, 1}:
+            for region in regions:
 
-            # the state doesn't appear not in the region set
-            except AssertionError:
-                if self.verbose >= 1:
-                    print("The region '{}' is not in the trained region set".format(region))
-                continue  # skip skip to the next region
+                pred_region_df = process_prediction_region(region, self, dates, region_set, model_key=model_key, from_first=from_first)
+                pred_df = pred_df.append(pred_region_df, ignore_index=True)
 
-            # start from the first date
-            if from_first & self.keep_first:
-                last_date = self.df_trained_first.loc[region, "TIME"]
-            # start from the last date
-            else:
-                last_date = self.df_trained.loc[region, "TIME"]
+        # maximum cpu allowed
+        if n_jobs == -1:
+            pool = mp.Pool(processes=mp.cpu_count())
+        elif isinstance(n_jobs, int) & (n_jobs <= mp.cpu_count()) :
+            pool = mp.Pool(processes=n_jobs)
+        else:
+            raise MDPPredictionError("n_jobs should be an integer between -1 and {}".format(mp.cpu_count()))
 
-            # predict from each dates
-            for date in dates:
-                try:
-                    pred = predict_region_date(self, (region, last_date), date, model_key=model_key, from_first=from_first, verbose=self.verbose)
-                    pred_df = pred_df.append({self.region_colname: region, "TIME": date, self.target_colname: pred[0]}, ignore_index=True)
-                except MDPPredictionError:
-                    pass
+        prediction_regions_pool = partial(process_prediction_region,
+                                          mdp=self,
+                                          dates=dates,
+                                          region_set=region_set,
+                                          model_key=model_key,
+                                          from_first=from_first)
+
+        # apply in parallel fitting function
+        prediction_per_region = pool.map(prediction_regions_pool, regions)
+        for _ in prediction_per_region:
+            pred_df = pred_df.append(_, ignore_index=True)
+
         pred_df.rename(columns={'TIME': self.date_colname}, inplace=True)
         pred_dic = {state: pred_df[pred_df[self.region_colname] == state].set_index([self.date_colname])[self.target_colname] for state in pred_df[self.region_colname].unique()}
 

@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm  # progress bar
 from copy import deepcopy
-from sklearn.cluster import KMeans, AgglomerativeClustering, Birch
+from sklearn.cluster import KMeans, AgglomerativeClustering, Birch, DBSCAN
 from sklearn.preprocessing import LabelEncoder
 from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
 from sklearn.tree import DecisionTreeClassifier
@@ -21,7 +21,8 @@ import warnings
 warnings.filterwarnings("ignore")
 
 from codes.mdp_testing import R2_value, training_value_error, \
-    predict_cluster, testing_value_error, error_per_ID, MDPTrainingError, prediction_score, get_MDP, compute_state_target
+    predict_cluster, testing_value_error, error_per_ID, MDPTrainingError, prediction_score, get_MDP, \
+    compute_state_target_risk, compute_state_target_alpha, predict_region_date, MDPPredictionError
 from codes.data_utils import save_model
 
 
@@ -55,29 +56,35 @@ class MDPPredictor:
         self.R2_train = None
         self.R2_test = None
         self.columns = None
-        self.pfeatures = None
+        self.features = None
         self.model = None
         self.accuracy_cluster = None
+        self.classifier = None
 
     def complete_path(self, all_data):
-        for region_id in self.current_state_date.index:
-            current_date = self.current_state_date.loc[region_id, "TIME"]
-            current_cluster = self.current_state_date.loc[region_id, "CLUSTER"]
+        if self.model is None:
+            for region_id in self.current_state_date.index:
+                current_date = self.current_state_date.loc[region_id, "TIME"]
+                current_cluster = self.current_state_date.loc[region_id, "CLUSTER"]
 
-            state_data = all_data.loc[region_id]
-            state_data = state_data[state_data["TIME"] >= current_date].reset_index()
-            missing_size = state_data.shape[0] - 1
-            if missing_size > 0 :
-                previous_cluster = current_cluster
-                for row_id, row in state_data.iterrows():
+                state_data = all_data.loc[region_id]
+                state_data = state_data[state_data["TIME"] >= current_date].reset_index()
+                missing_size = state_data.shape[0] - 1
+                if missing_size > 0 :
                     previous_cluster = current_cluster
-                    current_date = row["TIME"]
-                    action = row["ACTION"]
-                    target = row["TARGET"]
-                    current_cluster = self.P_df.loc[(current_cluster, action)][0]
-                self.current_state_date.loc[region_id, "TIME"] = current_date
-                self.current_state_date.loc[region_id, "CLUSTER"] = previous_cluster
-                self.current_state_date.loc[region_id, "TARGET"] = target
+                    for row_id, row in state_data.iterrows():
+                        previous_cluster = current_cluster
+                        current_date = row["TIME"]
+                        action = row["ACTION"]
+                        target = row["TARGET"]
+                        current_cluster = self.P_df.loc[(current_cluster, action)][0]
+                    self.current_state_date.loc[region_id, "TIME"] = current_date
+                    self.current_state_date.loc[region_id, "CLUSTER"] = previous_cluster
+                    self.current_state_date.loc[region_id, "TARGET"] = target
+        else:
+            self.current_state_date = all_data.reset_index().groupby('ID').last()
+            self.current_state_date['CLUSTER'] = self.classifier.predict(self.current_state_date.loc[:, self.features])
+            self.current_state_date = self.current_state_date.loc[:, ["TIME", "CLUSTER", "RISK", "TARGET"]].copy()
 
 
 class MDP_Splitter:
@@ -86,7 +93,8 @@ class MDP_Splitter:
                  df,
                  all_data,
                  days_avg,
-                 pfeatures,
+                 features,
+                 reward_name="RISK",
                  error_computing="horizon",
                  horizon=5,
                  alpha=1e-5,
@@ -102,9 +110,10 @@ class MDP_Splitter:
         self.df = df.sort_values(["ID", "TIME"]).copy()
         self.all_data = all_data.set_index(["ID", "TIME"]).copy()
         self.clustering = clustering
+        self.reward_name = reward_name
         self.init_n_clusters = init_n_clusters
         self.distance_threshold = distance_threshold
-        self.pfeatures = pfeatures
+        self.features = features
         self.days_avg = days_avg
         self.error_computing = error_computing
         self.horizon = horizon
@@ -133,30 +142,34 @@ class MDP_Splitter:
     # a clustering algorithm, a number of clusters n_clusters,
     # and a random seed (optional) and returns a dataframe
     # with two new columns 'CLUSTER' and 'NEXT_CLUSTER'
-    def initializeClusters(self):  # random seed for the clustering
+    def initializeClusters(self, reward=["RISK_SCALE"]):  # random seed for the clustering
         if self.clustering == 'KMeans':
             output = KMeans(
                 n_clusters=self.init_n_clusters, random_state=self.random_state).fit(
-                np.array(self.df.RISK).reshape(-1, 1)).labels_
+                np.array(self.df[reward]).reshape(-1, len(reward))).labels_
         elif self.clustering == 'Agglomerative':
             output = AgglomerativeClustering(
                 n_clusters=self.init_n_clusters, distance_threshold=self.distance_threshold).fit(
-                np.array(self.df.RISK).reshape(-1, 1)).labels_
+                np.array(self.df[reward]).reshape(-1, len(reward))).labels_
         elif self.clustering == 'Birch':
             output = Birch(
                 n_clusters=self.init_n_clusters).fit(
-                np.array(self.df.RISK).reshape(-1, 1)).labels_
+                np.array(self.df[reward]).reshape(-1, len(reward))).labels_
+        elif self.clustering == 'DBSCAN':
+            output = DBSCAN(
+                n_clusters=self.init_n_clusters).fit(
+                np.array(self.df[reward]).reshape(-1, 1)).labels_
         else:
-            output = LabelEncoder().fit_transform(np.array(self.df.RISK).reshape(-1, 1))
+            output = LabelEncoder().fit_transform(np.array(self.df[reward]).reshape(-1, 1))
         self.df['CLUSTER'] = output
         self.df['NEXT_CLUSTER'] = self.df.groupby('ID')['CLUSTER'].shift(-1)
 
     def update_mdp(self):
         # compute the estimated rewards and transition matrix
-        self.P_df, self.R_df = get_MDP(self.df, self.actions, self.pfeatures, n_cluster=self.n_clusters,
-                                       OutputFlag=self.verbose)
+        self.P_df, self.R_df = get_MDP(self.df, self.actions, self.features, n_cluster=self.n_clusters,
+                                       OutputFlag=self.verbose, reward=self.reward_name)
 
-        self.current_state_date = self.df.groupby(["ID"]).last()[["TIME", "CLUSTER", "TARGET"]]
+        self.current_state_date = self.df.groupby(["ID"]).last()[["TIME", "CLUSTER", "RISK", "TARGET"]]
 
         # Add estimated next cluster [MUST BE IMPROVE]
 
@@ -167,115 +180,78 @@ class MDP_Splitter:
         self.model = other.model
         self.current_state_date = other.current_state_date.copy()
 
-    def get_current_state(self):
-        pass
+    def compute_risk_error(self):
+        # TRAINING MODE
+        if self.mode == "train":
+            if self.reward_name == "RISK":
+                self.df = compute_risk_error_train_risk(self.df, self.P_df, self.R_df,
+                                                        self.error_eval, self.horizon)
+            elif self.reward_name == "AlphaRISK":
+                self.df = compute_risk_error_train_alpha(self.df, self.P_df, self.R_df,
+                                                        self.error_eval, self.horizon)
+            else:
+                raise MDPSplitterError("(Train) Reward name not found")
 
-    def compute_risk_error_train(self):
+        # TESTING MODE
+        elif self.mode == "test":
 
-        df = self.df.copy()
-        # df["EST_H_NEXT_CLUSTER"] = self.model.predict(df.iloc[:, 2:2 + self.pfeatures])
-        df["EST_H_NEXT_CLUSTER"] = df["CLUSTER"].values
+            if self.reward_name == "RISK":
+                test_initial_state_date = self.df.groupby("ID").first()["TIME"].copy()
+                test_initial_state_date = compute_state_target_risk(
+                    test_init_state=test_initial_state_date,
+                    current_state_target=self.current_state_date,
+                    transitions=self.P_df,
+                    rewards=self.R_df,
+                    all_data=self.all_data,
+                    days_avg=self.days_avg,)
 
-        # # compute accuracy score of cluster prediction
-        df["TRUE_H_NEXT_CLUSTER"] = df.groupby("ID", sort=False)["CLUSTER"].shift(-self.horizon)
-        # pred = df[["EST_H_NEXT_CLUSTER", "CLUSTER"]].dropna().copy()
-        # self.accuracy_cluster.append(accuracy_score(pred["EST_H_NEXT_CLUSTER"], pred["CLUSTER"]))
-        # del pred
+                try :
+                    self.df.drop(["INIT_TARGET", "EST_H_NEXT_CLUSTER"], axis=1, inplace=True)
+                except KeyError:
+                    pass
+                self.df = self.df.set_index("ID").join(test_initial_state_date[["INIT_TARGET", "EST_H_NEXT_CLUSTER"]], how="left").reset_index().dropna(subset=["EST_H_NEXT_CLUSTER"])
+                self.df["EST_H_NEXT_CLUSTER"] = self.model.predict(self.df.loc[:, self.features])
+                self.df = compute_risk_error_test_risk(self.df, self.P_df, self.R_df,
+                                                        self.error_eval, self.horizon)
+            elif self.reward_name == "AlphaRISK":
+                test_initial_state_date = self.df.groupby("ID").first()["TIME"].copy()
+                test_initial_state_date = compute_state_target_alpha(
+                    test_init_state=test_initial_state_date,
+                    current_state_target=self.current_state_date,
+                    transitions=self.P_df,
+                    rewards=self.R_df,
+                    all_data=self.all_data,
+                    days_avg=self.days_avg)
 
-        df["EST_H_NEXT_RISK"] = 0.
-        df["EST_H_ERROR"] = 0.
+                try :
+                    self.df.drop(["INIT_TARGET", "INIT_RISK", "EST_H_NEXT_CLUSTER"], axis=1, inplace=True)
+                except KeyError:
+                    pass
+                self.df = self.df.set_index("ID").join(test_initial_state_date[["INIT_TARGET", "INIT_RISK", "EST_H_NEXT_CLUSTER"]], how="left").reset_index().dropna(subset=["EST_H_NEXT_CLUSTER"])
+                self.df["EST_H_NEXT_CLUSTER"] = self.model.predict(self.df.loc[:, self.features])
+                self.df = compute_risk_error_test_alpha(self.df, self.P_df, self.R_df,
+                                                        self.error_eval, self.horizon)
 
-        for h in range(1, self.horizon + 1):  # [TO ADAPT WITH EXPONENTIAL]
-            # COMPUTE THE NEXT CLUSTER
-            df = pd.merge(
-                df,
-                self.P_df.reset_index().rename(columns={"ACTION": "ACTION_", "CLUSTER": "CLUSTER_"}),
-                left_on=["EST_H_NEXT_CLUSTER", "ACTION"],
-                right_on=["CLUSTER_", "ACTION_"],
-                how="left").copy().drop(["CLUSTER_", "ACTION_"],
-                                        axis=1).drop(["EST_H_NEXT_CLUSTER"],
-                                                     axis=1).rename(columns={"TRANSITION_CLUSTER": "EST_H_NEXT_CLUSTER"})
+            else:
+                raise MDPSplitterError("(test) Reward name not found")
 
-            # COMPLETE MISSING TRANSITION WITH THE LAST AVAILABLE CLUSTER
-            df["EST_H_NEXT_CLUSTER"] = df.groupby(['ID'], sort=False).apply(lambda group: group.ffill())[
-                'EST_H_NEXT_CLUSTER'].values
-
-            # COMPUTE THE ONE STEP ESTIMATED RISK
-            df["EST_H_NEXT_RISK"] += pd.merge(
-                df.drop('EST_H_NEXT_RISK', axis=1),
-                self.R_df.reset_index(),
-                left_on="EST_H_NEXT_CLUSTER",
-                right_on="CLUSTER",
-                how="left")["EST_RISK"].values
-
-            df["TRUE_H_NEXT_RISK"] = df.groupby("ID", sort=False).rolling(window=h, min_periods=h)[
-                "RISK"].sum().values
-            df["TRUE_H_NEXT_RISK"] = df.groupby("ID", sort=False)["TRUE_H_NEXT_RISK"].shift(-h)
-
-            # COMPUTE THE ONE STEP ERROR
-            df["EST_H_ERROR"] += self.error_eval(df["EST_H_NEXT_RISK"].values,
-                                                 df["TRUE_H_NEXT_RISK"].values)
-
-        self.df = df.copy()
-
-    def compute_risk_error_test(self):
-
-        test_initial_state_date = self.df.groupby("ID").first()["TIME"].copy()
-        test_initial_state_date = compute_state_target(test_init_state=test_initial_state_date,
-                                   current_state_target=self.current_state_date,
-                                   transitions=self.P_df,
-                                   rewards=self.R_df,
-                                   all_data=self.all_data,
-                                   days_avg=self.days_avg)
-        df = self.df.copy()
-        # df.set_index("ID").join(test_initial_state_date[["INIT_TARGET", "EST_H_NEXT_CLUSTER"]], how="left").reset_index()
-        df = df.set_index("ID").join(test_initial_state_date[["INIT_TARGET", "EST_H_NEXT_CLUSTER"]], how="left").reset_index().dropna(subset=["EST_H_NEXT_CLUSTER"])
-        df["EST_H_NEXT_RISK"] = 0.
-        df["EST_H_ERROR"] = 0.
-
-        for h in range(1, self.horizon + 1):  # [TO ADAPT WITH EXPONENTIAL]
-            # COMPUTE THE NEXT CLUSTER
-            df = pd.merge(
-                df,
-                self.P_df.reset_index().rename(columns={"ACTION" : "ACTION_", "CLUSTER" : "CLUSTER_"}),
-                left_on=["EST_H_NEXT_CLUSTER", "ACTION"],
-                right_on=["CLUSTER_", "ACTION_"],
-                how="left").copy().drop(["CLUSTER_", "ACTION_"],
-                                        axis=1).drop(["EST_H_NEXT_CLUSTER"],
-                                                     axis=1).rename(columns={"TRANSITION_CLUSTER": "EST_H_NEXT_CLUSTER"})
-
-            # COMPLETE MISSING TRANSITION WITH THE LAST AVAILABLE CLUSTER
-            df["EST_H_NEXT_CLUSTER"] = df.groupby(['ID'], sort=False).apply(lambda group: group.ffill())[
-                'EST_H_NEXT_CLUSTER'].values
-
-            # COMPUTE THE ONE STEP ESTIMATED RISK
-            df["EST_H_NEXT_RISK"] += pd.merge(
-                df.drop('EST_H_NEXT_RISK', axis=1),
-                self.R_df.reset_index(),
-                left_on="EST_H_NEXT_CLUSTER",
-                right_on="CLUSTER",
-                how="left")["EST_RISK"].values
-
-            df["TRUE_H_NEXT_RISK"] = df.groupby("ID", sort=False).rolling(window=h, min_periods=h)[
-                "RISK"].sum().values
-            df["TRUE_H_NEXT_RISK"] = df.groupby("ID", sort=False)["TRUE_H_NEXT_RISK"].shift(-h)
-
-            # COMPUTE THE ONE STEP ERROR
-            df["EST_H_ERROR"] += self.error_eval(df["EST_H_NEXT_RISK"].values,
-                                                 df["TRUE_H_NEXT_RISK"].values,
-                                                 df["INIT_TARGET"].values,
-                                                 df["TARGET"])
-# y_est, y_true, init_target_y_est, target_y_true
-        df.drop(["INIT_TARGET", "EST_H_NEXT_CLUSTER"], axis=1, inplace=True)
-        self.df = df.copy()
+        else:
+            raise MDPSplitterError("mode is not found : must be either 'train' or 'test'")
 
     def update_cluster(self):
-        pass
-        # self.model = predict_cluster(self.df, self.pfeatures)
+        # pass
+        self.model = predict_cluster(self.df, self.features)
 
-    def compute_transition_error(self):
+    def compute_transition_error(self, method="robust"):
         n_df = self.df.groupby(["CLUSTER", "ACTION"])["NEXT_CLUSTER"].nunique()
-        e_df = self.df.groupby(["CLUSTER", "ACTION"])["EST_H_ERROR"].max() / self.horizon
+        if method == "robust":
+            e_df = self.df.groupby(["CLUSTER", "ACTION"])["EST_H_ERROR"].max() / self.horizon
+        elif method == "mean":
+            e_df = self.df.groupby(["CLUSTER", "ACTION"])["EST_H_ERROR"].mean() / self.horizon
+        elif method == "myopic":
+            e_df = 1.
+        else:
+            raise MDPSplitterError
         self.error_transition_df = (np.log(n_df) * e_df).copy()
         pass
 
@@ -288,18 +264,14 @@ class MDP_Splitter:
         mdp_predictor.testing_error = self.testing_error
         mdp_predictor.R2_train = self.R2_train
         mdp_predictor.R2_test = self.R2_test
-        mdp_predictor.columns = self.df.iloc[:, 2: self.pfeatures + 2].columns.tolist()
-        mdp_predictor.pfeatures = self.pfeatures
+        mdp_predictor.columns = self.features
         mdp_predictor.classifier = self.model
         mdp_predictor.accuracy_cluster = self.accuracy_cluster
         mdp_predictor.verbose = self.verbose
 
         return mdp_predictor
 
-
-
 #############################################################################
-
 
 #############################################################################
 # Error functions
@@ -352,8 +324,195 @@ def get_error_eval(function_name, mode="train"):
             return np.vectorize(lambda y_est, y_true, init_target_y_est, target_y_true:
                                 np.abs(init_target_y_est * np.exp(y_est) - target_y_true) / target_y_true)
 
+
+# Compute alpha risk error (training set - alpharisk as reward)
+def compute_risk_error_train_alpha(df, P_df, R_df, error_eval, horizon=5):
+    # df["EST_H_NEXT_CLUSTER"] = self.model.predict(df.iloc[:, 2:2 + self.pfeatures])
+    df["EST_H_NEXT_CLUSTER"] = df["CLUSTER"].values
+
+    df["EST_CUR_RISK"] = df["RISK"].values
+    df["EST_H_NEXT_RISK"] = 0.
+    df["EST_H_NEXT_AlphaRISK"] = 0.
+    df["EST_H_ERROR"] = 0.
+
+    for h in range(1, horizon + 1):  # [TO ADAPT WITH EXPONENTIAL]
+        # COMPUTE THE NEXT CLUSTER
+        df = pd.merge(
+            df,
+            P_df.reset_index().rename(columns={"ACTION": "ACTION_", "CLUSTER": "CLUSTER_"}),
+            left_on=["EST_H_NEXT_CLUSTER", "ACTION"],
+            right_on=["CLUSTER_", "ACTION_"],
+            how="left").copy().drop(["CLUSTER_", "ACTION_"],
+                                    axis=1).drop(["EST_H_NEXT_CLUSTER"],
+                                                 axis=1).rename(columns={"TRANSITION_CLUSTER": "EST_H_NEXT_CLUSTER"})
+
+        # # COMPLETE MISSING TRANSITION WITH THE LAST AVAILABLE CLUSTER
+        # df["EST_H_NEXT_CLUSTER"] = df.groupby(['ID'], sort=False).apply(lambda group: group.ffill())[
+        #     'EST_H_NEXT_CLUSTER'].values
+
+        # COMPUTE THE ONE STEP ESTIMATED RISK
+        df["EST_H_NEXT_AlphaRISK"] = pd.merge(
+            df.drop('EST_H_NEXT_AlphaRISK', axis=1),
+            R_df.reset_index(),
+            left_on="EST_H_NEXT_CLUSTER",
+            right_on="CLUSTER",
+            how="left")["EST_AlphaRISK"].values
+        df["EST_CUR_RISK"] *= np.exp(df["EST_H_NEXT_AlphaRISK"]).values
+        df["EST_H_NEXT_RISK"] += df["EST_CUR_RISK"].values
+
+        df["TRUE_H_NEXT_RISK"] = df.groupby("ID", sort=False).rolling(window=h, min_periods=h)[
+            "RISK"].sum().values
+        df["TRUE_H_NEXT_RISK"] = df.groupby("ID", sort=False)["TRUE_H_NEXT_RISK"].shift(-h)
+
+        # COMPUTE THE ONE STEP ERROR
+        df["EST_H_ERROR"] += error_eval(df["EST_H_NEXT_RISK"].values,
+                                             df["TRUE_H_NEXT_RISK"].values)
+    return df
+
+
+# Compute risk error (training set - risk as reward)
+def compute_risk_error_train_risk(df, P_df, R_df, error_eval, horizon=5):
+    # df["EST_H_NEXT_CLUSTER"] = self.model.predict(df.iloc[:, 2:2 + self.pfeatures])
+    df["EST_H_NEXT_CLUSTER"] = df["CLUSTER"].values
+
+    df["EST_CUR_RISK"] = df["RISK"].values
+    df["EST_H_NEXT_RISK"] = 0.
+    df["EST_H_ERROR"] = 0.
+
+    for h in range(1, horizon + 1):  # [TO ADAPT WITH EXPONENTIAL]
+        # COMPUTE THE NEXT CLUSTER
+        df = pd.merge(
+            df,
+            P_df.reset_index().rename(columns={"ACTION": "ACTION_", "CLUSTER": "CLUSTER_"}),
+            left_on=["EST_H_NEXT_CLUSTER", "ACTION"],
+            right_on=["CLUSTER_", "ACTION_"],
+            how="left").copy().drop(["CLUSTER_", "ACTION_"],
+                                    axis=1).drop(["EST_H_NEXT_CLUSTER"], axis=1).rename(columns={"TRANSITION_CLUSTER": "EST_H_NEXT_CLUSTER"})
+
+        # # COMPLETE MISSING TRANSITION WITH THE LAST AVAILABLE CLUSTER
+        # df["EST_H_NEXT_CLUSTER"] = df.groupby(['ID'], sort=False).apply(lambda group: group.ffill())[
+        #     'EST_H_NEXT_CLUSTER'].values
+
+        # COMPUTE THE ONE STEP ESTIMATED RISK
+        df["EST_CUR_RISK"] = pd.merge(
+            df.drop('EST_CUR_RISK', axis=1),
+            R_df.reset_index(),
+            left_on="EST_H_NEXT_CLUSTER",
+            right_on="CLUSTER",
+            how="left")["EST_RISK"].values
+        df["EST_H_NEXT_RISK"] += df["EST_CUR_RISK"].values
+
+        df["TRUE_H_NEXT_RISK"] = df.groupby("ID").rolling(window=h, min_periods=h)[
+            "RISK"].sum().values
+        df["TRUE_H_NEXT_RISK"] = df.groupby("ID")["TRUE_H_NEXT_RISK"].shift(-h)
+
+        # COMPUTE THE ONE STEP ERROR
+        df["EST_H_ERROR"] += error_eval(df["EST_H_NEXT_RISK"].values,
+                                             df["TRUE_H_NEXT_RISK"].values)
+    return df
+
+
+# Compute risk error (testing set - alpharisk as reward)
+def compute_risk_error_test_alpha(df, P_df, R_df, error_eval, horizon=5):
+
+        df["EST_H_NEXT_RISK"] = 0.
+        df["EST_H_NEXT_AlphaRISK"] = 0.
+        df["EST_H_ERROR"] = 0.
+        df["EST_CUR_RISK"] = df["INIT_RISK"].values
+
+        for h in range(1, horizon + 1):  # [TO ADAPT WITH EXPONENTIAL]
+            # COMPUTE THE NEXT CLUSTER
+            df = pd.merge(
+                df,
+                P_df.reset_index().rename(columns={"ACTION": "ACTION_", "CLUSTER": "CLUSTER_"}),
+                left_on=["EST_H_NEXT_CLUSTER", "ACTION"],
+                right_on=["CLUSTER_", "ACTION_"],
+                how="left").copy().drop(["CLUSTER_", "ACTION_"],
+                                        axis=1).drop(["EST_H_NEXT_CLUSTER"],
+                                                     axis=1).rename(columns={"TRANSITION_CLUSTER": "EST_H_NEXT_CLUSTER"})
+
+            # COMPLETE MISSING TRANSITION WITH THE LAST AVAILABLE CLUSTER
+            df["EST_H_NEXT_CLUSTER"] = df.groupby(['ID'], sort=False).apply(lambda group: group.ffill())[
+                'EST_H_NEXT_CLUSTER'].values
+
+            # COMPUTE THE ONE STEP ESTIMATED RISK
+            df["EST_H_NEXT_AlphaRISK"] = pd.merge(
+                df.drop('EST_H_NEXT_AlphaRISK', axis=1),
+                R_df.reset_index(),
+                left_on="EST_H_NEXT_CLUSTER",
+                right_on="CLUSTER",
+                how="left")["EST_AlphaRISK"].values
+            df["EST_CUR_RISK"] *= np.exp(df["EST_H_NEXT_AlphaRISK"]).values
+            df["EST_H_NEXT_RISK"] += df["EST_CUR_RISK"].values
+
+            df["TRUE_H_NEXT_RISK"] = df.groupby("ID", sort=False).rolling(window=h, min_periods=h)[
+                "RISK"].sum().values
+            df["TRUE_H_NEXT_RISK"] = df.groupby("ID", sort=False)["TRUE_H_NEXT_RISK"].shift(-h)
+
+            # COMPUTE THE ONE STEP ERROR
+            df["EST_H_ERROR"] += error_eval(df["EST_H_NEXT_RISK"].values,
+                                            df["TRUE_H_NEXT_RISK"].values,
+                                            df["INIT_TARGET"].values,
+                                            df["TARGET"])
+        # y_est, y_true, init_target_y_est, target_y_true
+        df.drop(["INIT_TARGET", "EST_H_NEXT_CLUSTER", "EST_H_NEXT_AlphaRISK", "EST_CUR_RISK", "INIT_RISK"], axis=1, inplace=True)
+        return df
+
+
+# Compute risk error (training set - risk as reward)
+def compute_risk_error_test_risk(df, P_df, R_df, error_eval, horizon=5):
+
+    # df["EST_H_NEXT_CLUSTER"] = self.model.predict(df.iloc[:, 2:2 + self.pfeatures])
+    df["EST_H_NEXT_RISK"] = 0.
+    df["EST_H_ERROR"] = 0.
+    df['EST_CUR_RISK'] = 0.
+
+    for h in range(1, horizon + 1):  # [TO ADAPT WITH EXPONENTIAL]
+        # COMPUTE THE NEXT CLUSTER
+        df = pd.merge(
+            df,
+            P_df.reset_index().rename(columns={"ACTION": "ACTION_", "CLUSTER": "CLUSTER_"}),
+            left_on=["EST_H_NEXT_CLUSTER", "ACTION"],
+            right_on=["CLUSTER_", "ACTION_"],
+            how="left").copy().drop(["CLUSTER_", "ACTION_"],
+                                    axis=1).drop(["EST_H_NEXT_CLUSTER"],
+                                                 axis=1).rename(columns={"TRANSITION_CLUSTER": "EST_H_NEXT_CLUSTER"})
+
+        # # COMPLETE MISSING TRANSITION WITH THE LAST AVAILABLE CLUSTER
+        # df["EST_H_NEXT_CLUSTER"] = df.groupby(['ID'], sort=False).apply(lambda group: group.ffill())[
+        #     'EST_H_NEXT_CLUSTER'].values
+
+        # COMPUTE THE ONE STEP ESTIMATED RISK
+        df["EST_CUR_RISK"] = pd.merge(
+            df.drop('EST_CUR_RISK', axis=1),
+            R_df.reset_index(),
+            left_on="EST_H_NEXT_CLUSTER",
+            right_on="CLUSTER",
+            how="left")["EST_RISK"].values
+        df["EST_H_NEXT_RISK"] += df["EST_CUR_RISK"].values
+
+        df["TRUE_H_NEXT_RISK"] = df.groupby("ID", sort=False).rolling(window=h, min_periods=h)[
+            "RISK"].sum().values
+        df["TRUE_H_NEXT_RISK"] = df.groupby("ID", sort=False)["TRUE_H_NEXT_RISK"].shift(-h)
+
+        # COMPUTE THE ONE STEP ERROR
+        df["EST_H_ERROR"] += error_eval(df["EST_H_NEXT_RISK"].values,
+                                        df["TRUE_H_NEXT_RISK"].values,
+                                        df["INIT_TARGET"].values,
+                                        df["TARGET"])
+
+    return df
+
+
+#############################################################################
+# Optimization  function
+
+
+
 #############################################################################
 # Function for the Iterations
+def compute_error_aux(df, P_df, R_df, h):
+    pass
 
 # findConstradiction() takes as input a dataframe and returns the tuple with
 # initial cluster and action that have the most number of contradictions or
@@ -427,7 +586,7 @@ def split(df,  # pandas dataFrame
           i,  # integer: initial cluster
           a,  # integer: action taken
           c,  # integer: target cluster
-          pfeatures,  # integer: number of features
+          features,  # s: number of features
           k,  # integer: intedexer for next cluster
           classification='LogisticRegression',
           random_state=0):  # string: classification aglo
@@ -444,7 +603,7 @@ def split(df,  # pandas dataFrame
     data = {}
 
     for j in range(len(groups)):
-        d = pd.DataFrame(groups[j].iloc[:, 2:2 + pfeatures].values.tolist())
+        d = pd.DataFrame(groups[j].loc[:, features].values.tolist())
 
         data[j] = d
 
@@ -491,17 +650,16 @@ def split(df,  # pandas dataFrame
 # (MDP GRID SEARCH FUNCTION)
 # Splitting function from the MDP learning algorithm
 def splitter(splitter_dataframe,  # pandas dataFrame
-             pfeatures,  # integer: number of features
              th,  # integer: threshold for minimum split
              test_splitter_dataframe=None,
              testing=False,
              classification='LogisticRegression',  # string: classification alg
-             it=6,  # integer: max number of clusters
+             it=100,  # integer: max number of clusters
              OutputFlag=1,
              n=-1,
              random_state=0,
              plot=False,
-             save=False,
+             save=True,
              savepath=None):  # If we plot error
 
     # initializing lists for error & accuracy data
@@ -512,9 +670,8 @@ def splitter(splitter_dataframe,  # pandas dataFrame
     nc = splitter_dataframe.df['CLUSTER'].nunique()  # initial number of clusters
     k = nc
 
-    if testing:
-        best_testing_error = np.inf
-        best_mdp_predictor = None
+    best_testing_error = np.inf
+    best_mdp_predictor = None
 
     # Setting progress bar--------------
     if OutputFlag >= 1:
@@ -536,7 +693,7 @@ def splitter(splitter_dataframe,  # pandas dataFrame
         splitter_dataframe.update_cluster()
 
         # compute horizon error & transition error
-        splitter_dataframe.compute_risk_error_train()
+        splitter_dataframe.compute_risk_error()
 
         # compute transition error
         splitter_dataframe.compute_transition_error()
@@ -555,14 +712,14 @@ def splitter(splitter_dataframe,  # pandas dataFrame
         if testing:
             # compute updated predicted cluster
             test_splitter_dataframe.get_mdp_tree(splitter_dataframe)
-            test_splitter_dataframe.compute_risk_error_test()
+            test_splitter_dataframe.compute_risk_error()
 
             R2_test = R2_value(test_splitter_dataframe)
             test_error = testing_value_error(test_splitter_dataframe)
             testing_R2.append(R2_test)
             testing_error.append(test_error)
 
-            if (test_error < best_testing_error) & (_ > 30):  # DEBUG
+            if test_error < best_testing_error:  # DEBUG
                 best_mdp_predictor = splitter_dataframe.to_mdp()
                 best_testing_error = test_error
 
@@ -595,7 +752,7 @@ def splitter(splitter_dataframe,  # pandas dataFrame
             a, b = contradiction(splitter_dataframe.df, c, a)
 
             # if OutputFlag == 1:
-            splitter_dataframe.df = split(splitter_dataframe.df.copy(), c, a, b, pfeatures, nc, classification,
+            splitter_dataframe.df = split(splitter_dataframe.df.copy(), c, a, b, splitter_dataframe.features, nc, classification,
                                               random_state=random_state)
 
             cont = True
@@ -614,7 +771,7 @@ def splitter(splitter_dataframe,  # pandas dataFrame
     splitter_dataframe.update_cluster()
 
     # compute horizon error & transition error
-    splitter_dataframe.compute_risk_error_train()
+    splitter_dataframe.compute_risk_error()
 
     # compute transition error
     splitter_dataframe.compute_transition_error()
@@ -629,14 +786,14 @@ def splitter(splitter_dataframe,  # pandas dataFrame
     if testing:
         # compute updated predicted cluster
         test_splitter_dataframe.get_mdp_tree(splitter_dataframe)
-        test_splitter_dataframe.compute_risk_error_test()
+        test_splitter_dataframe.compute_risk_error()
 
         R2_test = R2_value(test_splitter_dataframe)
         test_error = testing_value_error(test_splitter_dataframe)
         testing_R2.append(R2_test)
         testing_error.append(test_error)
 
-        if (test_error < best_testing_error) & (_ > 30):  # DEBUG
+        if test_error < best_testing_error:  # DEBUG
             best_mdp_predictor = splitter_dataframe.to_mdp()
 
         # printing error and accuracy values
@@ -721,6 +878,7 @@ def fit_cv_fold(split_idx,
                 clustering_distance_threshold,
                 actions,
                 pfeatures,
+                reward_name,
                 splitting_threshold,
                 classification,
                 n_iter,
@@ -739,13 +897,13 @@ def fit_cv_fold(split_idx,
                 plot=False):
     if mode == "ALL":
 
-        idx, (train_idx, test_idx) = split_idx  # train_idx, _ = split_idx  / _, train_idx = split_idx
+        idx, (train_idx, test_idx), features = split_idx  # train_idx, _ = split_idx  / _, train_idx = split_idx
         df_test = df.loc[train_idx].groupby("ID").tail(test_horizon+1).reset_index(drop=True).copy()
         df_train = df.loc[train_idx].groupby("ID").apply(lambda x: x.head(-(test_horizon+1))).reset_index(drop=True).copy()
 
     elif mode == "TIME_CV":
 
-        idx, (train_idx, test_idx) = split_idx
+        idx, (train_idx, test_idx), features = split_idx
         df_train = pd.concat(
             [df.loc[train_idx],
              df.loc[test_idx].groupby("ID").apply(lambda x: x.head(-(test_horizon+1))).reset_index(drop=True)]
@@ -754,9 +912,9 @@ def fit_cv_fold(split_idx,
 
     elif mode == "ID":
 
-        idx, (train_idx, test_idx) = split_idx
-        df_train = df.loc[train_idx].copy()
-        df_test = df.loc[test_idx].copy()
+        idx, (train_idx, test_idx), features = split_idx
+        df_train = df.groupby("ID").apply(lambda x: x.head(-(test_horizon+1))).reset_index(drop=True).copy().reset_index(drop=True)
+        df_test = df.loc[test_idx].groupby("ID").tail(test_horizon+1).reset_index(drop=True).copy()
 
     else:
         if OutputFlag >= 1:
@@ -768,7 +926,8 @@ def fit_cv_fold(split_idx,
 
     splitter_df = MDP_Splitter(df_train,
                                all_data=df,
-                               pfeatures=pfeatures,
+                               features=features,
+                               reward_name=reward_name,
                                days_avg=days_avg,
                                clustering=clustering,
                                init_n_clusters=n_clusters,
@@ -783,7 +942,8 @@ def fit_cv_fold(split_idx,
 
     test_splitter_df = MDP_Splitter(df_test,
                                     all_data=df,
-                                    pfeatures=pfeatures,
+                                    features=features,
+                                    reward_name=reward_name,
                                     days_avg=days_avg,
                                     clustering=clustering,
                                     init_n_clusters=n_clusters,
@@ -796,7 +956,8 @@ def fit_cv_fold(split_idx,
                                     random_state=random_state,
                                     verbose=OutputFlag)
 
-    splitter_df.initializeClusters()
+    # splitter_df.initializeClusters(["RISK", "AlphaRISK"])
+    splitter_df.initializeClusters(reward=["{}_SCALE".format(reward_name)])
 
     # k = df_train['CLUSTER'].nunique()
     #################################################################
@@ -805,7 +966,6 @@ def fit_cv_fold(split_idx,
     # Run Iterative Learning Algorithm
 
     trained_splitter_df = splitter(splitter_df,
-                                   pfeatures,
                                    splitting_threshold,
                                    test_splitter_df,
                                    testing=True,
@@ -864,3 +1024,32 @@ def fit_eval_params(param_id_mdp,
     else:
         validation_error = prediction_score(mdp, testing_data)
         return param_id, mdp, validation_error
+
+
+def process_prediction_region(region, mdp, dates, region_set, model_key="mean", from_first=False):
+
+    if mdp.verbose >= 1:
+        print("Current region:{}".format(region))
+    try:
+        assert region in region_set
+    # the state doesn't appear not in the region set
+    except AssertionError:
+        if mdp.verbose >= 1:
+            print("The region '{}' is not in the trained region set".format(region))
+
+    # start from the first date
+    if from_first & mdp.keep_first:
+        last_date = mdp.df_trained_first.loc[region, "TIME"]
+    # start from the last date
+    else:
+        last_date = mdp.df_trained.loc[region, "TIME"]
+
+    # predict from each dates
+    pred_df = pd.DataFrame(columns=[mdp.region_colname, 'TIME', mdp.target_colname])
+    for date in dates:
+        try:
+            pred = predict_region_date(mdp, (region, last_date), date, model_key=model_key, from_first=from_first, verbose=mdp.verbose)
+            pred_df = pred_df.append({mdp.region_colname: region, "TIME": date, mdp.target_colname: pred}, ignore_index=True)
+        except MDPPredictionError:
+            pass
+    return pred_df
