@@ -5,7 +5,7 @@ Created on Tue Jul  7 00:42:44 2020
 @author: omars
 """
 
-# %% Libraries
+#%% Libraries
 
 import numpy as np
 import pandas as pd
@@ -20,8 +20,7 @@ from sklearn.svm import SVR, LinearSVR
 import operator
 from copy import deepcopy
 
-# %% Model
-
+#%% Model
 
 class AGGModel():
 
@@ -81,15 +80,14 @@ class AGGModel():
                     except:
                         pass
 
-                models_to_keep = [key for key, values in self.mape_regions[region_name].items()
-                                  if values / np.sqrt(length) <= 1e-3]
+                models_to_keep = [key for key, values in self.mape_regions[region_name].items() if values / np.sqrt(length) <= 1e-3]
                 if not models_to_keep:
                     models_to_keep = [min(self.mape_regions[region_name].items(), key=operator.itemgetter(1))[0]]
 
                 self.model_regions[region_name] = models_to_keep
 
-                X_train = df_sub.loc[:, self.model_regions[region_name]]
-                y_train = df_sub.loc[:, self.target]
+                X_train = df_sub.loc[:, self.model_regions[region_name]].diff().dropna()
+                y_train = df_sub.loc[:, self.target].diff().dropna()
                 best_mape = np.infty
                 best_model = None
                 for model_name in self.ml_mapping.keys():
@@ -99,8 +97,11 @@ class AGGModel():
                             model = GridSearchCV(model_instance, self.ml_hyperparams[model_name])
                         else:
                             model = deepcopy(self.ml_mapping[model_name][0])
-
-                        model.fit(X_train, y_train)
+                        try:
+                            model.fit(X_train, y_train)
+                        except ValueError:
+                            print(region_name, model_name)
+                            continue
                         current_mape = mape(y_train, model.predict(X_train))
                         if current_mape < best_mape:
                             best_mape = current_mape
@@ -111,13 +112,17 @@ class AGGModel():
         predictions = {}
         for region in regions:
             try:
-                l_prov = []
+                l_prov = pd.DataFrame(index=dates)
                 for model in self.model_regions[region]:
-                    l_prov.append(list(output[model][region]))
+                    output[model][region].name = model
+                    l_prov = l_prov.join(output[model][region], how="inner")
 
-                X = np.array(l_prov).transpose()
-                predictions[region] = pd.DataFrame(self.regressor[region].predict(X),
-                                                   columns=['agg'], index=dates)['agg']
-            except KeyError:
+                X = np.diff(l_prov.values, axis=0)
+                predictions[region] = pd.DataFrame(self.regressor[region].predict(X), columns=['agg'], index=l_prov.index[1:])['agg'].cumsum() + l_prov.iloc[0].median()
+            except:
                 continue
         return predictions
+
+
+
+

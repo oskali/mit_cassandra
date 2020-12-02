@@ -1,7 +1,4 @@
-# %% Libraries
-from data_utils import save_model
-from mdp_testing import R2_value_training, training_value_error, get_MDP, \
-    predict_cluster, R2_value_testing, testing_value_error, error_per_ID, MDPTrainingError, prediction_score
+#%% Libraries
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -19,9 +16,12 @@ from operator import itemgetter
 import os
 
 import warnings
-warnings.filterwarnings('ignore')
+warnings.filterwarnings("ignore")
 
+from mdp_testing import R2_value_training, training_value_error, get_MDP, \
+    predict_cluster, R2_value_testing, testing_value_error, error_per_ID, MDPTrainingError, prediction_score
 
+from data_utils import save_model
 #############################################################################
 # Splitter algorithm with cross-validation
 
@@ -41,22 +41,22 @@ warnings.filterwarnings('ignore')
 # with two new columns 'CLUSTER' and 'NEXT_CLUSTER'
 def initializeClusters(df,  # pandas dataFrame: MUST contain a "RISK" column
                        clustering='Agglomerative',  # string: clustering algorithm
-                       n_clusters=None,
-                       distance_threshold=0.1,  # number of clusters
+                       n_clusters= None,
+                       distance_threshold= 0.1,  # number of clusters
                        random_state=0):  # random seed for the clustering
     df = df.copy()
     if clustering == 'KMeans':
         output = KMeans(
-            n_clusters=n_clusters, random_state=random_state).fit(
-            np.array(df.RISK).reshape(-1, 1)).labels_
+                n_clusters=n_clusters, random_state=random_state).fit(
+                        np.array(df.RISK).reshape(-1, 1)).labels_
     elif clustering == 'Agglomerative':
         output = AgglomerativeClustering(
             n_clusters=n_clusters, distance_threshold=distance_threshold).fit(
-            np.array(df.RISK).reshape(-1, 1)).labels_
+                    np.array(df.RISK).reshape(-1, 1)).labels_
     elif clustering == 'Birch':
         output = Birch(
             n_clusters=n_clusters).fit(
-            np.array(df.RISK).reshape(-1, 1)).labels_
+                    np.array(df.RISK).reshape(-1, 1)).labels_
     else:
         output = LabelEncoder().fit_transform(np.array(df.RISK).reshape(-1, 1))
     df['CLUSTER'] = output
@@ -72,8 +72,8 @@ def initializeClusters(df,  # pandas dataFrame: MUST contain a "RISK" column
 # findConstradiction() takes as input a dataframe and returns the tuple with
 # initial cluster and action that have the most number of contradictions or
 # (-1, -1) if no such cluster existss
-def findContradiction(df,  # pandas dataFrame
-                      th):  # integer: threshold split size
+def findContradiction(df, # pandas dataFrame
+                      th): # integer: threshold split size
     X = df.loc[:, ['CLUSTER', 'NEXT_CLUSTER', 'ACTION']]
     X = X[X.NEXT_CLUSTER != 'None']
     count = X.groupby(['CLUSTER', 'ACTION'])['NEXT_CLUSTER'].nunique()
@@ -81,7 +81,7 @@ def findContradiction(df,  # pandas dataFrame
     if len(contradictions) > 0:
         ncontradictions = [sum(list(X.query('CLUSTER == @i[0]').query(
             'ACTION == @i[1]').groupby('NEXT_CLUSTER')['ACTION'].count().
-            sort_values(ascending=False))[1:]) for i in contradictions]
+                                    sort_values(ascending=False))[1:]) for i in contradictions]
         if max(ncontradictions) > th:
             selectedCont = contradictions[ncontradictions.index(
                 max(ncontradictions))]
@@ -95,7 +95,7 @@ def contradiction(df,  # pandas dataFrame
                   i,  # integer: initial clusters
                   a):  # integer: action taken
     nc = list(df.query('CLUSTER == @i').query(
-        'ACTION == @a').query('NEXT_CLUSTER != "None"')['NEXT_CLUSTER'])
+            'ACTION == @a').query('NEXT_CLUSTER != "None"')['NEXT_CLUSTER'])
     if len(nc) == 1:
         return (None, None)
     else:
@@ -130,10 +130,10 @@ def split(df,  # pandas dataFrame
             df['ACTION'] == a) & (df['NEXT_CLUSTER'] == c)]
     g2 = df[(df['CLUSTER'] == i) & (
             df['ACTION'] == a) & (df['NEXT_CLUSTER'] != c) & (
-        df['NEXT_CLUSTER'] != 'None')]
+                    df['NEXT_CLUSTER'] != 'None')]
     g3 = df[(df['CLUSTER'] == i) & (
             ((df['ACTION'] == a) & (df['NEXT_CLUSTER'] == 'None')) | (
-                df['ACTION'] != a))]
+                    df['ACTION'] != a))]
     groups = [g1, g2, g3]
     data = {}
 
@@ -143,13 +143,13 @@ def split(df,  # pandas dataFrame
 
         data[j] = d
 
-    data[0].insert(data[0].shape[1], 'GROUP', np.zeros(data[0].shape[0]))
-    data[1].insert(data[1].shape[1], 'GROUP', np.ones(data[1].shape[0]))
+    data[0].insert(data[0].shape[1], "GROUP", np.zeros(data[0].shape[0]))
+    data[1].insert(data[1].shape[1], "GROUP", np.ones(data[1].shape[0]))
 
     training = pd.concat([data[0], data[1]])
 
-    tr_X = training.loc[:, ~(training.columns == 'GROUP')]
-    tr_y = training.loc[:, 'GROUP']
+    tr_X = training.loc[:, ~(training.columns == "GROUP")]
+    tr_y = training.loc[:, "GROUP"]
 
     if classification == 'LogisticRegression':
         m = LogisticRegression(solver='liblinear', random_state=random_state)
@@ -172,13 +172,13 @@ def split(df,  # pandas dataFrame
     test_X = data[2]
     if len(test_X) != 0:
         Y = m.predict(test_X)
-        g3.insert(g3.shape[1], 'GROUP', Y)
-        id2 = g3.loc[g3['GROUP'] == 1].index.values
+        g3.insert(g3.shape[1], "GROUP", Y)
+        id2 = g3.loc[g3["GROUP"] == 1].index.values
         ids = np.concatenate((ids, id2))
 
     df.loc[df.index.isin(ids), 'CLUSTER'] = k
     newids = ids-1
-    df.loc[(df.index.isin(newids)) & (df['ID'] == df['ID'].shift(-1)), 'NEXT_CLUSTER'] = k
+    df.loc[(df.index.isin(newids)) & (df['ID']== df['ID'].shift(-1)), 'NEXT_CLUSTER'] = k
 
     return df
 
@@ -199,7 +199,7 @@ def splitter(df,  # pandas dataFrame
              random_state=0,
              plot=False,
              save=False,
-             savepath=None):  # If we plot error
+             savepath=None):  #If we plot error
     # initializing lists for error & accuracy data
     training_R2 = []
     testing_R2 = []
@@ -207,7 +207,7 @@ def splitter(df,  # pandas dataFrame
     # testing_acc = []
     testing_error = []
     training_error = []
-    k = df['CLUSTER'].nunique()  # initial number of clusters
+    k = df['CLUSTER'].nunique() #initial number of clusters
     nc = k
     df_new = deepcopy(df)
 
@@ -224,28 +224,26 @@ def splitter(df,  # pandas dataFrame
         c, a = findContradiction(df_new, th)
         # print('Iteration',i+1, '| #Clusters=',nc+1, '------------------------')
         if c != -1:
-            # if OutputFlag == 1:
-            #print('Cluster Content')
-            # print(df_new.groupby(
-            # ['CLUSTER', 'OG_CLUSTER'])['ACTION'].count())
+            #if OutputFlag == 1:
+                #print('Cluster Content')
+                #print(df_new.groupby(
+                            #['CLUSTER', 'OG_CLUSTER'])['ACTION'].count())
 
             # finding contradictions and splitting
             a, b = contradiction(df_new, c, a)
 
             # if OutputFlag == 1:
-            # print('Cluster splitted', c,'| Action causing contradiction:', a, '| Cluster most elements went to:', b)
+                # print('Cluster splitted', c,'| Action causing contradiction:', a, '| Cluster most elements went to:', b)
             df_new = split(df_new, c, a, b, pfeatures, nc, classification, random_state=random_state)
 
             # error and accuracy calculations
 
-            R2_train = R2_value_training(df_new, actions=actions, pfeatures=pfeatures,
-                                         n_cluster=nc+1, complete=True, OutputFlag=OutputFlag)
+            R2_train = R2_value_training(df_new, actions=actions, pfeatures=pfeatures, n_cluster=nc+1, complete=True, OutputFlag=OutputFlag)
 
             if testing:
                 # model = predict_cluster(df_new, pfeatures)
                 model = None
-                R2_test = R2_value_testing(df_test, df_new, model, pfeatures, actions=actions,
-                                           n_cluster=nc+1, OutputFlag=OutputFlag)
+                R2_test = R2_value_testing(df_test, df_new, model, pfeatures, actions=actions, n_cluster=nc+1, OutputFlag=OutputFlag)
                 test_error = testing_value_error(df_test.copy(), df_new, model,
                                                  actions=actions,
                                                  pfeatures=pfeatures, n_cluster=nc+1,
@@ -255,8 +253,8 @@ def splitter(df,  # pandas dataFrame
                 testing_error.append(test_error)
             # train_acc = training_accuracy(df_new)[0]
             # test_acc = testing_accuracy(df_test, df_new, model, pfeatures)[0]
-            P_df, R_df = get_MDP(df_new, complete=True, actions=actions, pfeatures=pfeatures,
-                                 n_cluster=nc+1,  OutputFlag=0)
+            P_df,R_df = get_MDP(df_new, complete=True, actions=actions, pfeatures=pfeatures,
+                                n_cluster=nc+1,  OutputFlag=0)
             train_error = training_value_error(df_new, P_df=P_df, R_df=R_df, relative=True, h=h, OutputFlag=OutputFlag)
             training_R2.append(R2_train)
             training_error.append(train_error)
@@ -304,11 +302,11 @@ def splitter(df,  # pandas dataFrame
     # for training
     if plot:
         fig2, ax2 = plt.subplots()
-        ax2.plot(its, training_error, label='Training Error')
+        ax2.plot(its, training_error, label="Training Error")
         if testing:
-            ax2.plot(its, testing_error, label='Testing Error')
+            ax2.plot(its, testing_error, label="Testing Error")
         if n > 0:
-            ax2.axvline(x=n, linestyle='--', color='r')  # Plotting vertical line at #cluster =n
+            ax2.axvline(x=n, linestyle='--', color='r') #Plotting vertical line at #cluster =n
         ax2.set_ylim(0)
         ax2.set_xlabel('# of Clusters')
         ax2.set_ylabel('Cases MAPE error')
@@ -321,11 +319,11 @@ def splitter(df,  # pandas dataFrame
         else:
             plt.close()
 
-    df_train_error = pd.DataFrame(list(zip(its, training_error)),
+    df_train_error = pd.DataFrame(list(zip(its, training_error)), \
                                   columns=['Clusters', 'Error'])
     if testing:
-        df_test_error = pd.DataFrame(list(zip(its, testing_error)),
-                                     columns=['Clusters', 'Error'])
+        df_test_error = pd.DataFrame(list(zip(its, testing_error)), \
+                                  columns=['Clusters', 'Error'])
         return df_new, df_train_error, df_test_error
 
     return df_new, training_error, testing_error
@@ -347,27 +345,27 @@ def fit_cv_fold(split_idx,
                 n,
                 OutputFlag=0,
                 random_state=1234,
-                mode='ID',
+                mode="ID",
                 save=False,
-                savepath='',
+                savepath="",
                 plot=False):
 
-    if mode == 'ALL':
+    if mode == "ALL":
 
         idx, (train_idx, test_idx) = split_idx  # train_idx, _ = split_idx  / _, train_idx = split_idx
-        df_test = df.loc[train_idx].groupby('ID').tail(horizon).reset_index(drop=True).copy()
-        df_train = df.loc[train_idx].groupby('ID').apply(lambda x: x.head(-horizon)).reset_index(drop=True).copy()
+        df_test = df.loc[train_idx].groupby("ID").tail(horizon).reset_index(drop=True).copy()
+        df_train = df.loc[train_idx].groupby("ID").apply(lambda x: x.head(-horizon)).reset_index(drop=True).copy()
 
-    elif mode == 'TIME_CV':
+    elif mode == "TIME_CV":
 
         idx, (train_idx, test_idx) = split_idx
         df_train = pd.concat(
             [df.loc[train_idx],
-             df.loc[test_idx].groupby('ID').apply(lambda x: x.head(-horizon)).reset_index(drop=True)]
+             df.loc[test_idx].groupby("ID").apply(lambda x: x.head(-horizon)).reset_index(drop=True)]
         ).copy().reset_index(drop=True)
-        df_test = df.loc[test_idx].groupby('ID').tail(horizon).reset_index(drop=True).copy()
+        df_test = df.loc[test_idx].groupby("ID").tail(horizon).reset_index(drop=True).copy()
 
-    elif mode == 'ID':
+    elif mode == "ID":
 
         idx, (train_idx, test_idx) = split_idx
         df_train = df.loc[train_idx].copy()
@@ -405,7 +403,7 @@ def fit_cv_fold(split_idx,
                                                        random_state=random_state,
                                                        plot=plot,
                                                        save=save,
-                                                       savepath=os.path.join(savepath, 'plot_{}.PNG'.format(idx)))
+                                                       savepath=os.path.join(savepath, "plot_{}.PNG".format(idx)))
 
     m = predict_cluster(df_train, pfeatures)
     try:
