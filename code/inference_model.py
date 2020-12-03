@@ -41,7 +41,7 @@ class InferenceModel(Model):
         ci_file = pd.read_csv(os.path.join(
             repo_path, self.model_parameters['ci_file']))
 
-        ci_file = pd.read_csv(os.path.join(
+        preval_file = pd.read_csv(os.path.join(
             repo_path, self.model_parameters['preval_file']))
 
         regions = ['Massachusetts', 'New York']
