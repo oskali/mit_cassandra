@@ -290,7 +290,7 @@ def match_to_real_growth(df, region_best_parameters, list_states, start_date, me
 
         # current_final_test is the df where we add all the state predictions for the current iteration (day)
         current_final_test = pd.DataFrame()
-        for chosen_region in list_states:
+        for chosen_region in region_best_parameters.keys():
             # the distinction between in state and out of state only has an effect when the day_0 is before the split_date
             #for in state train data, we can use anything before the day_0
             train_data_in_state = get_in_date_range(df.loc[df[region_col] == chosen_region], first_date=start_date[chosen_region], last_date = day_0, date_col = date_col)
@@ -450,13 +450,14 @@ def cassandra_fit(df, list_states, start_date, memory = 10, forward_days = 14, s
     
     region_best_parameters = {}
     for region in list_states:
-        threshold, n, p, func , ex_weights = get_best_parameters(df, region ,  memory, split_date, forward_days, r, day1,
-                                                    region_col= region_col, date_col=date_col, mob_col = mob_col,
-                                                    use_mob = use_mob, starting_point = starting_point,
-                                                    hfilter = hfilter , clusters_map= clusters_map,
-                                                    extra_features= extra_features)
-        region_best_parameters[region] = {'threshold': threshold , 'neighbors': n , 'p_norm':p,
-                                          'function': func, 'ex_weights' : ex_weights}
+        if region in df[region_col].unique():
+            threshold, n, p, func , ex_weights = get_best_parameters(df, region ,  memory, split_date, forward_days, r, day1,
+                                                        region_col= region_col, date_col=date_col, mob_col = mob_col,
+                                                        use_mob = use_mob, starting_point = starting_point,
+                                                        hfilter = hfilter , clusters_map= clusters_map,
+                                                        extra_features= extra_features)
+            region_best_parameters[region] = {'threshold': threshold , 'neighbors': n , 'p_norm':p,
+                                            'function': func, 'ex_weights' : ex_weights}
 
     return region_best_parameters
 

@@ -66,10 +66,10 @@ class KNNModel:
             
         else:
             self.day1 = '2020-04-10' #training overall starting date
-            # remove_states_list = ['District of Columbia','Puerto Rico','American Samoa', 'Diamond Princess',
-            #                     'Grand Princess','Guam','Northern Mariana Islands','Virgin Islands']
-            # self.state_df = self.state_df.loc[~self.state_df['state'].isin(remove_states_list)]
             min_case_requirement = 100
+
+        if self.target == 'deaths':
+            min_case_requirement = 1
             
         mask = self.state_df[self.target] >= min_case_requirement #need to remove regions with only few cases at the end
         self.state_df = self.state_df[mask]
