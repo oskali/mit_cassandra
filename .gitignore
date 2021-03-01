@@ -1,23 +1,9 @@
-# Created by .ignore support plugin (hsz.mobi)
-.idea/shelf/
-code/__pycache__/benchmark_model.cpython-37.pyc
-code/__pycache__/mdp_utils.cpython-37.pyc
-code/error_last.csv
-code/knn_fips/
-code/models - save/
-code/old/
-code/results_east_coast.csv
-code/results_east_coast2.csv
-code/tmp_mass_pred.csv
-code/tmp_ny_pred.csv
-data/input/07_08_2020_states_combined_w_pct.csv
-/code/knn_fips/
-/code/export_20200720_cases.csv
-/code/tm4_metrics.csv
-/code/tmp.csv
-/code/tmp4.csv
-/code/tmp_2.csv
-/code/tmp_3.csv
-/code/case predictions.csv
-/code/region_list.txt
-/code/tmp_sir.csv
+/data/01_05_2021_states_combined.csv
+/data/01_05_2021_states_combined_temperature_demographics_and_holidays.csv
+/data/01_05_2021_states_combined_temperature_demographics_and_holidays_final.csv
+/data/01_05_2021_states_combined_temperature_demographics_and_holidays_final_scaled_v2.csv
+/data/01_05_2021_states_combined_temperature_demographics_and_holidays_final_v2.csv
+/data/11_09_2020_states_combined.csv
+/data/12_06_2020_states_combined.csv
+/data/12_10_2020_states_combined.csv
+/data/12_28_2020_states_combined.csv

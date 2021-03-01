@@ -1,0 +1,96 @@
+
+
+-------------------------------
+0) Setting of the environment folder : experiment_features_cases_state_2020-08-31_2020-09-26
+
+
+
+BEGINNING OF THE TRAINING
+#########################
+
+-------------------------
+1) Loading of the data :
+
+    target : cases
+    region : state
+    
+    Chosen cutoffs: 
+
+        - training_agg_cutoff : 2020-08-31
+        - training_cutoff : 2020-08-05
+        - validation_cutoff : 2020-09-26
+
+    Additional information >>>
+
+        - features MDP : 
+            {'days_avg': 3, 'horizon': 8, 'n_iter': 100, 'n_folds_cv': 4, 'clustering_distance_threshold': 0.1, 'splitting_threshold': 0.0, 'classification_algorithm': 'DecisionTreeClassifier', 'clustering_algorithm': 'Agglomerative', 'n_clusters': None, 'action_thresh': ([], 0), 'features_list': ['cases_pct3', 'cases_pct5', 'temperature', 'temperature_7'], 'verbose': 1, 'n_jobs': -1, 'date_colname': 'date', 'target_colname': 'cases', 'region_colname': 'state', 'random_state': 42, 'keep_first': True, 'save': False, 'plot': False, 'savepath': '', 'region_exceptions': None}
+
+    Loading datasets : running ...
+
+
+pop 48
+Training set contains 48 state.
+pop 48
+Training set contains 48 state.
+pop 48
+Training set contains 48 state.
+
+    Loading datasets : done.
+
+
+
+
+-------------------------------
+2) Training and Loading models (TRAIN) :
+
+    Training and predictions : running ...
+
+
+
+    (16/02/2021 01:14:23) Predictions Bi-LSTM : running ...
+[['Alabama', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming']]
+day 0
+day 1
+day 2
+day 3
+day 4
+day 5
+day 6
+day 7
+day 8
+day 9
+day 10
+day 11
+day 12
+day 13
+day 14
+day 15
+day 16
+day 17
+day 18
+day 19
+day 20
+day 21
+day 22
+day 23
+day 24
+day 25
+day 26
+
+    (16/02/2021 01:15:32) Predictions Bi-LSTM : done.
+
+    (16/02/2021 01:15:32) Training Cassandra : running ...
+       unnamed: 0    state  ... death2cases_2w  temperature_7
+0               0  Alabama  ...            NaN            NaN
+1               1  Alabama  ...            NaN            NaN
+2               2  Alabama  ...            NaN            NaN
+3               3  Alabama  ...            NaN            NaN
+4               4  Alabama  ...            NaN            NaN
+...           ...      ...  ...            ...            ...
+13680       13680  Wyoming  ...       0.011401       0.826810
+13681       13681  Wyoming  ...       0.011290       0.763595
+13682       13682  Wyoming  ...       0.012324       0.776238
+13683       13683  Wyoming  ...       0.012891       0.839452
+13684       13684  Wyoming  ...       0.013487       0.902666
+
+[7951 rows x 267 columns]

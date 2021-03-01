@@ -1,0 +1,47 @@
+2021-02-26 17:31:35.803877: W tensorflow/stream_executor/platform/default/dso_loader.cc:59] Could not load dynamic library 'libcudart.so.10.1'; dlerror: libcudart.so.10.1: cannot open shared object file: No such file or directory; LD_LIBRARY_PATH: /home/software/python/3.8.3/lib:/home/software/sqlite3/3.22.0/lib:/home/software/sloan/local/lib:/home/software/gcc/6.2.0/lib64:/home/software/gcc/6.2.0/lib
+2021-02-26 17:31:35.803915: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
+2021-02-26 17:31:41.060521: W tensorflow/stream_executor/platform/default/dso_loader.cc:59] Could not load dynamic library 'libcuda.so.1'; dlerror: libcuda.so.1: cannot open shared object file: No such file or directory; LD_LIBRARY_PATH: /home/software/python/3.8.3/lib:/home/software/sqlite3/3.22.0/lib:/home/software/sloan/local/lib:/home/software/gcc/6.2.0/lib64:/home/software/gcc/6.2.0/lib
+2021-02-26 17:31:41.060559: W tensorflow/stream_executor/cuda/cuda_driver.cc:312] failed call to cuInit: UNKNOWN ERROR (303)
+2021-02-26 17:31:41.060584: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:156] kernel driver does not appear to be running on this host (node1032.cm.cluster): /proc/driver/nvidia/version does not exist
+2021-02-26 17:31:41.060937: I tensorflow/core/platform/cpu_feature_guard.cc:142] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN)to use the following CPU instructions in performance-critical operations:  AVX2 AVX512F FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2021-02-26 17:31:41.070618: I tensorflow/core/platform/profile_utils/cpu_utils.cc:104] CPU Frequency: 2200000000 Hz
+2021-02-26 17:31:41.071677: I tensorflow/compiler/xla/service/service.cc:168] XLA service 0x612dbd0 initialized for platform Host (this does not guarantee that XLA will be used). Devices:
+2021-02-26 17:31:41.071698: I tensorflow/compiler/xla/service/service.cc:176]   StreamExecutor device (0): Host, Default Version
+Using TensorFlow backend.
+  0%|          | 0/97 [00:00<?, ?it/s]  0%|          | 0/96 [00:00<?, ?it/s]  0%|          | 0/97 [00:00<?, ?it/s]  0%|          | 0/97 [00:00<?, ?it/s]  0%|          | 0/97 [00:02<?, ?it/s]  0%|          | 0/96 [00:02<?, ?it/s]  0%|          | 0/97 [00:02<?, ?it/s]  0%|          | 0/97 [00:02<?, ?it/s]multiprocessing.pool.RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/home/software/python/3.8.3/lib/python3.8/multiprocessing/pool.py", line 125, in worker
+    result = (True, func(*args, **kwds))
+  File "/home/software/python/3.8.3/lib/python3.8/multiprocessing/pool.py", line 48, in mapstar
+    return list(map(*args))
+  File "/nfs/sloanlab003/projects/covid_t2_proj/covid19_team2_wf/covid19_team2/codes/mdp_utils.py", line 393, in fit_cv_fold
+    df_train, training_error, testing_error = splitter(df_train,
+  File "/nfs/sloanlab003/projects/covid_t2_proj/covid19_team2_wf/covid19_team2/codes/mdp_utils.py", line 247, in splitter
+    R2_test = R2_value_testing(df_test, df_new, model, pfeatures, actions=actions, n_cluster=nc+1, OutputFlag=OutputFlag)
+  File "/nfs/sloanlab003/projects/covid_t2_proj/covid19_team2_wf/covid19_team2/codes/mdp_testing.py", line 727, in R2_value_testing
+    df2 = df2.dropna(subset=["CLUSTER"]).copy()
+  File "/home/atsiour/.local/lib/python3.8/site-packages/pandas/core/frame.py", line 5004, in dropna
+    raise KeyError(list(np.compress(check, subset)))
+KeyError: ['CLUSTER']
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "./main_train.py", line 365, in <module>
+    mdp_agg.fit(df_train_agg)
+  File "/nfs/sloanlab003/projects/covid_t2_proj/covid19_team2_wf/covid19_team2/codes/mdp_model.py", line 218, in fit
+    cv_training_error, cv_testing_error = fit_cv(df.copy(),
+  File "/nfs/sloanlab003/projects/covid_t2_proj/covid19_team2_wf/covid19_team2/codes/mdp_states_functions.py", line 285, in fit_cv
+    results = pool.map(fit_cv_fold_pool, split_)
+  File "/home/software/python/3.8.3/lib/python3.8/multiprocessing/pool.py", line 364, in map
+    return self._map_async(func, iterable, mapstar, chunksize).get()
+  File "/home/software/python/3.8.3/lib/python3.8/multiprocessing/pool.py", line 771, in get
+    raise self._value
+KeyError: ['CLUSTER']
+
+
+
+

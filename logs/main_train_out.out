@@ -1,0 +1,373 @@
+
+
+-------------------------------
+0) Setting of the environment folder : experiment_features_cases_state_2020-08-31_2020-09-26
+
+
+
+BEGINNING OF THE TRAINING
+#########################
+
+-------------------------
+1) Loading of the data :
+
+    target : cases
+    region : state
+    
+    Chosen cutoffs: 
+
+        - training_agg_cutoff : 2020-08-31
+        - training_cutoff : 2020-08-05
+        - validation_cutoff : 2020-09-26
+
+    Additional information >>>
+
+        - features MDP : 
+            {'days_avg': 3, 'horizon': 8, 'n_iter': 100, 'n_folds_cv': 4, 'clustering_distance_threshold': 0.1, 'splitting_threshold': 0.0, 'classification_algorithm': 'DecisionTreeClassifier', 'clustering_algorithm': 'Agglomerative', 'n_clusters': None, 'action_thresh': ([], 0), 'features_list': ['cases_pct3', 'cases_pct5', 'cases_pct30', 'temperature', 'temperature_7'], 'verbose': 1, 'n_jobs': -1, 'date_colname': 'date', 'target_colname': 'cases', 'region_colname': 'state', 'random_state': 42, 'keep_first': True, 'save': False, 'plot': False, 'savepath': '', 'region_exceptions': None}
+
+    Loading datasets : running ...
+
+
+pop 48
+Training set contains 48 state.
+pop 48
+Training set contains 48 state.
+pop 48
+Training set contains 48 state.
+
+    Loading datasets : done.
+
+
+
+
+-------------------------------
+2) Training and Loading models (TRAIN) :
+
+    Training and predictions : running ...
+
+
+
+    (01/03/2021 12:21:35) Predictions Bi-LSTM : running ...
+[['Alabama', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming']]
+day 0
+day 1
+day 2
+day 3
+day 4
+day 5
+day 6
+day 7
+day 8
+day 9
+day 10
+day 11
+day 12
+day 13
+day 14
+day 15
+day 16
+day 17
+day 18
+day 19
+day 20
+day 21
+day 22
+day 23
+day 24
+day 25
+day 26
+
+    (01/03/2021 12:22:28) Predictions Bi-LSTM : done.
+
+    (01/03/2021 12:22:28) Predictions Cassandra : running ...
+
+    (01/03/2021 12:24:20) Predictions Cassandra : done.
+
+    (01/03/2021 12:24:20) Predictions MDP : running ...
+
+    (01/03/2021 12:24:24) Predictions MDP : done.
+
+    (01/03/2021 12:24:24) Predictions rMDP : running ...
+Current region:Texas
+Current region:Rhode Island
+Current region:Mississippi
+Current region:Georgia
+Current region:Montana
+Current region:California
+Current region:Washington
+Current region:Kansas
+Current region:Wisconsin
+Current region:West Virginia
+Current region:Wyoming
+Current region:New Jersey
+Current region:Nevada
+Current region:Delaware
+Current region:Idaho
+Current region:Massachusetts
+Current region:Tennessee
+Current region:Utah
+Current region:Minnesota
+Current region:Colorado
+Current region:Indiana
+Current region:North Carolina
+Current region:Louisiana
+Current region:Ohio
+Current region:South Carolina
+Current region:Nebraska
+Current region:Oregon
+Current region:Arkansas
+Current region:Arizona
+Current region:Maryland
+Current region:Alabama
+Current region:Pennsylvania
+Current region:Florida
+Current region:Vermont
+Current region:New Hampshire
+Current region:Oklahoma
+Current region:South Dakota
+Current region:Illinois
+Current region:Michigan
+Current region:North Dakota
+Current region:Connecticut
+Current region:New York
+Current region:Kentucky
+Current region:New Mexico
+Current region:Virginia
+Current region:Iowa
+Current region:Maine
+Current region:Missouri
+
+    (01/03/2021 12:24:52) Predictions rMDP : done.
+
+    Training and predictions (~AGG) : done.
+    
+    
+
+    Additional saving of the predicitons (~AGG) as a csv.
+         state       date    bilstm       knn       mdp           rmdp   cases
+0        Texas 2020-09-24  757535.0  763769.0  757386.0  756603.438103  751831
+1        Texas 2020-09-26  767302.0  775095.0  765974.0  767996.653006  758869
+2        Texas 2020-09-25  762424.0  769518.0  761668.0  762277.645435  755560
+3        Texas 2020-09-19  732932.0  735819.0  729111.0  728926.353415  711690
+4        Texas 2020-09-05  662989.0  659485.0  658454.0  656907.479305  659154
+...        ...        ...       ...       ...       ...            ...     ...
+1243  Missouri 2020-09-15  104937.0  107187.0  100067.0  105065.264904  106637
+1244  Missouri 2020-09-14  103657.0  105699.0   99178.0  103667.566037  105278
+1245  Missouri 2020-09-04   90748.0   90597.0   92517.0   90511.643845   91228
+1246  Missouri 2020-09-09   97254.0   97619.0   95790.0   96905.453929   97504
+1247  Missouri 2020-09-06   93381.0   93186.0   93567.0   93033.754447   94492
+
+[1248 rows x 7 columns]
+
+    -------------------------------
+    2-bis) Training and Loading models (AGG) :
+
+        Training and predictions : running ...
+
+    
+
+        (01/03/2021 12:24:52) Predictions Cassandra (AGG) : running ...
+
+        (01/03/2021 12:26:39) Predictions Cassandra (AGG) : done.
+
+        (01/03/2021 12:26:39) Predictions Bi-LSTM (AGG) : running ...
+[['Alabama', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming']]
+day 0
+day 1
+day 2
+day 3
+day 4
+day 5
+day 6
+day 7
+day 8
+day 9
+day 10
+day 11
+day 12
+day 13
+day 14
+day 15
+day 16
+day 17
+day 18
+day 19
+day 20
+day 21
+day 22
+day 23
+day 24
+day 25
+day 26
+
+        (01/03/2021 12:27:27) Predictions Bi-LSTM (AGG) : done.
+
+        (01/03/2021 12:27:27) Training MDP (AGG) : running ...
+minimum iterations: 100
+
+        (01/03/2021 12:30:06) Training MDP (AGG) : done.
+
+        mdp model saved.
+
+        (01/03/2021 12:30:06) Predictions MDP (AGG) : running ...
+
+        (01/03/2021 12:30:10) Predictions MDP (AGG) : done.
+
+        (01/03/2021 12:30:10) Predictions rMDP (AGG) : running ...
+
+        (01/03/2021 12:30:37) Predictions rMDP (AGG) : done.
+
+        [AGG] Additional saving of the predictions (~AGG) as a pickle and csv.
+
+    (01/03/2021 12:30:37) Training AGG : running ...
+
+    (01/03/2021 12:30:39) Training AGG : done. 
+
+    agg model saved.
+
+    (01/03/2021 12:30:39) Predictions AGG : running...
+rmdp
+rmdp
+rmdp
+rmdp
+rmdp
+rmdp
+rmdp
+rmdp
+knn
+rmdp
+knn
+knn
+rmdp
+knn
+rmdp
+rmdp
+rmdp
+rmdp
+rmdp
+rmdp
+rmdp
+rmdp
+rmdp
+knn
+rmdp
+rmdp
+rmdp
+knn
+rmdp
+rmdp
+rmdp
+rmdp
+rmdp
+rmdp
+rmdp
+knn
+rmdp
+knn
+rmdp
+knn
+knn
+knn
+knn
+rmdp
+knn
+rmdp
+rmdp
+rmdp
+
+    (01/03/2021 12:30:39) Predictions AGG : done.
+
+        Additional saving of the predictions as a csv.
+
+###################
+END OF THE TRAINING
+-------------------
+
+
+
+BEGINNING OF THE BATCKTESTING
+############################# 
+pop 48
+Training set contains 48 state.
+[['Alabama', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming']]
+day 0
+day 1
+day 2
+day 3
+day 4
+day 5
+day 6
+day 7
+day 8
+day 9
+day 10
+day 11
+day 12
+day 13
+day 14
+day 15
+day 16
+day 17
+day 18
+day 19
+day 20
+day 21
+day 22
+day 23
+day 24
+day 25
+day 26
+DEBUG regions: ['Texas', 'Rhode Island', 'Mississippi', 'Montana', 'Georgia', 'California', 'Washington', 'Wyoming', 'Kansas', 'Wisconsin', 'West Virginia', 'New Jersey', 'Tennessee', 'Idaho', 'Nevada', 'Delaware', 'Massachusetts', 'Utah', 'Minnesota', 'Colorado', 'Indiana', 'North Carolina', 'Ohio', 'Louisiana', 'Oregon', 'Arkansas', 'South Carolina', 'Nebraska', 'Arizona', 'Maryland', 'Alabama', 'Florida', 'Pennsylvania', 'New Hampshire', 'Vermont', 'South Dakota', 'Oklahoma', 'Illinois', 'Michigan', 'North Dakota', 'Connecticut', 'New York', 'Kentucky', 'New Mexico', 'Iowa', 'Virginia', 'Maine', 'Missouri']
+rmdp
+rmdp
+rmdp
+rmdp
+rmdp
+rmdp
+rmdp
+rmdp
+knn
+rmdp
+knn
+knn
+rmdp
+knn
+rmdp
+rmdp
+rmdp
+rmdp
+rmdp
+rmdp
+rmdp
+rmdp
+rmdp
+knn
+rmdp
+rmdp
+rmdp
+knn
+rmdp
+rmdp
+rmdp
+rmdp
+rmdp
+rmdp
+rmdp
+knn
+rmdp
+knn
+rmdp
+knn
+knn
+knn
+knn
+rmdp
+knn
+rmdp
+rmdp
+rmdp
+
+######################
+END OF THE BACKTESTING
+----------------------
+

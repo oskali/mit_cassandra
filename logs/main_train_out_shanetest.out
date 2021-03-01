@@ -1,0 +1,109 @@
+
+
+-------------------------------
+0) Setting of the environment folder : experiment_features_deaths_state_2020-06-01_2020-06-27
+
+
+
+BEGINNING OF THE TRAINING
+#########################
+
+-------------------------
+1) Loading of the data :
+
+    target : deaths
+    region : state
+    
+    Chosen cutoffs: 
+
+        - training_agg_cutoff : 2020-06-01
+        - training_cutoff : 2020-05-16
+        - validation_cutoff : 2020-06-27
+
+    Additional information >>>
+
+        - features MDP : 
+            {'days_avg': 3, 'horizon': 8, 'n_iter': 100, 'n_folds_cv': 4, 'clustering_distance_threshold': 0.1, 'splitting_threshold': 0.0, 'classification_algorithm': 'DecisionTreeClassifier', 'clustering_algorithm': 'Agglomerative', 'n_clusters': None, 'action_thresh': ([], 0), 'features_list': ['cases_pct3', 'cases_pct5', 'temperature_7'], 'verbose': 1, 'n_jobs': -1, 'date_colname': 'date', 'target_colname': 'deaths', 'region_colname': 'state', 'random_state': 42, 'keep_first': True, 'save': False, 'plot': False, 'savepath': '', 'region_exceptions': None}
+
+    Loading datasets : running ...
+
+
+pop 48
+Training set contains 48 state.
+pop 48
+Training set contains 48 state.
+pop 48
+Training set contains 48 state.
+
+    Loading datasets : done.
+
+
+
+
+-------------------------------
+2) Training and Loading models (TRAIN) :
+
+    Training and predictions : running ...
+
+
+
+    (25/02/2021 16:35:32) Training Cassandra : running ...
+       unnamed: 0  unnamed: 0.1  ...  temperature_3 prcp_median_scaled_5
+0               0            21  ...            NaN                  NaN
+1               1            22  ...            NaN                  NaN
+2               2            23  ...            NaN                  NaN
+3               3            24  ...       0.581177                  NaN
+4               4            25  ...       0.559504                  NaN
+...           ...           ...  ...            ...                  ...
+12628       12628         13589  ...      -0.993758            -0.331000
+12629       12629         13590  ...      -0.361616            -0.234211
+12630       12630         13591  ...       0.030311            -0.331000
+12631       12631         13592  ...       0.295811            -0.331000
+12632       12632         13593  ...       0.675096            -0.331000
+
+[2622 rows x 290 columns]
+['unnamed: 0', 'unnamed: 0.1', 'unnamed: 0.1.1', 'state', 'date', 'cases', 'deaths', 'population', 'white_including_hispanic', 'pop_in_labor_force', 'commuters_drove_alone', 'black_male_55_64', 'employed_education_health_social', 'families_with_young_children', 'female_80_to_84', 'three_cars', 'no_car', 'commute_10_14_mins', 'dwellings_1_units_attached', 'other_race_pop', 'commute_15_19_mins', 'female_45_to_49', 'rent_over_50_percent', 'black_male_45_54', 'income_50000_59999', 'male_25_to_29', 'housing_built_2000_to_2004', 'hispanic_male_45_54', 'employed_construction', 'occupation_natural_resources_construction_maintenance', 'female_60_to_61', 'income_150000_199999', 'income_40000_44999', 'commute_35_39_mins', 'female_18_to_19', 'amerindian_pop', 'households', 'dwellings_20_to_49_units', 'commuters_by_public_transportation', 'white_male_45_54', 'one_year_more_college', 'female_22_to_24', 'rent_15_to_20_percent', 'rent_30_to_35_percent', 'dwellings_2_units', 'civilian_labor_force', 'occupation_production_transportation_material', 'commuters_by_subway_or_elevated', 'median_income', 'white_male_55_64', 'employed_other_services_not_public_admin', 'income_100000_124999', 'rent_20_to_25_percent', 'white_pop', 'income_60000_74999', 'income_25000_29999', 'commuters_by_car_truck_van', 'group_quarters', 'less_one_year_college', 'dwellings_1_units_detached', 'housing_units', 'employed_finance_insurance_real_estate', 'male_20', 'female_15_to_17', 'graduate_professional_degree', 'male_45_64_less_than_9_grade', 'female_62_to_64', 'dwellings_10_to_19_units', 'percent_income_spent_on_rent', 'female_55_to_59', 'male_15_to_17', 'in_grades_9_to_12', 'employed_agriculture_forestry_fishing_hunting_mining', 'female_10_to_14', 'not_in_labor_force', 'less_than_high_school_graduate', 'female_67_to_69', 'female_35_to_39', 'income_35000_39999', 'female_65_to_66', 'children', 'female_70_to_74', 'amerindian_including_hispanic', 'male_80_to_84', 'dwellings_5_to_9_units', 'male_75_to_79', 'bachelors_degree', 'income_75000_99999', 'rent_burden_not_computed', 'female_5_to_9', 'occupation_services', 'commute_30_34_mins', 'employed_public_administration', 'owner_occupied_housing_units', 'male_5_to_9', 'male_70_to_74', 'father_one_parent_families_with_young_children', 'commuters_by_bus', 'occupation_sales_office', 'male_67_to_69', 'commute_90_more_mins', 'housing_units_renter_occupied', 'poverty', 'employed_arts_entertainment_recreation_accommodation_food', 'commute_20_24_mins', 'in_undergrad_college', 'employed_manufacturing', 'female_30_to_34', 'two_parent_families_with_young_children', 'male_65_to_66', 'income_30000_34999', 'aggregate_travel_time_to_work', 'male_under_5', 'two_parents_father_in_labor_force_families_with_young_children', 'households_public_asst_or_food_stamps', 'pop_16_over', 'masters_degree', 'male_55_to_59', 'male_62_64', 'female_20', 'hispanic_male_55_64', 'male_45_64_high_school', 'male_60_61', 'male_pop', 'female_under_5', 'two_parents_not_in_labor_force_families_with_young_children', 'income_less_10000', 'female_85_and_over', 'vacant_housing_units', 'rent_10_to_15_percent', 'male_85_and_over', 'in_grades_5_to_8', 'pop_determined_poverty_status', 'renter_occupied_housing_units_paying_cash_median_gross_rent', 'commute_5_9_mins', 'male_30_to_34', 'black_including_hispanic', 'rent_25_to_30_percent', 'worked_at_home', 'income_125000_149999', 'male_22_to_24', 'male_45_to_64', 'male_45_64_grade_9_12', 'no_cars', 'two_cars', 'different_house_year_ago_different_city', 'commute_45_59_mins', 'population_1_year_and_over', 'commute_40_44_mins', 'commute_60_89_mins', 'geo_id', 'male_21', 'in_grades_1_to_4', 'male_10_to_14', 'asian_male_45_54', 'sales_office_employed', 'vacant_housing_units_for_sale', 'high_school_including_ged', 'dwellings_3_to_4_units', 'two_or_more_races_pop', 'management_business_sci_arts_employed', 'not_hispanic_pop', 'rent_40_to_50_percent', 'occupied_housing_units', 'four_more_cars', 'income_15000_19999', 'family_households', 'black_pop', 'male_45_64_bachelors_degree', 'male_50_to_54', 'male_40_to_44', 'female_40_to_44', 'female_pop', 'rent_35_to_40_percent', 'employed_pop', 'married_households', 'father_in_labor_force_one_parent_families_with_young_children', 'rent_under_10_percent', 'gini_index', 'not_us_citizen_pop', 'owner_occupied_housing_units_upper_value_quartile', 'employed_wholesale_trade', 'income_per_capita', 'housing_built_2005_or_later', 'unemployed_pop', 'male_45_64_associates_degree', 'workers_16_and_over', 'popdensity', 'armed_forces', 'male_18_to_19', 'male_45_64_some_college', 'in_school', 'male_45_to_49', 'median_year_structure_built', 'some_college_and_associates_degree', 'bachelors_degree_2', 'employed_retail_trade', 'female_female_households', 'mobile_homes', 'two_parents_mother_in_labor_force_families_with_young_children', 'male_45_64_graduate_degree', 'owner_occupied_housing_units_lower_value_quartile', 'housing_built_1939_or_earlier', 'income_200000_or_more', 'female_21', 'hispanic_pop', 'year', 'female_25_to_29', 'median_rent', 'slope', 'land_area', 'income_20000_24999', 'total_pop', 'median_age', 'vacant_housing_units_for_rent', 'mortgaged_housing_units', 'dwellings_50_or_more_units', 'male_male_households', 'pop_25_64', 'nonfamily_households', 'occupation_management_arts', 'asian_pop', 'income_10000_14999', 'employed_science_management_admin_waste', 'asian_including_hispanic', 'two_parents_in_labor_force_families_with_young_children', 'million_dollar_housing_units', 'different_house_year_ago_same_city', 'high_school_diploma', 'children_in_single_female_hh', 'one_parent_families_with_young_children', 'associates_degree', 'walked_to_work', 'commute_25_29_mins', 'income_45000_49999', 'one_car', 'female_75_to_79', 'bachelors_degree_or_higher_25_64', 'employed_information', 'employed_transportation_warehousing_utilities', 'female_50_to_54', 'male_35_to_39', 'pop_25_years_over', 'population_3_years_over', 'commuters_by_carpool', 'households_retirement_income', 'owner_occupied_housing_units_median_value', 'asian_male_55_64', 'temperature', 'isholiday', 'prcp_median', 'prcp_median_scaled', 'prcp_mean', 'prcp_mean_scaled', 'growthrate', 'growthratelag_0', 'growthratelag_3', 'growthratelag_5', 'growthratelag_7', 'growthratelag_9', 'growthratelag_12', 'growthratelag_14', 'growthratelag_16', 'growthratelag_18', 'growthratelag_20', 'predictions', 'growthcasespred', 'cases_nom', 'deaths_nom', 'cases_pct3', 'cases_pct5', 'cases_pct10', 'cases_pct20', 'cases_pct30', 'cases_pct40', 'cases_pct3_lag7', 'cases_pct5_lag7', 'cases_pct3_lag14', 'cases_pct5_lag14', 'cases_pct3_lag30', 'cases_pct5_lag30', 'cases_pct3_lag60', 'cases_pct5_lag60', 'cases_r1w_2w', 'cases_r1w_1m', 'cases_r3d_2w', 'death2cases_2w', 'temperature_7', 'temperature_3', 'prcp_median_scaled_5']
+
+    (25/02/2021 16:35:48) Training Cassandra : done.
+
+    seird model saved.
+
+    (25/02/2021 16:35:48) Predictions Cassandra : running ...
+
+    (25/02/2021 16:35:49) Predictions Cassandra : done.
+
+    (25/02/2021 16:35:49) Training MDP : running ...
+minimum iterations: 53
+
+    (25/02/2021 16:37:14) Training MDP : done.
+
+    mdp model saved.
+
+    (25/02/2021 16:37:14) Predictions MDP : running ...
+
+    (25/02/2021 16:37:18) Predictions MDP : done.
+
+    (25/02/2021 16:37:18) Training rMDP : running ...
+ERROR SOLVED: n_splits=5 cannot be greater than the number of members in each class, then cv_split = 2
+ERROR SOLVED: n_splits=5 cannot be greater than the number of members in each class, then cv_split = 2
+ERROR SOLVED: n_splits=5 cannot be greater than the number of members in each class, then cv_split = 2
+ERROR SOLVED: n_splits=5 cannot be greater than the number of members in each class, then cv_split = 2
+ERROR SOLVED: n_splits=5 cannot be greater than the number of members in each class, then cv_split = 2
+ERROR SOLVED: n_splits=5 cannot be greater than the number of members in each class, then cv_split = 2
+ERROR SOLVED: n_splits=5 cannot be greater than the number of members in each class, then cv_split = 2
+ERROR SOLVED: n_splits=5 cannot be greater than the number of members in each class, then cv_split = 2
+ERROR SOLVED: n_splits=5 cannot be greater than the number of members in each class, then cv_split = 2
+ERROR SOLVED: n_splits=5 cannot be greater than the number of members in each class, then cv_split = 2
+ERROR SOLVED: n_splits=5 cannot be greater than the number of members in each class, then cv_split = 2
+ERROR SOLVED: n_splits=5 cannot be greater than the number of members in each class, then cv_split = 2
+ERROR SOLVED: n_splits=5 cannot be greater than the number of members in each class, then cv_split = 2
+ERROR SOLVED: n_splits=5 cannot be greater than the number of members in each class, then cv_split = 2
+ERROR SOLVED: n_splits=5 cannot be greater than the number of members in each class, then cv_split = 2
+ERROR SOLVED: n_splits=5 cannot be greater than the number of members in each class, then cv_split = 2
+ERROR SOLVED: n_splits=5 cannot be greater than the number of members in each class, then cv_split = 2
+ERROR SOLVED: n_splits=5 cannot be greater than the number of members in each class, then cv_split = 2
+ERROR SOLVED: n_splits=5 cannot be greater than the number of members in each class, then cv_split = 2
+ERROR SOLVED: n_splits=5 cannot be greater than the number of members in each class, then cv_split = 2
+ERROR SOLVED: n_splits=5 cannot be greater than the number of members in each class, then cv_split = 2
+ERROR SOLVED: n_splits=5 cannot be greater than the number of members in each class, then cv_split = 2
+ERROR SOLVED: n_splits=5 cannot be greater than the number of members in each class, then cv_split = 2
